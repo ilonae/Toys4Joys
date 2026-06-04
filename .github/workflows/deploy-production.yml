@@ -1,0 +1,70 @@
+name: Deploy → Production
+
+# Runs after CI passes on main.
+# Vercel's GitHub integration deploys automatically,
+# but this workflow lets you add pre/post deploy steps
+# (e.g. smoke test, Slack notification, DB migration reminder).
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  pre-deploy-check:
+    name: CI gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:run
+        env:
+          VITE_SUPABASE_URL:           ${{ secrets.TEST_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY:      ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          VITE_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+
+  remind-migrations:
+    name: Migration reminder
+    runs-on: ubuntu-latest
+    needs: pre-deploy-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for new SQL migrations
+        id: sql_check
+        run: |
+          # List any SQL files changed in this push
+          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'supabase/*.sql' 2>/dev/null || echo "")
+          if [ -n "$CHANGED" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "files=$CHANGED" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Warn if migrations not applied
+        if: steps.sql_check.outputs.changed == 'true'
+        run: |
+          echo "⚠️  SQL migrations changed in this release:"
+          echo "${{ steps.sql_check.outputs.files }}"
+          echo ""
+          echo "➡  Make sure you have run these in the PRODUCTION Supabase SQL Editor"
+          echo "   before this deploy goes live."
+          echo ""
+          echo "   Supabase Dashboard → SQL Editor → New query → paste & run"
+
+  # Actual deploy is handled by Vercel's GitHub integration.
+  # This job just confirms the gate passed and logs the release.
+  confirm:
+    name: Release confirmed
+    runs-on: ubuntu-latest
+    needs: [pre-deploy-check, remind-migrations]
+    steps:
+      - name: Log
+        run: |
+          echo "✅ CI passed. Vercel is deploying main → production."
+          echo "   Monitor at: https://vercel.com/dashboard"

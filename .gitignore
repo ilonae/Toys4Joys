@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+studio/node_modules/
+
+# Build output
+dist/
+studio/dist/
+
+# Environment variables — never commit real secrets
+# .env.example and .env.test ARE committed (safe placeholder / mock values)
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+.env.production
+
+# Sanity Studio — editor UI, not needed in repo
+studio/
+
+# Test & coverage output
+coverage/
+.vitest-cache/
+
+# Misc
+.DS_Store
+*.log
+studio/
+.vercel
+.env*.local

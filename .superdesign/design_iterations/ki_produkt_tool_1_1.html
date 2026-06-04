@@ -1,0 +1,4002 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KI-Produkt-Tool — Toys4Joys</title>
+<link rel="stylesheet" href="theme_toys4joys_1.css"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  /* Inline CSS vars — ensures they resolve even if external theme file doesn't load */
+  :root {
+    --background:       #070509;
+    --surface:          #0f0d12;
+    --surface-2:        #1a1720;
+    --surface-3:        #252230;
+    --foreground:       #f0ecf5;
+    --foreground-muted: #7a7585;
+    --foreground-subtle:#3d3948;
+    --accent:           #e50f38;
+    --accent-dim:       rgba(229,15,56,0.15);
+    --accent-glow:      0 0 20px rgba(229,15,56,0.35), 0 0 60px rgba(229,15,56,0.12);
+    --success:          #00E5A0;
+    --border:           rgba(229,15,56,0.18);
+    --border-subtle:    rgba(255,255,255,0.06);
+    --border-hover:     rgba(229,15,56,0.45);
+    --font-mono:        'Space Mono', monospace;
+    --font-sans:        'DM Sans', sans-serif;
+    --radius:           2px;
+    --radius-md:        4px;
+    --radius-lg:        6px;
+    --shadow-lg:        0 8px 32px rgba(0,0,0,0.8),0 2px 8px rgba(0,0,0,0.6);
+    --shadow-accent:    0 0 0 1px rgba(229,15,56,0.3),0 4px 20px rgba(229,15,56,0.2);
+    --transition-fast:  120ms cubic-bezier(0.4,0,0.2,1);
+    --transition-base:  220ms cubic-bezier(0.4,0,0.2,1);
+    --transition-slow:  400ms cubic-bezier(0.4,0,0.2,1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--background) !important;
+    color: var(--foreground) !important;
+    font-family: var(--font-sans) !important;
+    min-height: 100vh !important;
+    line-height: 1.6 !important;
+    overflow-x: hidden !important;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--background); }
+  ::-webkit-scrollbar-thumb { background: var(--foreground-subtle); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .header {
+    background: var(--surface) !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    padding: 0 2rem !important;
+    height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+  }
+
+  .logo {
+    font-family: var(--font-mono) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.12em !important;
+    color: var(--foreground) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: var(--accent-glow);
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.75); }
+  }
+
+  .header-sub {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    color: var(--foreground-muted) !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  /* ── Main ────────────────────────────────────────────── */
+  .main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .page-title {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.14em !important;
+    color: var(--accent) !important;
+    text-transform: uppercase !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .page-heading {
+    font-size: 1.6rem !important;
+    font-weight: 600 !important;
+    color: var(--foreground) !important;
+    margin-bottom: 2rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* ── API Key Panel ───────────────────────────────────── */
+  .api-panel {
+    background: var(--surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    margin-bottom: 1.5rem !important;
+    overflow: hidden !important;
+  }
+
+  .api-panel-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 12px 16px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    transition: background var(--transition-fast) !important;
+  }
+
+  .api-panel-header:hover { background: var(--surface-2) !important; }
+
+  .api-panel-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .api-status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--foreground-subtle);
+    transition: background var(--transition-base), box-shadow var(--transition-base);
+  }
+
+  .api-status-dot.connected {
+    background: var(--success);
+    box-shadow: 0 0 8px rgba(0,229,160,0.5);
+  }
+
+  .api-panel-title {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    color: var(--foreground-muted) !important;
+  }
+
+  .api-panel-body {
+    padding: 0 16px 16px !important;
+    display: none !important;
+  }
+
+  .api-panel.open .api-panel-body { display: block !important; }
+
+  .api-chevron {
+    color: var(--foreground-subtle);
+    transition: transform var(--transition-fast);
+  }
+
+  .api-panel.open .api-chevron { transform: rotate(180deg); }
+
+  /* ── Input Fields (FIXED) ────────────────────────────── */
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .field-label {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    letter-spacing: 0.1em !important;
+    color: var(--foreground-muted) !important;
+    text-transform: uppercase !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+  }
+
+  /* The key fix: dark inset, visible border, clear interactive affordance */
+  .field-input {
+    background: #0c0a10 !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: var(--radius-md) !important;
+    color: #f0ecf5 !important;
+    font-family: 'Space Mono', monospace !important;
+    font-size: 12px !important;
+    padding: 10px 14px !important;
+    outline: none !important;
+    transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease !important;
+    width: 100% !important;
+    resize: none !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.6) !important;
+    letter-spacing: 0.02em !important;
+    -webkit-text-fill-color: #f0ecf5 !important;
+  }
+
+  .field-input::placeholder {
+    color: rgba(255,255,255,0.22) !important;
+    -webkit-text-fill-color: rgba(255,255,255,0.22) !important;
+    font-style: italic !important;
+  }
+
+  .field-input:hover:not(:focus) {
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    background: #0f0c14 !important;
+  }
+
+  .field-input:focus {
+    border-color: var(--accent) !important;
+    background: #0f0c14 !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 0 0 3px rgba(255,23,68,0.12), 0 0 12px rgba(255,23,68,0.08) !important;
+  }
+
+  /* API key specific */
+  .field-input.api-key-input {
+    font-family: var(--font-mono) !important;
+    letter-spacing: 0.04em !important;
+    padding-right: 44px !important;
+  }
+
+  .api-key-wrap {
+    position: relative;
+  }
+
+  .api-key-toggle {
+    position: absolute !important;
+    right: 10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--foreground-subtle) !important;
+    cursor: pointer !important;
+    padding: 4px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: color var(--transition-fast) !important;
+  }
+
+  .api-key-toggle:hover { color: var(--foreground-muted) !important; }
+
+  /* ── Input Grid ──────────────────────────────────────── */
+  .input-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  @media (max-width: 640px) {
+    .input-grid { grid-template-columns: 1fr !important; }
+    .result-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* ── Upload Zone ─────────────────────────────────────── */
+  .upload-zone {
+    background: var(--surface) !important;
+    border: 1.5px dashed rgba(255,23,68,0.25) !important;
+    border-radius: var(--radius-md) !important;
+    min-height: 260px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all var(--transition-base) !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .upload-zone:hover {
+    border-color: rgba(255,23,68,0.5) !important;
+    background: #0f0d12 !important;
+  }
+
+  .upload-zone.drag-over {
+    border-color: var(--accent) !important;
+    background: var(--accent-dim) !important;
+    transform: scale(1.01) !important;
+    box-shadow: var(--shadow-accent) !important;
+  }
+
+  .upload-zone.has-preview { border-style: solid !important; border-color: rgba(255,255,255,0.1) !important; }
+
+  .upload-inner {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px; padding: 2rem; text-align: center;
+    transition: opacity var(--transition-base);
+  }
+
+  .upload-icon { color: var(--accent) !important; opacity: 0.7; }
+
+  .upload-label {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important; letter-spacing: 0.1em !important;
+    color: var(--foreground-muted) !important; text-transform: uppercase !important;
+  }
+
+  .upload-sub { font-size: 11px !important; color: var(--foreground-subtle) !important; }
+
+  #file-input { display: none; }
+
+  .preview-image {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0; border-radius: var(--radius-md);
+    animation: fadeInScale 0.4s ease-out;
+  }
+
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .preview-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(7,5,9,0.85) 0%, transparent 50%);
+    display: flex; align-items: flex-end; padding: 1rem;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .preview-badge {
+    font-family: var(--font-mono) !important; font-size: 10px !important;
+    letter-spacing: 0.1em !important; color: var(--foreground-muted) !important;
+    background: rgba(7,5,9,0.7) !important; padding: 4px 8px !important;
+    border-radius: var(--radius) !important; border: 1px solid var(--border-subtle) !important;
+  }
+
+  .preview-remove {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(7,5,9,0.8) !important; border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: var(--radius) !important; color: var(--foreground-muted) !important;
+    cursor: pointer !important; padding: 6px !important;
+    display: flex !important; align-items: center !important;
+    transition: all var(--transition-fast) !important; z-index: 2 !important;
+  }
+
+  .preview-remove:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+
+  /* ── Raw Info Panel ──────────────────────────────────── */
+  .info-panel {
+    background: var(--surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1.25rem 1.5rem !important;
+    display: flex !important; flex-direction: column !important; gap: 1rem !important;
+  }
+
+  .panel-label {
+    font-family: var(--font-mono) !important; font-size: 10px !important;
+    letter-spacing: 0.12em !important; color: var(--accent) !important;
+    text-transform: uppercase !important; margin-bottom: 0.1rem !important;
+  }
+
+  .output-field-label {
+    font-family: var(--font-mono) !important; font-size: 9px !important;
+    letter-spacing: 0.12em !important; color: var(--foreground-muted) !important;
+    text-transform: uppercase !important; margin-bottom: 4px !important;
+  }
+
+  /* ── CTA ─────────────────────────────────────────────── */
+  .cta-wrap {
+    margin-bottom: 2rem !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    padding-top: 0.25rem !important;
+  }
+
+  .btn-primary {
+    background: var(--accent) !important; color: #fff !important;
+    font-family: 'Space Mono', monospace !important; font-size: 12px !important;
+    font-weight: 700 !important; letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    border: 2px solid var(--accent) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 13px 28px !important;
+    cursor: pointer !important; display: inline-flex !important;
+    align-items: center !important; gap: 10px !important;
+    transition: all 200ms cubic-bezier(0.4,0,0.2,1) !important;
+    position: relative !important; overflow: hidden !important;
+    width: auto !important; white-space: nowrap !important;
+    box-shadow: 0 0 0 0 rgba(255,23,68,0) !important;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: transparent !important;
+    color: var(--accent) !important;
+    box-shadow: 0 0 24px rgba(255,23,68,0.3), inset 0 0 0 0 transparent !important;
+    transform: translateY(-1px) !important;
+  }
+  .btn-primary:active:not(:disabled) { transform: scale(0.97) translateY(0) !important; }
+  .btn-primary:disabled { opacity: 0.35 !important; cursor: not-allowed !important; }
+  .btn-primary.loading { animation: btn-pulse 1.6s ease-in-out infinite !important; }
+
+  @keyframes btn-pulse { 0%,100%{opacity:1}50%{opacity:0.6} }
+
+  .btn-ripple {
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,0.2); transform: scale(0);
+    animation: ripple 0.4s linear; pointer-events: none;
+  }
+
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+  /* ── Progress ────────────────────────────────────────── */
+  .progress-wrap {
+    background: var(--surface) !important; border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important; padding: 1.25rem 1.5rem !important;
+    margin-bottom: 2rem !important; display: none !important;
+  }
+
+  .progress-wrap.visible { display: block !important; }
+
+  .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+
+  .progress-status {
+    font-family: var(--font-mono) !important; font-size: 11px !important;
+    color: var(--foreground-muted) !important; letter-spacing: 0.06em !important;
+    transition: all var(--transition-base) !important;
+  }
+
+  .progress-pct {
+    font-family: var(--font-mono) !important; font-size: 11px !important;
+    color: var(--accent) !important; font-weight: 700 !important;
+  }
+
+  .progress-bar-track {
+    background: var(--surface-3) !important; border-radius: 1px !important;
+    height: 3px !important; margin-bottom: 1.25rem !important; overflow: hidden !important;
+  }
+
+  .progress-bar-fill {
+    height: 100% !important; background: var(--accent) !important;
+    border-radius: 1px !important; width: 0% !important;
+    transition: width 0.6s ease-out !important; box-shadow: 0 0 8px var(--accent) !important;
+  }
+
+  .progress-steps { display: flex; justify-content: space-between; }
+
+  .step-item {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; flex: 1; position: relative;
+  }
+
+  .step-item:not(:last-child)::after {
+    content: ''; position: absolute; top: 11px; left: 50%;
+    width: 100%; height: 1px; background: var(--border-subtle); z-index: 0;
+  }
+
+  .step-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--border-subtle); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 9px;
+    color: var(--foreground-subtle); transition: all var(--transition-base); position: relative; z-index: 1;
+  }
+
+  .step-item.active .step-dot {
+    border-color: var(--accent); background: var(--accent-dim); color: var(--accent);
+    box-shadow: 0 0 12px rgba(255,23,68,0.3); animation: step-pulse 1.2s ease-in-out infinite;
+  }
+
+  .step-item.done .step-dot { border-color: var(--success); background: rgba(0,229,160,0.12); color: var(--success); }
+
+  @keyframes step-pulse {
+    0%,100%{box-shadow:0 0 12px rgba(255,23,68,0.3)}
+    50%{box-shadow:0 0 20px rgba(255,23,68,0.6)}
+  }
+
+  .step-label {
+    font-family: var(--font-mono) !important; font-size: 9px !important;
+    letter-spacing: 0.08em !important; color: var(--foreground-subtle) !important;
+    text-transform: uppercase !important; text-align: center !important;
+    transition: color var(--transition-base) !important;
+  }
+
+  .step-item.active .step-label { color: var(--accent) !important; }
+  .step-item.done .step-label { color: var(--success) !important; }
+
+  /* ── Error Banner ────────────────────────────────────── */
+  .error-banner {
+    background: rgba(255,23,68,0.08) !important;
+    border: 1px solid rgba(255,23,68,0.3) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 12px 16px !important;
+    margin-bottom: 1.5rem !important;
+    display: none !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .error-banner.visible { display: flex !important; }
+
+  .error-text {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    color: #ff8a80 !important;
+    line-height: 1.6 !important;
+  }
+
+  /* ── Result ──────────────────────────────────────────── */
+  .result-section { display: none !important; animation: slideUp 0.5s ease-out !important; }
+  .result-section.visible { display: block !important; }
+
+  @keyframes slideUp { from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)} }
+
+  .result-header {
+    font-family: var(--font-mono) !important; font-size: 10px !important;
+    letter-spacing: 0.14em !important; color: var(--accent) !important;
+    text-transform: uppercase !important; margin-bottom: 1rem !important;
+    display: flex !important; align-items: center !important; gap: 8px !important;
+  }
+
+  .result-grid {
+    display: grid !important; grid-template-columns: 1fr !important;
+    gap: 1.5rem !important; background: var(--surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important; padding: 1.5rem !important; margin-bottom: 1rem !important;
+  }
+
+  /* ── Product Image ───────────────────────────────────── */
+  .product-image-wrap {
+    aspect-ratio: 1; background: #070509 !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden !important; position: relative !important;
+    animation: fadeIn 0.6s ease-out 0.1s both !important;
+  }
+
+  .product-image-wrap img { width: 100%; height: 100%; object-fit: contain; }
+
+  .img-loading-overlay {
+    position: absolute; inset: 0; background: #070509;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 12px;
+  }
+
+  .img-spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border-subtle);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .img-loading-text {
+    font-family: var(--font-mono) !important; font-size: 9px !important;
+    letter-spacing: 0.1em !important; color: var(--foreground-muted) !important;
+    text-transform: uppercase !important;
+  }
+
+  .image-label {
+    position: absolute; bottom: 8px; left: 8px;
+    font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em;
+    color: var(--foreground-muted); background: rgba(7,5,9,0.75);
+    padding: 3px 7px; border-radius: var(--radius); border: 1px solid var(--border-subtle);
+  }
+
+  /* ── Text Output ─────────────────────────────────────── */
+  .text-output { display: flex; flex-direction: column; gap: 1rem; animation: fadeInRight 0.5s ease-out 0.2s both; }
+
+  @keyframes fadeInRight { from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)} }
+
+  /* editable result fields */
+  .editable-name {
+    width: 100% !important; box-sizing: border-box !important;
+    background: transparent !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 4px !important;
+    color: var(--foreground) !important;
+    font-size: 0.95rem !important; font-weight: 600 !important;
+    padding: 6px 10px !important;
+    font-family: var(--font-sans) !important;
+    transition: border-color 0.15s !important;
+  }
+  .editable-name:focus { outline: none !important; border-color: var(--accent) !important; }
+
+  .lang-panel-ta {
+    width: 100% !important; box-sizing: border-box !important;
+    background: transparent !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: 4px !important;
+    color: var(--foreground) !important;
+    font-size: 13px !important; line-height: 1.7 !important;
+    padding: 8px 10px !important; min-height: 100px !important;
+    font-family: var(--font-sans) !important;
+    resize: vertical !important;
+    transition: border-color 0.15s !important;
+  }
+  .lang-panel-ta:focus { outline: none !important; border-color: var(--accent) !important; }
+
+  .btn-regen {
+    display: inline-flex !important; align-items: center !important; gap: 5px !important;
+    margin-left: auto !important;
+    padding: 4px 10px !important; border-radius: 4px !important;
+    font-size: 11px !important; font-weight: 600 !important; cursor: pointer !important;
+    background: transparent !important; border: 1px solid var(--border-subtle) !important;
+    color: var(--foreground-muted) !important; transition: all 0.15s !important;
+  }
+  .btn-regen:hover { border-color: var(--foreground-muted) !important; color: var(--foreground) !important; }
+
+  .product-name-value {
+    font-family: var(--font-mono) !important; font-size: 1.05rem !important;
+    font-weight: 700 !important; color: var(--foreground) !important;
+    letter-spacing: 0.02em !important; animation: fadeIn 0.4s ease-out 0.3s both !important;
+  }
+
+  /* ── Lang Tabs ───────────────────────────────────────── */
+  .lang-tabs {
+    background: #0c0a10 !important;
+    border: 1.5px solid rgba(255,255,255,0.1) !important;
+    border-radius: var(--radius-md) !important; overflow: hidden !important;
+  }
+
+  .lang-tab-nav { display: flex; border-bottom: 1px solid var(--border-subtle); }
+
+  .lang-tab-btn {
+    flex: 1; background: transparent !important; border: none !important;
+    padding: 10px !important; font-family: var(--font-mono) !important;
+    font-size: 11px !important; font-weight: 700 !important;
+    letter-spacing: 0.1em !important; color: var(--foreground-muted) !important;
+    cursor: pointer !important; transition: all var(--transition-fast) !important;
+    position: relative !important; text-transform: uppercase !important;
+  }
+
+  .lang-tab-btn::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px; background: var(--accent); transform: scaleX(0);
+    transition: transform var(--transition-base);
+  }
+
+  .lang-tab-btn:hover { color: var(--foreground) !important; }
+  .lang-tab-btn.active { color: var(--accent) !important; }
+  .lang-tab-btn.active::after { transform: scaleX(1); }
+
+  .lang-tab-content { padding: 1rem; }
+
+  .lang-panel { display: none !important; animation: fadeIn 0.2s ease-out; }
+  .lang-panel.active { display: block !important; }
+
+  @keyframes fadeIn    { from{opacity:0}to{opacity:1} }
+  @keyframes fadeInUp  { from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)} }
+
+  /* ── Download Bar ────────────────────────────────────── */
+  .download-bar {
+    background: var(--surface) !important; border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important; padding: 1rem 1.5rem !important;
+    display: flex !important; align-items: center !important;
+    justify-content: space-between !important; gap: 1rem !important;
+    flex-wrap: wrap !important; animation: slideUp 0.4s ease-out 0.4s both !important;
+  }
+
+  .download-info { display: flex; flex-direction: column; gap: 2px; }
+
+  .download-title {
+    font-family: var(--font-mono) !important; font-size: 11px !important;
+    letter-spacing: 0.08em !important; color: var(--foreground) !important; font-weight: 700 !important;
+  }
+
+  .download-sub { font-size: 11px !important; color: var(--foreground-muted) !important; }
+
+  .download-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .btn-download {
+    background: transparent !important; border: 1.5px solid rgba(255,255,255,0.15) !important;
+    border-radius: var(--radius-md) !important; color: var(--foreground) !important;
+    font-family: var(--font-mono) !important; font-size: 11px !important;
+    font-weight: 700 !important; letter-spacing: 0.1em !important;
+    text-transform: uppercase !important; padding: 9px 18px !important;
+    cursor: pointer !important; display: inline-flex !important;
+    align-items: center !important; gap: 8px !important;
+    transition: all var(--transition-base) !important;
+  }
+
+  .btn-download:hover { border-color: var(--accent) !important; color: var(--accent) !important; box-shadow: var(--shadow-accent) !important; }
+  .btn-download:active { transform: scale(0.97) !important; }
+  .btn-download.btn-zip { background: var(--accent-dim) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+  .btn-download.btn-zip:hover { background: var(--accent) !important; color: #fff !important; box-shadow: var(--accent-glow) !important; }
+  .btn-download.btn-supabase { background: rgba(62,207,142,0.10) !important; border-color: #3ECF8E !important; color: #3ECF8E !important; }
+  .btn-download.btn-supabase:hover { background: #3ECF8E !important; color: #000 !important; box-shadow: 0 0 20px rgba(62,207,142,0.35) !important; }
+  .btn-download.btn-supabase.uploading { opacity: 0.6 !important; cursor: wait !important; pointer-events: none !important; }
+  .btn-download.btn-supabase.done { background: rgba(62,207,142,0.20) !important; border-color: #3ECF8E !important; color: #3ECF8E !important; }
+  .btn-download.btn-supabase.error { background: var(--accent-dim) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
+  .btn-download.done { border-color: var(--success) !important; color: var(--success) !important; }
+
+
+  /* ── Toast ───────────────────────────────────────────── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em;
+    color: var(--foreground); box-shadow: var(--shadow-lg);
+    transform: translateY(80px); opacity: 0;
+    transition: all var(--transition-base); z-index: 999; min-width: 240px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: rgba(255,23,68,0.4) !important; }
+  .toast .toast-icon { color: var(--success); }
+  .toast.error .toast-icon { color: var(--accent); }
+
+  /* ── Utility ─────────────────────────────────────────── */
+  .divider { height: 1px; background: var(--border-subtle); margin: 1.5rem 0; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--font-mono); font-size: 9px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: var(--radius); border: 1px solid;
+  }
+
+  .badge-accent { color: var(--accent); border-color: rgba(255,23,68,0.3); background: var(--accent-dim); }
+  .badge-muted  { color: var(--foreground-muted); border-color: var(--border-subtle); background: var(--surface-3); }
+  .badge-success { color: var(--success); border-color: rgba(0,229,160,0.3); background: rgba(0,229,160,0.08); }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────── -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    TOYS4JOYS
+    <span style="color:var(--foreground-subtle);font-weight:400;margin:0 4px">·</span>
+    KI-PRODUKT-TOOL
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <span class="header-sub">GPT-4o + DALL·E 3</span>
+    <span class="badge badge-accent" id="header-badge">
+      <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite"></span>
+      BEREIT
+    </span>
+  </div>
+</header>
+
+<!-- ── MAIN ────────────────────────────────────────────────── -->
+<main class="main">
+
+  <p class="page-title">Produktaufbereitung</p>
+  <h1 class="page-heading">Foto, Name &amp; Beschreibung — automatisch</h1>
+
+  <!-- API KEY PANEL -->
+  <div class="api-panel" id="apiPanel">
+    <div class="api-panel-header" onclick="toggleApiPanel()">
+      <div class="api-panel-left">
+        <div class="api-status-dot" id="apiStatusDot"></div>
+        <span class="api-panel-title" id="apiPanelTitle">OpenAI API-Schlüssel konfigurieren</span>
+      </div>
+      <i data-lucide="chevron-down" class="api-chevron" style="width:14px;height:14px"></i>
+    </div>
+    <div class="api-panel-body">
+      <div class="field-group" style="margin-bottom:10px">
+        <label class="field-label">
+          <i data-lucide="key" style="width:10px;height:10px"></i>
+          OpenAI API Key
+        </label>
+        <div class="api-key-wrap">
+          <input type="password" class="field-input api-key-input" id="apiKeyInput"
+            placeholder="sk-proj-…"
+            oninput="onApiKeyChange()"
+          />
+          <button class="api-key-toggle" onclick="toggleKeyVisibility()" id="keyToggleBtn">
+            <i data-lucide="eye" style="width:14px;height:14px"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Supabase section -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-subtle)">
+        <p class="field-label" style="margin-bottom:8px;display:flex;align-items:center;gap:6px">
+          <i data-lucide="database" style="width:10px;height:10px"></i>
+          Supabase Upload
+        </p>
+        <div id="supabaseFields">
+          <div class="api-key-wrap">
+            <input type="password" class="field-input api-key-input" id="supabaseKeyInput"
+              placeholder="service_role Key (Supabase → Settings → API)"
+              oninput="onSupabaseKeyChange()"
+              style="font-size:10px"
+            />
+            <button class="api-key-toggle" onclick="toggleSupabaseKeyVisibility()" id="supabaseKeyToggleBtn">
+              <i data-lucide="eye" style="width:14px;height:14px"></i>
+            </button>
+          </div>
+          <p style="font-size:10px;color:var(--foreground-subtle);margin-top:5px;font-family:var(--font-mono)">
+            Kategorie + Material aus den Rohinfos unten übernommen · Preis in Supabase Dashboard setzen
+          </p>
+        </div>
+      </div>
+
+      <!-- NovitaAI key -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle)">
+        <p style="font-size:10px;font-weight:600;color:var(--foreground-subtle);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+          <i data-lucide="image" style="width:10px;height:10px"></i>
+          Novita AI (Bild-Fallback)
+        </p>
+        <div class="api-key-wrap">
+          <input type="password" class="field-input api-key-input" id="novitaKeyInput"
+            placeholder="... (novita.ai → Account → API Keys)"
+            oninput="onNovitaKeyChange()"
+            style="font-size:10px"
+          />
+          <button class="api-key-toggle" onclick="toggleNovitaKeyVisibility()" id="novitaKeyToggleBtn">
+            <i data-lucide="eye" style="width:14px;height:14px"></i>
+          </button>
+        </div>
+        <p style="font-size:10px;color:var(--foreground-subtle);margin-top:5px;font-family:var(--font-mono)">
+          Adult-Content erlaubt · Claude beschreibt → Novita generiert · ~$0.02/Bild
+        </p>
+      </div>
+
+      <!-- Anthropic (Claude) key -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle)">
+        <p style="font-size:10px;font-weight:600;color:var(--foreground-subtle);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+          <i data-lucide="scan-eye" style="width:10px;height:10px"></i>
+          Claude Vision (Bildbeschreibung)
+        </p>
+        <div class="api-key-wrap">
+          <input type="password" class="field-input api-key-input" id="anthropicKeyInput"
+            placeholder="sk-ant-... (console.anthropic.com → API Keys)"
+            oninput="onAnthropicKeyChange()"
+            style="font-size:10px"
+          />
+          <button class="api-key-toggle" onclick="toggleAnthropicKeyVisibility()" id="anthropicKeyToggleBtn">
+            <i data-lucide="eye" style="width:14px;height:14px"></i>
+          </button>
+        </div>
+        <p style="font-size:10px;color:var(--foreground-subtle);margin-top:5px;font-family:var(--font-mono)">
+          Beschreibt das Produkt forensisch → Prompt für Novita AI
+        </p>
+      </div>
+
+      <!-- Stability AI key (for remove-background only) -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle)">
+        <p style="font-size:10px;font-weight:600;color:var(--foreground-subtle);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;display:flex;align-items:center;gap:5px">
+          <i data-lucide="scissors" style="width:10px;height:10px"></i>
+          Stability AI (Hintergrund entfernen)
+        </p>
+        <div class="api-key-wrap">
+          <input type="password" class="field-input api-key-input" id="stabilityKeyInput"
+            placeholder="sk-... (platform.stability.ai → API Keys)"
+            oninput="onStabilityKeyChange()"
+            style="font-size:10px"
+          />
+          <button class="api-key-toggle" onclick="toggleStabilityKeyVisibility()" id="stabilityKeyToggleBtn">
+            <i data-lucide="eye" style="width:14px;height:14px"></i>
+          </button>
+        </div>
+        <p style="font-size:10px;color:var(--foreground-subtle);margin-top:5px;font-family:var(--font-mono)">
+          Letzter Fallback: präziser Freisteller ohne Generierung
+        </p>
+      </div>
+
+      <!-- rembg server status -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle);display:flex;align-items:center;gap:7px">
+        <span id="rembgDot" style="width:6px;height:6px;border-radius:50%;background:var(--foreground-subtle);flex-shrink:0;transition:background 0.3s"></span>
+        <span id="rembgLabel" style="font-size:10px;color:var(--foreground-muted);font-family:var(--font-mono);letter-spacing:0.04em">
+          rembg-Server: prüfe…
+        </span>
+      </div>
+
+      <!-- Image quality toggle -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div>
+          <p style="font-size:10px;font-family:var(--font-mono);color:var(--foreground-muted);letter-spacing:0.04em;margin:0">Bildqualität</p>
+          <p style="font-size:9px;font-family:var(--font-mono);letter-spacing:0.04em;margin:3px 0 0;transition:color 0.2s" id="qualityCostHint">~$0.04 / Bild · 7× günstiger</p>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button id="qualityBtnStandard" onclick="setQualityMode('standard')"
+            style="font-size:9px;font-family:var(--font-mono);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 9px;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;background:var(--success);color:#fff">
+            Standard
+          </button>
+          <button id="qualityBtnHD" onclick="setQualityMode('hd')"
+            style="font-size:9px;font-family:var(--font-mono);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 9px;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;background:transparent;color:var(--foreground-subtle)">
+            HD
+          </button>
+        </div>
+      </div>
+
+      <!-- Image mode toggle: masked inpaint vs full recreation -->
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div>
+          <p style="font-size:10px;font-family:var(--font-mono);color:var(--foreground-muted);letter-spacing:0.04em;margin:0">OpenAI-Modus</p>
+          <p style="font-size:9px;font-family:var(--font-mono);letter-spacing:0.04em;margin:3px 0 0;transition:color 0.2s" id="imageModeHint">Maskiert · Produkt bleibt exakt erhalten</p>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button id="imageModeBtnInpaint" onclick="setImageMode('inpaint')"
+            style="font-size:9px;font-family:var(--font-mono);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 9px;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;background:var(--success);color:#fff">
+            Maskiert
+          </button>
+          <button id="imageModeBtnRecreate" onclick="setImageMode('recreate')"
+            style="font-size:9px;font-family:var(--font-mono);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:4px 9px;border-radius:4px;border:1px solid var(--border);cursor:pointer;transition:all 0.15s;background:transparent;color:var(--foreground-subtle)">
+            Neu gen.
+          </button>
+        </div>
+      </div>
+
+      <p style="font-size:11px;color:var(--foreground-subtle);font-family:var(--font-mono);letter-spacing:0.04em;margin-top:8px">
+        Keys lokal gespeichert · Kein Server-Transit · Direkt an OpenAI / Supabase API
+      </p>
+    </div>
+  </div>
+
+  <!-- ERROR BANNER -->
+  <div class="error-banner" id="errorBanner">
+    <i data-lucide="alert-triangle" style="width:14px;height:14px;color:var(--accent);flex-shrink:0;margin-top:1px"></i>
+    <span class="error-text" id="errorText"></span>
+  </div>
+
+  <!-- PROP ERASER MODAL -->
+  <div id="propEraserModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(7,5,9,0.92);backdrop-filter:blur(4px);align-items:center;justify-content:center;flex-direction:column;padding:20px;gap:14px">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center">
+      <span style="font-family:var(--font-mono);font-size:12px;color:#fff;letter-spacing:0.04em">
+        <i data-lucide="eraser" style="width:13px;height:13px;vertical-align:-2px"></i>
+        Retuschieren — Farbe wählen, dann übermalen
+      </span>
+      <label style="font-family:var(--font-mono);font-size:11px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:6px">
+        Pinsel
+        <input type="range" id="eraserBrushSize" min="8" max="120" value="40" style="width:110px;cursor:pointer">
+        <span id="eraserBrushVal" style="width:28px;display:inline-block">40</span>
+      </label>
+      <button id="eraserPickBtn" onclick="eraserTogglePick()" style="font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px">
+        <i data-lucide="pipette" style="width:12px;height:12px"></i> Farbe wählen
+        <span id="eraserSwatch" style="width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,0.4);background:#fafafa;display:inline-block"></span>
+      </button>
+      <button onclick="eraserUndo()" style="font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:#fff;cursor:pointer">↶ Rückgängig</button>
+      <button onclick="eraserReset()" style="font-family:var(--font-mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:6px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:#fff;cursor:pointer">Zurücksetzen</button>
+    </div>
+    <div style="position:relative;max-width:90vw;max-height:70vh;overflow:auto;border-radius:6px;background:#fff">
+      <canvas id="eraserCanvas" style="display:block;cursor:crosshair;touch-action:none"></canvas>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closePropEraser(false)" style="font-family:var(--font-mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:9px 20px;border-radius:5px;border:1px solid rgba(255,255,255,0.25);background:transparent;color:#fff;cursor:pointer">Abbrechen</button>
+      <button onclick="closePropEraser(true)" style="font-family:var(--font-mono);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:9px 20px;border-radius:5px;border:none;background:var(--success);color:#fff;cursor:pointer">✓ Übernehmen</button>
+    </div>
+    <p style="font-family:var(--font-mono);font-size:10px;color:rgba(255,255,255,0.45);max-width:560px;text-align:center;line-height:1.6">
+      <b style="color:rgba(255,255,255,0.7)">Weiß (Standard):</b> Props auf dem Hintergrund übermalen → werden entfernt.&nbsp;
+      <b style="color:rgba(255,255,255,0.7)">Farbe wählen (Pipette):</b> auf eine saubere Produktstelle klicken (z.B. Schwarz), dann Klebeband/Etikett auf dem Produkt übermalen.
+    </p>
+  </div>
+
+  <!-- INPUT GRID -->
+  <div class="input-grid">
+
+    <!-- Upload Zone -->
+    <div>
+      <p class="output-field-label" style="margin-bottom:8px">Produktfoto *</p>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="image/*" multiple/>
+        <div class="upload-inner" id="uploadInner">
+          <i data-lucide="upload-cloud" class="upload-icon" style="width:36px;height:36px"></i>
+          <span class="upload-label">Produktfoto + Referenzbilder</span>
+          <span class="upload-sub">Mehrere Bilder möglich · JPG PNG HEIC · Drag &amp; Drop</span>
+        </div>
+        <div id="thumbGrid" style="display:none;width:100%;padding:10px;gap:8px;flex-wrap:wrap;justify-content:center;pointer-events:none"></div>
+      </div>
+    </div>
+
+    <!-- Raw Info -->
+    <div class="info-panel">
+      <p class="panel-label">Rohinfos <span style="color:rgba(255,255,255,0.25);font-weight:400">(optional)</span></p>
+
+      <div class="field-group">
+        <label class="field-label" for="field-category">
+          <i data-lucide="tag" style="width:9px;height:9px"></i>
+          Kategorie
+        </label>
+        <select class="field-input" id="field-category" style="cursor:pointer;appearance:none;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.3)%22 stroke-width=%222%22><polyline points=%226 9 12 15 18 9%22/></svg>');background-repeat:no-repeat;background-position:right 12px center;padding-right:36px">
+          <option value="">— Wählen —</option>
+          <optgroup label="Anal">
+            <option value="Anal — Aufblasbare Plugs">Aufblasbare Plugs</option>
+            <option value="Anal — Analperlen">Analperlen</option>
+            <option value="Anal — Prostata-Massager">Prostata-Massager</option>
+          </optgroup>
+          <optgroup label="Dildos">
+            <option value="Dildos — Aufblasbar">Aufblasbare Dildos</option>
+            <option value="Dildos — Strap-On & Harness">Strap-On & Harness</option>
+            <option value="Dildos — Realistic">Realistic</option>
+            <option value="Dildos — Fruit Series">Fruit Series</option>
+            <option value="Dildos — Alien & Fantasy">Alien & Fantasy</option>
+          </optgroup>
+          <optgroup label="Vibratoren & Elektro">
+            <option value="Vibratoren — Finger">Finger-Vibratoren</option>
+            <option value="Vibratoren — Wearable">Wearable & Strap-On</option>
+            <option value="Vibratoren — Klassisch">Klassische Vibratoren</option>
+          </optgroup>
+          <optgroup label="BDSM & Kontrolle">
+            <option value="BDSM — Knebel Ball Gag">Knebel — Ball Gag</option>
+            <option value="BDSM — Knebel Mouth Gag">Knebel — Mouth Gag</option>
+            <option value="BDSM — Knebel Aufblasbar">Knebel — Aufblasbar</option>
+            <option value="BDSM — Restraints">Restraints / Fesselset</option>
+            <option value="BDSM — Collar">Collar / Halsband</option>
+            <option value="BDSM — Paddle & Flogger">Paddle & Flogger</option>
+          </optgroup>
+          <optgroup label="Latex & Fetischwear">
+            <option value="Latex — Handschuhe">Handschuhe</option>
+            <option value="Latex — Masken">Masken</option>
+            <option value="Latex — Bekleidung">Bekleidung</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="field-model" style="display:flex;align-items:center;justify-content:space-between">
+          <span style="display:flex;align-items:center;gap:4px">
+            <i data-lucide="hash" style="width:9px;height:9px"></i>
+            Modell / Artikelnr.
+          </span>
+          <span id="skuFetchStatus" style="font-size:9px;font-family:var(--font-mono);color:var(--foreground-subtle);letter-spacing:0.04em"></span>
+        </label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" class="field-input" id="field-model" placeholder="wird geladen…" style="flex:1"/>
+          <button onclick="fetchNextSku()" title="Nächste SKU aus Supabase laden"
+            style="flex-shrink:0;width:28px;height:28px;border-radius:4px;border:1px solid var(--border);background:var(--surface-2);color:var(--foreground-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
+            <i data-lucide="refresh-cw" style="width:11px;height:11px" id="skuRefreshIcon"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="field-material">
+          <i data-lucide="layers" style="width:9px;height:9px"></i>
+          Material
+        </label>
+        <input type="text" class="field-input" id="field-material" placeholder="z.B. Latex, Silikon, PVC, Leder"/>
+      </div>
+
+      <!-- Price row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="field-price">
+            <i data-lucide="euro" style="width:9px;height:9px"></i>
+            Preis (€) <span style="color:var(--accent)">*</span>
+          </label>
+          <input type="number" class="field-input" id="field-price"
+            placeholder="29.99" min="0" step="0.01"
+            style="font-variant-numeric:tabular-nums"/>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="field-old-price">
+            <i data-lucide="tag" style="width:9px;height:9px"></i>
+            Alter Preis (€)
+            <span style="font-weight:400;opacity:0.5">optional</span>
+          </label>
+          <input type="number" class="field-input" id="field-old-price"
+            placeholder="39.99" min="0" step="0.01"
+            style="font-variant-numeric:tabular-nums"/>
+        </div>
+      </div>
+
+      <!-- Badge + Level row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="field-badge">
+            <i data-lucide="award" style="width:9px;height:9px"></i>
+            Badge
+          </label>
+          <select class="field-input" id="field-badge" style="cursor:pointer">
+            <option value="">— kein Badge —</option>
+            <option value="new">🆕 Neu</option>
+            <option value="sale">🔥 Sale</option>
+            <option value="bestseller">⭐ Bestseller</option>
+            <option value="expert">🔞 Expert</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="field-level">
+            <i data-lucide="bar-chart-2" style="width:9px;height:9px"></i>
+            Level
+          </label>
+          <select class="field-input" id="field-level" style="cursor:pointer">
+            <option value="All levels">Alle Level</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+            <option value="Expert">Expert</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Featured toggle -->
+      <div class="field-group" style="display:flex;align-items:center;gap:8px;margin-bottom:0">
+        <input type="checkbox" id="field-featured"
+          style="width:14px;height:14px;accent-color:var(--accent);cursor:pointer;flex-shrink:0"/>
+        <label for="field-featured" class="field-label"
+          style="cursor:pointer;margin:0;font-weight:400">
+          Als Featured-Produkt markieren
+          <span style="opacity:0.45">(wird auf der Startseite angezeigt)</span>
+        </label>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="field-notes">
+          <i data-lucide="align-left" style="width:9px;height:9px"></i>
+          Maße / Besonderheiten · fließt in Text + Bild
+        </label>
+        <textarea class="field-input" id="field-notes" rows="3"
+          placeholder="z.B. Struktur nur auf einer Seite gerippt, aufblasbar, D-Ring, matt…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <button id="btn-generate" onclick="startGeneration(event)" style="
+      background:#FF1744;
+      color:#ffffff;
+      border:2px solid #FF1744;
+      font-family:'Space Mono',monospace;
+      font-size:12px;
+      font-weight:700;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      padding:13px 32px;
+      border-radius:4px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      position:relative;
+      overflow:hidden;
+      transition:all 200ms ease;
+      white-space:nowrap;
+    "
+    onmouseover="this.style.background='transparent';this.style.color='#FF1744';this.style.boxShadow='0 0 24px rgba(255,23,68,0.35)'"
+    onmouseout="this.style.background='#FF1744';this.style.color='#ffffff';this.style.boxShadow='none'"
+    onmousedown="this.style.transform='scale(0.97)'"
+    onmouseup="this.style.transform='scale(1)'"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <span id="btn-text">Generieren</span>
+    </button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-header">
+      <span class="progress-status" id="progressStatus">Initialisiere…</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-steps">
+      <div class="step-item" id="step-1"><div class="step-dot">1</div><span class="step-label">Analyse</span></div>
+      <div class="step-item" id="step-2"><div class="step-dot">2</div><span class="step-label">Name</span></div>
+      <div class="step-item" id="step-3"><div class="step-dot">3</div><span class="step-label">DE</span></div>
+      <div class="step-item" id="step-4"><div class="step-dot">4</div><span class="step-label">EN</span></div>
+      <div class="step-item" id="step-5"><div class="step-dot">5</div><span class="step-label">ES</span></div>
+      <div class="step-item" id="step-6"><div class="step-dot">6</div><span class="step-label">Fotos</span></div>
+    </div>
+  </div>
+
+  <!-- RESULT SECTION -->
+  <div class="result-section" id="resultSection">
+
+    <div class="result-header">
+      <i data-lucide="check-circle-2" style="width:14px;height:14px;color:var(--success)"></i>
+      Ergebnis
+      <span class="badge badge-muted" id="result-sku-badge"></span>
+      <button class="btn-regen" onclick="startGeneration(event)">
+        <i data-lucide="refresh-cw" style="width:11px;height:11px"></i>
+        Neu generieren
+      </button>
+    </div>
+
+    <div class="result-grid">
+
+      <!-- Product Images -->
+      <div>
+        <div id="imageGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px"></div>
+      </div>
+
+      <!-- Text Outputs — all fields editable before upload -->
+      <div class="text-output">
+
+        <div>
+          <p class="output-field-label">Produktname</p>
+          <input type="text" class="editable-name" id="outputName" value="—" />
+        </div>
+
+        <div class="divider" style="margin:0.5rem 0"></div>
+
+        <div>
+          <p class="output-field-label" style="margin-bottom:8px">Beschreibung</p>
+          <div class="lang-tabs">
+            <div class="lang-tab-nav">
+              <button class="lang-tab-btn active" onclick="switchLang('de',this)">DE</button>
+              <button class="lang-tab-btn" onclick="switchLang('en',this)">EN</button>
+              <button class="lang-tab-btn" onclick="switchLang('es',this)">ES</button>
+            </div>
+            <div class="lang-tab-content">
+              <textarea class="lang-panel-ta lang-panel active" id="lang-de">—</textarea>
+              <textarea class="lang-panel-ta lang-panel" id="lang-en">—</textarea>
+              <textarea class="lang-panel-ta lang-panel" id="lang-es">—</textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Download Bar -->
+    <div class="download-bar">
+      <div class="download-info">
+        <span class="download-title">Export</span>
+        <span class="download-sub">Bild (PNG) + CSV — als ZIP-Archiv</span>
+      </div>
+      <div class="download-actions">
+        <button class="btn-download" id="btn-csv" onclick="downloadCSV()">
+          <i data-lucide="table" style="width:13px;height:13px"></i>
+          CSV
+        </button>
+<button class="btn-download btn-zip" id="btn-zip" onclick="downloadZIP()">
+          <i data-lucide="archive" style="width:13px;height:13px"></i>
+          ZIP Herunterladen
+        </button>
+        <button class="btn-download btn-supabase" id="btn-supabase" onclick="startSupabaseUpload()">
+          <i data-lucide="database" style="width:13px;height:13px"></i>
+          <span id="btn-supabase-text">Supabase Upload</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i data-lucide="check-circle" class="toast-icon" style="width:16px;height:16px"></i>
+  <span id="toastMsg">Fertig</span>
+</div>
+
+<!-- ── SCRIPTS ─────────────────────────────────────────────── -->
+<script>
+lucide.createIcons();
+
+/* ── State ──────────────────────────────────────────────────── */
+let uploadedImages = [];    // [{b64, name, isProduct}] — first = product
+let resultData     = null;
+let keyVisible              = false;
+let supabaseKeyVisible      = false;
+let apiPanelOpen            = false;
+let rembgServerAvailable    = false;
+let hdMode                  = false; // false = medium/1024 (~$0.04/img), true = high/auto (~$0.28/img)
+let imageMode               = 'inpaint'; // 'inpaint' = mask only (preserve product), 'recreate' = full regen
+
+// Supabase project constants (from .env — anon key for reads, service_role for writes)
+const SUPABASE_URL = 'https://uglhpvdxaxtgnajdjekf.supabase.co';
+
+/* ── API Key persistence ─────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  // OpenAI key
+  const saved = localStorage.getItem('t4j_openai_key');
+  if (saved) { document.getElementById('apiKeyInput').value = saved; markConnected(); }
+  else        { openApiPanel(); }
+
+  // Supabase settings
+  const sbKey = localStorage.getItem('t4j_supabase_key');
+  if (sbKey) document.getElementById('supabaseKeyInput').value = sbKey;
+
+  const stKey = localStorage.getItem('t4j_stability_key');
+  if (stKey) document.getElementById('stabilityKeyInput').value = stKey;
+
+  const antKey = localStorage.getItem('t4j_anthropic_key');
+  if (antKey) document.getElementById('anthropicKeyInput').value = antKey;
+
+  const novKey = localStorage.getItem('t4j_novita_key');
+  if (novKey) document.getElementById('novitaKeyInput').value = novKey;
+
+  // Ping rembg server
+  pingRembgServer();
+
+  // Restore quality mode
+  hdMode = localStorage.getItem('t4j_hd_mode') === '1';
+  updateQualityUI();
+
+  // Restore image mode (default: inpaint = accurate)
+  imageMode = localStorage.getItem('t4j_image_mode') === 'recreate' ? 'recreate' : 'inpaint';
+  updateImageModeUI();
+
+  // Auto-fetch next SKU if Supabase key is configured
+  if (localStorage.getItem('t4j_supabase_key')) {
+    fetchNextSku();
+  }
+});
+
+/* ── rembg server status ─────────────────────────────────────── */
+async function pingRembgServer() {
+  const dot   = document.getElementById('rembgDot');
+  const label = document.getElementById('rembgLabel');
+  try {
+    const res = await fetch('http://localhost:5001/remove-bg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ping: true }),
+      signal: AbortSignal.timeout(5000)
+    });
+    // Any response (even 400) means the server is up
+    rembgServerAvailable = true;
+    dot.style.background   = 'var(--success)';
+    label.textContent      = 'rembg-Server: aktiv — KI-Freistellung läuft lokal';
+    label.style.color      = 'var(--success)';
+  } catch {
+    rembgServerAvailable = false;
+    dot.style.background   = 'var(--foreground-subtle)';
+    label.textContent      = 'rembg-Server: offline — Pixel-Freistellung als Fallback';
+    label.style.color      = 'var(--foreground-muted)';
+  }
+}
+
+/* ── Supabase settings handlers ──────────────────────────────── */
+function onSupabaseKeyChange() {
+  const v = document.getElementById('supabaseKeyInput').value.trim();
+  if (v.length > 10) localStorage.setItem('t4j_supabase_key', v);
+}
+function toggleSupabaseKeyVisibility() {
+  supabaseKeyVisible = !supabaseKeyVisible;
+  const inp = document.getElementById('supabaseKeyInput');
+  const btn = document.getElementById('supabaseKeyToggleBtn');
+  inp.type      = supabaseKeyVisible ? 'text' : 'password';
+  btn.innerHTML = supabaseKeyVisible
+    ? '<i data-lucide="eye-off" style="width:14px;height:14px"></i>'
+    : '<i data-lucide="eye"     style="width:14px;height:14px"></i>';
+  lucide.createIcons();
+}
+
+function onStabilityKeyChange() {
+  const v = document.getElementById('stabilityKeyInput').value.trim();
+  if (v.length > 10) localStorage.setItem('t4j_stability_key', v);
+}
+let stabilityKeyVisible = false;
+function toggleStabilityKeyVisibility() {
+  stabilityKeyVisible = !stabilityKeyVisible;
+  const inp = document.getElementById('stabilityKeyInput');
+  const btn = document.getElementById('stabilityKeyToggleBtn');
+  inp.type      = stabilityKeyVisible ? 'text' : 'password';
+  btn.innerHTML = stabilityKeyVisible
+    ? '<i data-lucide="eye-off" style="width:14px;height:14px"></i>'
+    : '<i data-lucide="eye"     style="width:14px;height:14px"></i>';
+  lucide.createIcons();
+}
+
+function onNovitaKeyChange() {
+  const v = document.getElementById('novitaKeyInput').value.trim();
+  if (v.length > 10) localStorage.setItem('t4j_novita_key', v);
+}
+let novitaKeyVisible = false;
+function toggleNovitaKeyVisibility() {
+  novitaKeyVisible = !novitaKeyVisible;
+  const inp = document.getElementById('novitaKeyInput');
+  const btn = document.getElementById('novitaKeyToggleBtn');
+  inp.type      = novitaKeyVisible ? 'text' : 'password';
+  btn.innerHTML = novitaKeyVisible
+    ? '<i data-lucide="eye-off" style="width:14px;height:14px"></i>'
+    : '<i data-lucide="eye"     style="width:14px;height:14px"></i>';
+  lucide.createIcons();
+}
+
+function onAnthropicKeyChange() {
+  const v = document.getElementById('anthropicKeyInput').value.trim();
+  if (v.length > 10) localStorage.setItem('t4j_anthropic_key', v);
+}
+let anthropicKeyVisible = false;
+function toggleAnthropicKeyVisibility() {
+  anthropicKeyVisible = !anthropicKeyVisible;
+  const inp = document.getElementById('anthropicKeyInput');
+  const btn = document.getElementById('anthropicKeyToggleBtn');
+  inp.type      = anthropicKeyVisible ? 'text' : 'password';
+  btn.innerHTML = anthropicKeyVisible
+    ? '<i data-lucide="eye-off" style="width:14px;height:14px"></i>'
+    : '<i data-lucide="eye"     style="width:14px;height:14px"></i>';
+  lucide.createIcons();
+}
+
+function onApiKeyChange() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (val.startsWith('sk-') || val.length > 20) {
+    localStorage.setItem('t4j_openai_key', val);
+    markConnected();
+  } else {
+    markDisconnected();
+  }
+}
+
+
+function markConnected() {
+  document.getElementById('apiStatusDot').classList.add('connected');
+  document.getElementById('apiPanelTitle').textContent = 'OpenAI API — verbunden';
+  document.getElementById('header-badge').innerHTML = `
+    <span style="width:5px;height:5px;border-radius:50%;background:var(--success)"></span>
+    VERBUNDEN`;
+  document.getElementById('header-badge').className = 'badge badge-success';
+}
+
+function markDisconnected() {
+  document.getElementById('apiStatusDot').classList.remove('connected');
+  document.getElementById('apiPanelTitle').textContent = 'OpenAI API-Schlüssel konfigurieren';
+  document.getElementById('header-badge').innerHTML = `
+    <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite"></span>
+    BEREIT`;
+  document.getElementById('header-badge').className = 'badge badge-accent';
+}
+
+/* ── Auto-SKU: fetch latest T4J-XXXX from Supabase and increment ── */
+async function fetchNextSku() {
+  const statusEl  = document.getElementById('skuFetchStatus');
+  const inputEl   = document.getElementById('field-model');
+  const iconEl    = document.getElementById('skuRefreshIcon');
+
+  const sbKey = localStorage.getItem('t4j_supabase_key');
+  if (!sbKey) {
+    statusEl.textContent = 'kein Supabase-Key';
+    statusEl.style.color = 'var(--accent)';
+    return;
+  }
+
+  // Spinning icon
+  iconEl.style.animation = 'spin 0.8s linear infinite';
+  statusEl.textContent   = 'lädt…';
+  statusEl.style.color   = 'var(--foreground-subtle)';
+
+  try {
+    // Query the sku column directly, filter to T4J-* pattern, get highest one
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/products?select=sku&sku=like.T4J-*&order=created_at.desc&limit=100`,
+      {
+        headers: {
+          'apikey':        sbKey,
+          'Authorization': `Bearer ${sbKey}`,
+        },
+      }
+    );
+    if (!res.ok) throw new Error(`Supabase ${res.status}`);
+
+    const rows = await res.json();
+
+    // Find the highest T4J-NNNN number across all returned rows
+    let maxNum = 0;
+    const skuRe = /T4J-(\d+)/i;
+    for (const row of rows) {
+      const match = skuRe.exec(row.sku || '');
+      if (match) {
+        const n = parseInt(match[1], 10);
+        if (n > maxNum) maxNum = n;
+      }
+    }
+
+    const nextNum = maxNum + 1;
+    const nextSku = `T4J-${String(nextNum).padStart(4, '0')}`;
+    inputEl.value        = nextSku;
+    statusEl.textContent = maxNum > 0
+      ? `↑ letzte: T4J-${String(maxNum).padStart(4, '0')}`
+      : '↑ erste SKU';
+    statusEl.style.color = 'var(--success)';
+
+  } catch (e) {
+    console.warn('fetchNextSku failed:', e.message);
+    statusEl.textContent = 'Fehler — manuell eingeben';
+    statusEl.style.color = 'var(--accent)';
+  } finally {
+    iconEl.style.animation = '';
+  }
+}
+
+/* ── Image quality mode ──────────────────────────────────────── */
+function setQualityMode(mode) {
+  hdMode = (mode === 'hd');
+  localStorage.setItem('t4j_hd_mode', hdMode ? '1' : '0');
+  updateQualityUI();
+}
+
+function updateQualityUI() {
+  const hint   = document.getElementById('qualityCostHint');
+  const btnStd = document.getElementById('qualityBtnStandard');
+  const btnHD  = document.getElementById('qualityBtnHD');
+  if (!hint) return;
+  if (hdMode) {
+    hint.textContent = '~$0.28 / Bild · Maximale Qualität';
+    hint.style.color = 'var(--accent)';
+    btnStd.style.background = 'transparent';
+    btnStd.style.color      = 'var(--foreground-subtle)';
+    btnHD.style.background  = 'var(--accent)';
+    btnHD.style.color       = '#fff';
+  } else {
+    hint.textContent = '~$0.04 / Bild · 7× günstiger';
+    hint.style.color = 'var(--success)';
+    btnStd.style.background = 'var(--success)';
+    btnStd.style.color      = '#fff';
+    btnHD.style.background  = 'transparent';
+    btnHD.style.color       = 'var(--foreground-subtle)';
+  }
+}
+
+function setImageMode(mode) {
+  imageMode = (mode === 'recreate') ? 'recreate' : 'inpaint';
+  localStorage.setItem('t4j_image_mode', imageMode);
+  updateImageModeUI();
+}
+
+function updateImageModeUI() {
+  const hint     = document.getElementById('imageModeHint');
+  const btnInp   = document.getElementById('imageModeBtnInpaint');
+  const btnRec   = document.getElementById('imageModeBtnRecreate');
+  if (!hint) return;
+  if (imageMode === 'recreate') {
+    hint.textContent = 'Neu generiert · sauber, ändert evtl. Details';
+    hint.style.color = 'var(--accent)';
+    btnInp.style.background = 'transparent';
+    btnInp.style.color      = 'var(--foreground-subtle)';
+    btnRec.style.background = 'var(--accent)';
+    btnRec.style.color      = '#fff';
+  } else {
+    hint.textContent = 'Maskiert · Produkt bleibt exakt erhalten';
+    hint.style.color = 'var(--success)';
+    btnInp.style.background = 'var(--success)';
+    btnInp.style.color      = '#fff';
+    btnRec.style.background = 'transparent';
+    btnRec.style.color      = 'var(--foreground-subtle)';
+  }
+}
+
+function toggleApiPanel() {
+  apiPanelOpen = !apiPanelOpen;
+  document.getElementById('apiPanel').classList.toggle('open', apiPanelOpen);
+}
+
+function openApiPanel() {
+  apiPanelOpen = true;
+  document.getElementById('apiPanel').classList.add('open');
+}
+
+function toggleKeyVisibility() {
+  keyVisible = !keyVisible;
+  const inp = document.getElementById('apiKeyInput');
+  inp.type  = keyVisible ? 'text' : 'password';
+  document.getElementById('keyToggleBtn').innerHTML =
+    keyVisible
+      ? '<i data-lucide="eye-off" style="width:14px;height:14px"></i>'
+      : '<i data-lucide="eye"     style="width:14px;height:14px"></i>';
+  lucide.createIcons();
+}
+
+/* ── Upload (multi-image) ────────────────────────────────────── */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput  = document.getElementById('file-input');
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+['dragleave','dragend'].forEach(ev => uploadZone.addEventListener(ev, () => uploadZone.classList.remove('drag-over')));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('drag-over');
+  const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  if (files.length) addImages(files);
+});
+fileInput.addEventListener('change', () => {
+  const files = [...fileInput.files].filter(f => f.type.startsWith('image/'));
+  if (files.length) addImages(files);
+  fileInput.value = '';
+});
+
+function resizeToB64(file) {
+  return new Promise(resolve => {
+    // Read at full original resolution — no downscaling, no JPEG compression.
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function addImages(files) {
+  for (const file of files) {
+    const b64 = await resizeToB64(file);
+    const isProduct = uploadedImages.length === 0;
+    uploadedImages.push({ b64, name: file.name, isProduct });
+  }
+  renderThumbs();
+}
+
+function renderThumbs() {
+  const grid = document.getElementById('thumbGrid');
+  const inner = document.getElementById('uploadInner');
+  if (!uploadedImages.length) {
+    grid.style.display = 'none';
+    inner.style.opacity = '1';
+    uploadZone.classList.remove('has-preview');
+    return;
+  }
+  uploadZone.classList.add('has-preview');
+  inner.style.opacity = '0';
+  grid.style.display = 'flex';
+  grid.innerHTML = '';
+
+  uploadedImages.forEach((img, idx) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;flex:0 0 auto;';
+
+    const el = document.createElement('img');
+    el.src = img.b64;
+    el.style.cssText = `width:80px;height:80px;object-fit:cover;border-radius:4px;
+      border:2px solid ${img.isProduct ? 'var(--accent)' : 'rgba(255,255,255,0.15)'};display:block;`;
+
+    const label = document.createElement('span');
+    label.textContent = img.isProduct ? 'PRODUKT' : 'REF';
+    label.style.cssText = `position:absolute;bottom:4px;left:0;right:0;text-align:center;
+      font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:0.08em;
+      color:${img.isProduct ? 'var(--accent)' : 'rgba(255,255,255,0.5)'};
+      background:rgba(7,5,9,0.75);padding:2px 0;`;
+
+    const del = document.createElement('button');
+    del.innerHTML = '×';
+    del.style.cssText = `position:absolute;top:-5px;right:-5px;width:16px;height:16px;
+      border-radius:50%;background:var(--accent);border:none;color:#fff;
+      font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;
+      justify-content:center;pointer-events:all;`;
+    del.onclick = ev => { ev.stopPropagation(); uploadedImages.splice(idx, 1);
+      if (uploadedImages.length) uploadedImages[0].isProduct = true;
+      renderThumbs(); };
+
+    // Edit / erase-prop button
+    const edit = document.createElement('button');
+    edit.innerHTML = '<i data-lucide="eraser" style="width:9px;height:9px"></i>';
+    edit.title = 'Prop wegradieren';
+    edit.style.cssText = `position:absolute;top:-5px;left:-5px;width:16px;height:16px;
+      border-radius:50%;background:var(--success);border:none;color:#fff;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:all;`;
+    edit.onclick = ev => { ev.stopPropagation(); openPropEraser(idx); };
+
+    wrap.appendChild(el); wrap.appendChild(label); wrap.appendChild(del); wrap.appendChild(edit);
+    grid.appendChild(wrap);
+  });
+
+  // Add-more button
+  const addBtn = document.createElement('div');
+  addBtn.style.cssText = `width:80px;height:80px;border:2px dashed rgba(255,255,255,0.15);
+    border-radius:4px;display:flex;align-items:center;justify-content:center;
+    color:rgba(255,255,255,0.3);font-size:24px;cursor:pointer;flex:0 0 auto;pointer-events:all;`;
+  addBtn.innerHTML = '+';
+  addBtn.onclick = ev => { ev.stopPropagation(); fileInput.click(); };
+  grid.appendChild(addBtn);
+
+  if (window.lucide) lucide.createIcons();
+}
+
+/* ── Prop eraser — brush white over a prop so BG removal drops it ── */
+let _eraser = { idx: -1, ctx: null, canvas: null, maskCtx: null, drawing: false, history: [], brush: 40 };
+
+async function openPropEraser(idx) {
+  const modal  = document.getElementById('propEraserModal');
+  const canvas = document.getElementById('eraserCanvas');
+  const img    = await loadImage(uploadedImages[idx].b64);
+
+  // Fit the canvas to the image's natural resolution (we edit at full res)
+  canvas.width  = img.naturalWidth  || img.width;
+  canvas.height = img.naturalHeight || img.height;
+
+  // Offscreen mask canvas — records exactly where the user brushed, so on
+  // save we can grow the white into the prop's surrounding shadow.
+  const maskCanvas = document.createElement('canvas');
+  maskCanvas.width = canvas.width; maskCanvas.height = canvas.height;
+  const maskCtx = maskCanvas.getContext('2d');
+  // Display-scale so it fits the viewport
+  const maxW = Math.min(window.innerWidth * 0.9, canvas.width);
+  const maxH = window.innerHeight * 0.7;
+  const scale = Math.min(maxW / canvas.width, maxH / canvas.height, 1);
+  canvas.style.width  = Math.round(canvas.width  * scale) + 'px';
+  canvas.style.height = Math.round(canvas.height * scale) + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+
+  // Sample the photo's actual background tone robustly: scan a band around the
+  // whole border and average ONLY the genuinely light pixels (the real backdrop).
+  // Dark intrusions (a prop, the product, a table edge or shadow in a corner) are
+  // ignored, so the brush colour can't be dragged down to grey.
+  const cw = canvas.width, ch = canvas.height;
+  const band = Math.max(2, Math.round(Math.min(cw, ch) * 0.04)); // outer 4% frame
+  const full = ctx.getImageData(0, 0, cw, ch).data;
+  let sr = 0, sg = 0, sb = 0, sn = 0;
+  const consider = (x, y) => {
+    const i = (y * cw + x) * 4;
+    const r = full[i], g = full[i+1], b = full[i+2];
+    if (Math.min(r, g, b) > 205) { sr += r; sg += g; sb += b; sn++; } // light = backdrop
+  };
+  for (let y = 0; y < ch; y += 2) {
+    for (let x = 0; x < band; x += 2)          consider(x, y);
+    for (let x = cw - band; x < cw; x += 2)    consider(x, y);
+  }
+  for (let x = 0; x < cw; x += 2) {
+    for (let y = 0; y < band; y += 2)          consider(x, y);
+    for (let y = ch - band; y < ch; y += 2)    consider(x, y);
+  }
+  const bgColor = sn > 50
+    ? { r: Math.round(sr/sn), g: Math.round(sg/sn), b: Math.round(sb/sn) }
+    : { r: 250, g: 250, b: 250 };  // fallback: near-white
+  console.info(`[Eraser] backdrop colour sampled: rgb(${bgColor.r},${bgColor.g},${bgColor.b}) from ${sn} light px`);
+
+  // Default brush colour = PURE WHITE — matches the final output's white canvas,
+  // so background props painted white vanish in the result. Use the eyedropper to
+  // pick the product colour (e.g. black) when erasing tape ON the product.
+  _eraser = { idx, ctx, canvas, maskCtx, bgColor, color: { r: 255, g: 255, b: 255 }, pick: false, drawing: false, history: [], brush: 40 };
+  _eraser.history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+  const sw0 = document.getElementById('eraserSwatch');
+  if (sw0) sw0.style.background = '#ffffff';
+
+  // Brush size control
+  const sizeInput = document.getElementById('eraserBrushSize');
+  const sizeVal   = document.getElementById('eraserBrushVal');
+  sizeInput.value = 40; sizeVal.textContent = 40; _eraser.brush = 40;
+  sizeInput.oninput = () => { _eraser.brush = +sizeInput.value; sizeVal.textContent = sizeInput.value; };
+
+  // Pointer handlers (mouse + touch via pointer events)
+  const toImgXY = (ev) => {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: (ev.clientX - r.left) / r.width  * canvas.width,
+      y: (ev.clientY - r.top)  / r.height * canvas.height,
+    };
+  };
+  const paint = (ev) => {
+    if (!_eraser.drawing) return;
+    const { x, y } = toImgXY(ev);
+    // Brush radius scales with the image so it feels consistent at any zoom
+    const r = _eraser.brush / 2 * (canvas.width / canvas.getBoundingClientRect().width);
+    const c = _eraser.color;
+    // Solid opaque fill with the chosen colour — predictable, no surprises.
+    ctx.fillStyle = `rgb(${c.r},${c.g},${c.b})`;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    maskCtx.fillStyle = '#ffffff';
+    maskCtx.beginPath();
+    maskCtx.arc(x, y, r, 0, Math.PI * 2);
+    maskCtx.fill();
+  };
+  const pickColorAt = (ev) => {
+    const { x, y } = toImgXY(ev);
+    const px = ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
+    _eraser.color = { r: px[0], g: px[1], b: px[2] };
+    const sw = document.getElementById('eraserSwatch');
+    if (sw) sw.style.background = `rgb(${px[0]},${px[1]},${px[2]})`;
+    eraserTogglePick(false);   // exit pick mode after one pick
+  };
+  canvas.onpointerdown = (ev) => {
+    ev.preventDefault();
+    if (_eraser.pick) { pickColorAt(ev); return; }   // eyedropper: pick, don't paint
+    _eraser.history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    if (_eraser.history.length > 20) _eraser.history.shift();
+    _eraser.drawing = true;
+    canvas.setPointerCapture(ev.pointerId);
+    paint(ev);
+  };
+  canvas.onpointermove = paint;
+  canvas.onpointerup   = () => { _eraser.drawing = false; };
+
+  modal.style.display = 'flex';
+  if (window.lucide) lucide.createIcons();
+}
+
+function eraserTogglePick(force) {
+  _eraser.pick = (typeof force === 'boolean') ? force : !_eraser.pick;
+  const btn = document.getElementById('eraserPickBtn');
+  const cv  = document.getElementById('eraserCanvas');
+  if (btn) btn.style.background = _eraser.pick ? 'var(--success)' : 'transparent';
+  if (cv)  cv.style.cursor = _eraser.pick ? 'copy' : 'crosshair';
+}
+
+function eraserUndo() {
+  if (!_eraser.ctx || _eraser.history.length < 1) return;
+  const prev = _eraser.history.pop();
+  if (prev) _eraser.ctx.putImageData(prev, 0, 0);
+}
+
+function eraserReset() {
+  if (!_eraser.ctx || !_eraser.history.length) return;
+  _eraser.ctx.putImageData(_eraser.history[0], 0, 0);
+  _eraser.history = [_eraser.history[0]];
+}
+
+/* Grow the painted white into the prop's surrounding shadow so no grey
+   halo survives. Seeds from the brushed mask, floods into adjacent light
+   low-saturation (shadow / anti-alias) pixels, stops at the dark product.
+   DISTANCE-LIMITED: the flood may travel only a short distance from the
+   brushed area, so it cleans the immediate halo but can NEVER wander across
+   the image into bright product details (hardware, highlights). */
+function eraserGrowIntoShadow() {
+  if (!_eraser.canvas || !_eraser.maskCtx) return;
+  const cv = _eraser.canvas, ctx = _eraser.ctx;
+  const W = cv.width, H = cv.height;
+  const id = ctx.getImageData(0, 0, W, H);
+  const d  = id.data;
+  const m  = _eraser.maskCtx.getImageData(0, 0, W, H).data;
+
+  // Max travel distance from the brush edge (in px). Small, so only the
+  // immediate shadow halo is cleaned — bright details farther away are safe.
+  const MAXDIST = Math.max(10, Math.round(Math.max(W, H) * 0.012)); // ~24px @2000px
+
+  const dist = new Int16Array(W * H).fill(-1);
+  // BFS queue (FIFO via index pointer — avoids costly Array.shift)
+  const queue = new Int32Array(W * H);
+  let qHead = 0, qTail = 0;
+
+  // Seed: every brushed pixel → force pure white, distance 0
+  for (let p = 0; p < W * H; p++) {
+    if (m[p * 4 + 3] > 10) {
+      const i = p * 4;
+      d[i] = 255; d[i+1] = 255; d[i+2] = 255;
+      dist[p] = 0;
+      queue[qTail++] = p;
+    }
+  }
+
+  const isShadow = (i) => {
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    return (mx - mn) < 30 && mn > 115 && mn < 250;
+  };
+
+  while (qHead < qTail) {
+    const p  = queue[qHead++];
+    const dp = dist[p];
+    if (dp >= MAXDIST) continue;           // reached travel limit — stop spreading
+    const x = p % W, y = (p / W) | 0;
+    const nbrs = [];
+    if (x > 0)     nbrs.push(p - 1);
+    if (x < W - 1) nbrs.push(p + 1);
+    if (y > 0)     nbrs.push(p - W);
+    if (y < H - 1) nbrs.push(p + W);
+    if (x > 0 && y > 0)         nbrs.push(p - W - 1);
+    if (x < W - 1 && y > 0)     nbrs.push(p - W + 1);
+    if (x > 0 && y < H - 1)     nbrs.push(p + W - 1);
+    if (x < W - 1 && y < H - 1) nbrs.push(p + W + 1);
+    for (const n of nbrs) {
+      if (dist[n] !== -1) continue;        // already handled
+      const i = n * 4;
+      if (isShadow(i)) {
+        d[i] = 255; d[i+1] = 255; d[i+2] = 255;
+        dist[n] = dp + 1;
+        queue[qTail++] = n;
+      } else {
+        dist[n] = -2;                      // not shadow — mark so we don't retest
+      }
+    }
+  }
+  ctx.putImageData(id, 0, 0);
+}
+
+function closePropEraser(save) {
+  const modal = document.getElementById('propEraserModal');
+  if (save && _eraser.idx >= 0 && _eraser.canvas) {
+    uploadedImages[_eraser.idx].b64 = _eraser.canvas.toDataURL('image/png');
+    renderThumbs();
+  }
+  modal.style.display = 'none';
+  _eraser = { idx: -1, ctx: null, canvas: null, maskCtx: null, drawing: false, history: [], brush: 40 };
+}
+
+function clearPreview() {
+  uploadedImages = [];
+  _brandBgCache = null;   // new product → regenerate background
+  document.getElementById('thumbGrid').style.display = 'none';
+  uploadZone.classList.remove('has-preview');
+  document.getElementById('uploadInner').style.opacity = '1';
+  fileInput.value = '';
+}
+
+/* ── Progress ────────────────────────────────────────────────── */
+const STEPS = [
+  { id:'step-1', label:'KI analysiert das Foto…',             pct:10 },
+  { id:'step-2', label:'Produktname wird generiert…',        pct:22 },
+  { id:'step-3', label:'Beschreibung DE wird geschrieben…', pct:34 },
+  { id:'step-4', label:'Beschreibung EN wird geschrieben…', pct:46 },
+  { id:'step-5', label:'Beschreibung ES wird geschrieben…', pct:58 },
+  { id:'step-6', label:'5 KI-Produktfotos werden erstellt…', pct:70 },
+];
+
+/* ── 5 Marketing compositions ──────────────────────────────── */
+// All angles are gentle — goal is clear product visibility, not distortion.
+// scaleF > 1 = zoomed in (full product still visible if it's a close-up input).
+// All shots use the same scaleF so the product appears the same size across all 5 images.
+// Camera angle differences are expressed in the DALL·E prompt, not by canvas scaling.
+const COMPOSITIONS = [
+  { name:'Front',     angle:  0.00, cxF: 0.50, cyF: 0.50, scaleF: 0.82 }, // straight-on hero
+  { name:'ThreeQtr',  angle:  0.04, cxF: 0.50, cyF: 0.50, scaleF: 0.82 }, // 45° angle from right
+  { name:'Side',      angle:  0.00, cxF: 0.50, cyF: 0.50, scaleF: 0.82 }, // pure side profile
+  { name:'HighAngle', angle: -0.03, cxF: 0.50, cyF: 0.52, scaleF: 0.82 }, // elevated, looking down
+  { name:'LowAngle',  angle:  0.03, cxF: 0.50, cyF: 0.48, scaleF: 0.82 }, // floor level, looking up
+];
+
+function setProgress(idx, labelOverride) {
+  const s = STEPS[idx];
+  document.getElementById('progressStatus').textContent = labelOverride || s.label;
+  document.getElementById('progressPct').textContent    = s.pct + '%';
+  document.getElementById('progressFill').style.width   = s.pct + '%';
+  STEPS.forEach((st, i) => {
+    const el = document.getElementById(st.id);
+    el.classList.toggle('done',   i < idx);
+    el.classList.toggle('active', i === idx);
+  });
+}
+
+function completeProgress() {
+  document.getElementById('progressStatus').textContent = 'Abgeschlossen — alle Assets bereit.';
+  document.getElementById('progressPct').textContent    = '100%';
+  document.getElementById('progressFill').style.width   = '100%';
+  STEPS.forEach(st => {
+    const el = document.getElementById(st.id);
+    el.classList.remove('active'); el.classList.add('done');
+  });
+}
+
+/* ── Error display ───────────────────────────────────────────── */
+function showError(msg) {
+  const b = document.getElementById('errorBanner');
+  document.getElementById('errorText').textContent = msg;
+  b.classList.add('visible');
+  showToast(msg, true);
+}
+
+function hideError() {
+  document.getElementById('errorBanner').classList.remove('visible');
+}
+
+/* ── Main generation ─────────────────────────────────────────── */
+async function startGeneration(e) {
+  hideError();
+  _litCache = {};   // clear lighting cache for fresh run
+
+  const apiKey = (document.getElementById('apiKeyInput').value || localStorage.getItem('t4j_openai_key') || '').trim();
+  if (!apiKey || apiKey.length < 10) {
+    showError('Kein gültiger OpenAI API-Schlüssel. Bitte oben eintragen (sk-proj-…).');
+    openApiPanel();
+    return;
+  }
+  if (!uploadedImages.length) {
+    showError('Kein Produktfoto hochgeladen. Bitte zuerst ein Bild auswählen.');
+    return;
+  }
+
+  // Ripple
+  const btn  = document.getElementById('btn-generate');
+  const rect = btn.getBoundingClientRect();
+  const rip  = document.createElement('span');
+  rip.className = 'btn-ripple';
+  rip.style.cssText = `width:${rect.width}px;height:${rect.width}px;left:${e.clientX-rect.left-rect.width/2}px;top:${e.clientY-rect.top-rect.width/2}px`;
+  btn.appendChild(rip);
+  setTimeout(() => rip.remove(), 420);
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('btn-text').textContent = 'Generiere…';
+
+  document.getElementById('progressWrap').classList.add('visible');
+  document.getElementById('resultSection').classList.remove('visible');
+
+  const sku = document.getElementById('field-model').value.trim() || 'T4J-' + Math.floor(Math.random()*9000+1000);
+
+  try {
+    const category     = document.getElementById('field-category').value.trim();
+    const userMaterial = document.getElementById('field-material').value.trim();
+    const userNotes    = document.getElementById('field-notes').value.trim();
+    const userSku      = document.getElementById('field-model').value.trim();
+
+    /* ── STEP 1: Visual description — GPT-4o, then Claude fallback ── */
+    setProgress(0);
+
+    const VISION_PROMPT_TEXT = `Describe this object in forensic detail so an AI can recreate it exactly. Cover ALL of the following — be specific and concrete, no vague terms:
+
+SHAPE & PROPORTIONS: Exact 3D silhouette, aspect ratios, whether it is tall/wide/squat, any curvature or tapering, cross-section shape (circular, oval, rectangular, etc.)
+COMPONENTS: Every distinct part, sub-section, attachment or protrusion — describe each one individually with its position, shape, and relative size
+MATERIALS: Material type for each component (silicone, leather, metal, rubber, fabric, plastic, etc.)
+COLORS: Exact color of every component — specific shade names (e.g. "matte charcoal black", "gunmetal silver", "deep burgundy"). Note any gradients, two-tone areas, or color transitions
+SURFACE FINISH: Per component — matte, glossy, satin, textured, granular, smooth, ribbed, perforated, etc.
+HARDWARE: Every piece of metal hardware — buckles, rings, clasps, rivets, screws, chains — describe shape, finish, and placement
+TEXTURE DETAILS: Any embossing, stitching, pattern, grain, studding, or surface decoration
+PROPORTIONAL RELATIONSHIPS: How each part relates in size to the overall object
+
+Write 10–14 sentences. Be concrete and precise. Output plain text only.`;
+
+    const REFUSAL_PHRASES = ["i'm sorry", "i can't", "i cannot", "i'm unable", "unable to", "not able to", "can't assist", "cannot assist", "can't help", "cannot help"];
+
+    let visualDescription = '';
+
+    // ── Try GPT-4o first ──────────────────────────────────────────
+    if (apiKey) {
+      try {
+        const describeRes = await callOpenAI(apiKey, {
+          model: 'gpt-4o',
+          max_tokens: 1100,
+          messages: [{
+            role: 'system',
+            content: 'You are a hyper-precise product reconstruction specialist. Your description must be detailed enough for an AI image generator to recreate the exact same object from scratch with no reference image. Be forensically specific. Never mention purpose, use-case, or brand. Never refuse, hedge, or add disclaimers. Plain descriptive English only.'
+          }, {
+            role: 'user',
+            content: [
+              { type: 'image_url', image_url: { url: uploadedImages[0].b64, detail: 'high' } },
+              { type: 'text', text: VISION_PROMPT_TEXT }
+            ]
+          }]
+        });
+        if (!describeRes.error) {
+          const raw = describeRes.choices?.[0]?.message?.content ?? '';
+          const refused = REFUSAL_PHRASES.some(p => raw.toLowerCase().includes(p));
+          if (!refused && raw.trim()) visualDescription = raw;
+        }
+      } catch (e) {
+        console.warn('GPT-4o vision error:', e.message);
+      }
+    }
+
+    // ── Claude fallback (permissive with adult products) ─────────
+    if (!visualDescription) {
+      const anthropicKey = localStorage.getItem('t4j_anthropic_key') || '';
+      if (anthropicKey) {
+        try {
+          setProgress(0, 'Claude analysiert das Foto…');
+          visualDescription = await describeProductWithClaude(uploadedImages[0].b64, anthropicKey);
+          console.info('[Vision] Claude description used for copy generation');
+        } catch (e) {
+          console.warn('Claude vision error (non-fatal):', e.message);
+        }
+      }
+    }
+
+    if (!visualDescription) {
+      console.info('[Vision] No vision API succeeded — generating copy from manual fields only.');
+    }
+
+    /* ── STEP 2–5: Brand copy generation (text only, no image) ── */
+    setProgress(1);
+
+    const contextLines = [
+      visualDescription,
+      userSku      ? `SKU / Article number: ${userSku}` : '',
+      category     ? `Product category: ${category}` : '',
+      userMaterial ? `Material info: ${userMaterial}` : '',
+      userNotes    ? `★ MEASUREMENTS / SPECS / FEATURES (MANDATORY — include ALL of these, verbatim values, in description_de, description_en AND description_es):\n${userNotes}` : ''
+    ].filter(Boolean).join('\n\n');
+
+    const systemCopy = `You are the product copywriter for Toys4Joys — a premium Berlin accessories brand. Tone: direct, unapologetic, confident. Clinical precision meets Berlin underground energy. Never vulgar, never soft.
+
+BRAND VOICE:
+- DE is primary: clinical but charged. Sell the sensation AND the specs. Start with the product's defining property.
+- EN and ES: same energy, written natively — not translated.
+- No "perfekt für", no "ideal für", no filler adjectives.
+- Short punchy sentences. Maximum impact per word.
+
+GERMAN (description_de) — STRICT RULES:
+- Write in clean, standard German. No English loanwords, no anglicisms.
+- Use proper German terms at all times. Examples of what NOT to do:
+  × "stylisch" → ✓ "ausdrucksstark"
+  × "smooth" → ✓ "weich", "geschmeidig"
+  × "powerful" → ✓ "kraftvoll", "stark"
+  × "sexy" → ✓ "verführerisch", "sinnlich"
+  × "clean" → ✓ "klar", "schlicht"
+  × "Design" (when used as adjective) → ✓ "Formgebung", "Gestaltung"
+  × "Performance" → ✓ "Leistung"
+  × "Features" → ✓ "Eigenschaften", "Ausstattung"
+- Technical material terms (Silikon, Latex, Nylon) are acceptable as they are established German technical vocabulary.
+- Every single word in description_de must be standard German.
+
+MEASUREMENTS & SPECS (MANDATORY — NEVER OMIT):
+- Any measurements, dimensions, sizes, weights or technical specs provided in the input
+  (e.g. length, diameter, width, circumference, cm, mm, inches, grams) MUST appear in
+  EVERY language description: description_de, description_en AND description_es.
+- Convert units naturally per language if helpful, but the numeric values must be preserved
+  exactly. Do not round, drop, or summarise them away.
+- State each measurement explicitly as a concrete spec (e.g. DE "Länge: 18 cm, Durchmesser: 4 cm").
+- If multiple measurements are given, include ALL of them in all three descriptions.
+- This is non-negotiable: a description missing a provided measurement is INVALID.
+
+NAME FORMAT: [Typ] — [Material/Oberfläche/Eigenschaft]
+Examples: "Ball Gag — Silikon, Lederriemen" / "Anal Plug — Aufblasbar XL" / "Latex-Handschuhe — Schwarz" / "Strap-On-Gurt — Nylon"
+
+Respond ONLY with a valid JSON object — no markdown, no text outside the JSON.
+{"name":"...","description_de":"...","description_en":"...","description_es":"..."}`;
+
+    const copyPromise = callOpenAI(apiKey, {
+      model: 'gpt-4o',
+      max_tokens: 1200,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemCopy },
+        { role: 'user',   content: `Generate the full product dataset for this item:\n\n${contextLines}` }
+      ]
+    });
+
+    await delay(800);  setProgress(2);
+    await delay(800);  setProgress(3);
+    await delay(800);  setProgress(4);
+
+    const copyRes = await copyPromise;
+    if (copyRes.error) throw new Error(copyRes.error.message || 'Texte konnten nicht generiert werden');
+
+    let parsed;
+    const rawContent = copyRes.choices?.[0]?.message?.content ?? '';
+    try {
+      let raw = rawContent.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/i,'').trim();
+      const m = raw.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error('no object');
+      parsed = JSON.parse(m[0]);
+    } catch {
+      console.error('OpenAI copy raw:', rawContent);
+      throw new Error(`JSON-Parsing fehlgeschlagen. GPT-4o antwortete: "${rawContent.slice(0,200).replace(/\n/g,' ')}"`);
+    }
+
+    /* ── STEP 6: One white-background image per uploaded photo ────
+       Each input image produces exactly one output:
+       background removed → placed on pure white at original size.
+    ─────────────────────────────────────────────────────────────── */
+    const images = [];
+    for (let i = 0; i < uploadedImages.length; i++) {
+      setProgress(5, `Bild ${i+1}/${uploadedImages.length} wird freigestellt…`);
+      const img = await applyBrandStyle(uploadedImages[i].b64, apiKey, i, visualDescription);
+      images.push(img);
+    }
+
+    /* ── Done ────────────────────────────────────────────────── */
+    completeProgress();
+    await delay(350);
+
+    resultData = {
+      sku,
+      name:     parsed.name,
+      de:       parsed.description_de,
+      en:       parsed.description_en,
+      es:       parsed.description_es,
+      images,
+      timestamp: new Date().toISOString()
+    };
+
+    populateResult(resultData);
+
+  } catch (err) {
+    showError('Fehler: ' + err.message);
+    document.getElementById('progressWrap').classList.remove('visible');
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  document.getElementById('btn-text').textContent = 'Erneut Generieren';
+  lucide.createIcons();
+}
+
+/* ── OpenAI text / vision ────────────────────────────────────── */
+async function callOpenAI(apiKey, body) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+/* ── DALL·E 3 image generation ───────────────────────────────── */
+async function callDallE(apiKey, prompt) {
+  const res = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model:   'dall-e-3',
+      prompt,
+      n:       1,
+      size:    '1024x1024',
+      quality: 'hd',
+      response_format: 'b64_json',
+    })
+  });
+  return res.json();
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ── Map the Rohinfos field-category option value → DB enum + sub ─
+   Option values are "Prefix — Subcategory" (e.g. "BDSM — Collar").
+   DB enum values (product_category):
+     'Anal' | 'BDSM & Kontrolle' | 'Vibratoren & Elektro' |
+     'Dildos' | 'Latex & Fetischwear'
+ ─────────────────────────────────────────────────────────────── */
+const CAT_PREFIX_MAP = {
+  'Anal':       'Anal',
+  'Dildos':     'Dildos',
+  'Vibratoren': 'Vibratoren & Elektro',
+  'BDSM':       'BDSM & Kontrolle',
+  'Latex':      'Latex & Fetischwear',
+};
+
+function parseCategoryField(val) {
+  // val = "BDSM — Collar"  →  { cat: "BDSM & Kontrolle", sub: "Collar" }
+  if (!val) return { cat: null, sub: '' };
+  const sep   = ' — ';
+  const idx   = val.indexOf(sep);
+  if (idx === -1) return { cat: val, sub: '' };   // no separator → use as-is
+  const prefix = val.slice(0, idx);
+  const sub    = val.slice(idx + sep.length);
+  return { cat: CAT_PREFIX_MAP[prefix] ?? prefix, sub };
+}
+
+/* ── Supabase auto-upload ────────────────────────────────────────
+   Schema facts (supabase/schema.sql):
+   • products.cat   → strict enum, mapped via CAT_PREFIX_MAP above
+   • products.price → NOT NULL check >= 0 → inserted as 0 (placeholder)
+   • products.image_path → bucket-relative filename (e.g. "xd-101.jpg")
+     The app calls getPublicUrl(image_path) to build the full URL
+   • Storage bucket: max 5 MB/file → convert PNG → JPEG before upload
+   • RLS: service_role key required for both storage and DB writes
+ ─────────────────────────────────────────────────────────────── */
+async function uploadToSupabase(d, serviceKey) {
+  // ── Read all product fields from Rohinfos ─────────────────────
+  const rawCat   = (document.getElementById('field-category')?.value  || '').trim();
+  const { cat, sub } = parseCategoryField(rawCat);
+  const mat      = (document.getElementById('field-material')?.value   || '').trim();
+  const priceRaw = document.getElementById('field-price')?.value;
+  const oldPriceRaw = document.getElementById('field-old-price')?.value;
+  const badge    = document.getElementById('field-badge')?.value || null;
+  const lvl      = document.getElementById('field-level')?.value || 'All levels';
+  const featured = document.getElementById('field-featured')?.checked ?? false;
+
+  const price    = priceRaw !== '' && priceRaw != null ? parseFloat(priceRaw) : null;
+  const oldPrice = oldPriceRaw !== '' && oldPriceRaw != null ? parseFloat(oldPriceRaw) : null;
+
+  // ── Validate required fields ──────────────────────────────────
+  if (!cat) {
+    showSupabaseToast('Fehler', 0, null,
+      'Keine Kategorie in den Rohinfos gewählt — Upload abgebrochen.');
+    return;
+  }
+  if (price === null || isNaN(price) || price < 0) {
+    showSupabaseToast('Fehler', 0, null,
+      'Kein gültiger Preis eingegeben (Rohinfos → Preis) — Upload abgebrochen.');
+    return;
+  }
+
+  const hdrs = {
+    'apikey':        serviceKey,
+    'Authorization': `Bearer ${serviceKey}`,
+  };
+
+  console.info(`[Supabase] Starting upload — SKU: ${d.sku}, images: ${d.images.length}, cat: ${cat}, price: ${price}`);
+
+  // ── 1. Upload images to storage ───────────────────────────────
+  // Convert PNG → JPEG first (PNG can exceed the 5 MB bucket limit).
+  const uploadedPaths = [];
+
+  for (let i = 0; i < d.images.length; i++) {
+    const jpegBlob = await dataUrlToJpegBlob(d.images[i], 0.92);
+    const filename = d.images.length === 1
+      ? `${d.sku}.jpg`
+      : `${d.sku}_${i + 1}.jpg`;
+
+    console.info(`[Supabase] Uploading ${filename} (${Math.round(jpegBlob.size / 1024)} KB)…`);
+
+    const upRes = await fetch(
+      `${SUPABASE_URL}/storage/v1/object/product-images/${filename}`,
+      { method: 'POST', headers: { ...hdrs, 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }, body: jpegBlob }
+    );
+
+    if (!upRes.ok) {
+      const txt = await upRes.text().catch(() => String(upRes.status));
+      throw new Error(`Storage ${upRes.status}: ${txt.slice(0, 200)}`);
+    }
+
+    uploadedPaths.push(filename);
+    console.info(`[Supabase] ✓ ${filename}`);
+  }
+
+  // ── 2. Insert product row ─────────────────────────────────────
+  // Read name + descriptions from the editable DOM fields (user may have edited them).
+  const editedName = (document.getElementById('outputName')?.value || d.name || '').trim();
+  const editedDe   = (document.getElementById('lang-de')?.value    || d.de   || '').trim();
+  const editedEn   = (document.getElementById('lang-en')?.value    || d.en   || '').trim();
+  const editedEs   = (document.getElementById('lang-es')?.value    || d.es   || '').trim();
+
+  // image_path  = first/primary image as plain string → getPublicUrl() works directly
+  // image_paths = native JS array (PostgREST maps this to text[] automatically, no JSON.stringify)
+  //               Requires: ALTER TABLE public.products ADD COLUMN IF NOT EXISTS image_paths text[];
+  const skuValue = document.getElementById('field-model')?.value?.trim() || null;
+  const baseRow = {
+    name:        editedName,
+    brand:       'Toys4Joys',
+    cat,
+    sub,
+    price,
+    old_price:   oldPrice,
+    badge:       badge || null,
+    rating:      0,
+    rev:         0,
+    mat,
+    lvl,
+    description: editedDe || editedEn || '',
+    image_path:  uploadedPaths[0],
+    featured,
+    ...(skuValue ? { sku: skuValue } : {}),
+  };
+  // Try with image_paths first; if column is missing fall back to baseRow only
+  const row = uploadedPaths.length > 1
+    ? { ...baseRow, image_paths: uploadedPaths }   // plain array — PostgREST → text[]
+    : baseRow;
+
+  console.info('[Supabase] Inserting row:', JSON.stringify(row));
+
+  const dbRes = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
+    method:  'POST',
+    headers: { ...hdrs, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    body:    JSON.stringify(row),
+  });
+
+  if (!dbRes.ok) {
+    const txt = await dbRes.text().catch(() => String(dbRes.status));
+    throw new Error(`DB ${dbRes.status}: ${txt.slice(0, 300)}`);
+  }
+
+  const result = await dbRes.json();
+  const id     = result?.[0]?.id ?? '?';
+  console.info(`[Supabase] ✓ Product inserted — id: ${id}`);
+  showSupabaseToast(d.sku, uploadedPaths.length, id, null, { price, cat, featured });
+}
+
+/* Convert a canvas data-URL (PNG or JPEG) to a JPEG Blob at the
+   given quality (0–1).  Stays within the 5 MB storage limit.    */
+function dataUrlToJpegBlob(dataUrl, quality = 0.92) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const cv  = document.createElement('canvas');
+      cv.width  = img.naturalWidth  || img.width;
+      cv.height = img.naturalHeight || img.height;
+      const ctx = cv.getContext('2d');
+      // JPEG has no alpha — paint white first so transparency becomes white
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.drawImage(img, 0, 0);
+      cv.toBlob(
+        blob => blob ? resolve(blob) : reject(new Error('toBlob returned null')),
+        'image/jpeg',
+        quality
+      );
+    };
+    img.onerror = () => reject(new Error('Image load failed in dataUrlToJpegBlob'));
+    img.src = dataUrl;
+  });
+}
+
+function showSupabaseToast(sku, imageCount, id, errorMsg = null, meta = {}) {
+  document.querySelectorAll('.sb-toast').forEach(t => t.remove());
+  const ok    = !errorMsg;
+  const toast = document.createElement('div');
+  toast.className = 'sb-toast';
+  toast.style.cssText = `
+    position:fixed;bottom:24px;right:24px;z-index:9999;max-width:360px;
+    background:var(--surface-2);
+    border:1px solid ${ok ? 'var(--success)' : 'var(--accent)'};
+    color:var(--foreground);padding:12px 16px;border-radius:var(--radius-md);
+    font-family:var(--font-mono);font-size:11px;line-height:1.7;
+    box-shadow:var(--shadow-lg);animation:fadeInUp 0.3s ease-out;
+  `;
+  if (ok && id) {
+    const priceStr  = meta.price != null ? `€ ${Number(meta.price).toFixed(2)}` : '—';
+    const catStr    = meta.cat   || '—';
+    const featStr   = meta.featured ? ' · ⭐ Featured' : '';
+    toast.innerHTML = `
+      <div style="color:var(--success);font-weight:700;margin-bottom:4px">✓ Supabase Upload erfolgreich</div>
+      <div>SKU <b>${sku}</b> · ${imageCount} Bild(er)</div>
+      <div style="color:var(--foreground-muted)">${catStr} · ${priceStr}${featStr}</div>
+      <div style="color:var(--foreground-subtle);font-size:10px;margin-top:3px">ID: ${id}</div>
+    `;
+    setTimeout(() => toast.remove(), 8000);
+  } else if (!errorMsg) {
+    toast.innerHTML = `<div style="color:var(--foreground-muted)">Upload läuft…</div>`;
+  } else {
+    toast.innerHTML = `
+      <div style="color:var(--accent);font-weight:700;margin-bottom:3px">✗ Upload fehlgeschlagen</div>
+      <div style="word-break:break-word">${errorMsg}</div>
+    `;
+  }
+  document.body.appendChild(toast);
+}
+
+/* ── Populate Result ─────────────────────────────────────────── */
+function populateResult(d) {
+  document.getElementById('outputName').value              = d.name;
+  document.getElementById('result-sku-badge').textContent = d.sku;
+  document.getElementById('lang-de').value = d.de;
+  document.getElementById('lang-en').value = d.en;
+  document.getElementById('lang-es').value = d.es;
+
+  const grid = document.getElementById('imageGrid');
+  grid.innerHTML = '';
+  (d.images || []).forEach((src, idx) => {
+    const comp = COMPOSITIONS[idx] || { name: 'Bild ' + (idx+1) };
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;aspect-ratio:1;background:#070408;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);cursor:pointer;';
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;';
+
+    const lbl = document.createElement('span');
+    lbl.textContent = comp.name;
+    lbl.style.cssText = 'position:absolute;bottom:0;left:0;right:0;text-align:center;font-family:var(--font-mono);font-size:7px;font-weight:700;letter-spacing:0.08em;color:rgba(255,255,255,0.55);background:rgba(7,5,9,0.82);padding:3px 0;text-transform:uppercase;';
+
+    const dlBtn = document.createElement('button');
+    dlBtn.title = `Download ${comp.name}`;
+    dlBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+    dlBtn.style.cssText = 'position:absolute;top:4px;right:4px;background:rgba(7,5,9,0.85);border:1px solid rgba(255,255,255,0.12);border-radius:3px;color:rgba(255,255,255,0.7);cursor:pointer;width:22px;height:22px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.15s;padding:0;';
+    dlBtn.onclick = ev => {
+      ev.stopPropagation();
+      const a = document.createElement('a');
+      a.href = src; a.download = `${d.sku}_bild_${idx+1}_${comp.name.toLowerCase()}.png`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    };
+    wrap.onmouseenter = () => dlBtn.style.opacity = '1';
+    wrap.onmouseleave = () => dlBtn.style.opacity = '0';
+
+    wrap.appendChild(img); wrap.appendChild(lbl); wrap.appendChild(dlBtn);
+    grid.appendChild(wrap);
+  });
+
+  document.getElementById('resultSection').classList.add('visible');
+  lucide.createIcons();
+  showToast('5 Produktfotos erfolgreich generiert');
+}
+
+/* ── Language tabs ───────────────────────────────────────────── */
+/* ── Brand image pipeline ─────────────────────────────────────
+   1. prepareCutout() — detect transparency (rembg PNG) or strip
+      white BG from photo; decontaminate edge spill; scale to 1024
+   2. generateBrandBackground() — DALL·E 3 generates brand scene
+      with NO product (avoids content filter). Cached across 5 shots.
+   3. applyBrandStyle() — composites: AI bg → shadow → cutout.
+      Falls back to canvas-drawn bg if DALL·E 3 fails.
+─────────────────────────────────────────────────────────── */
+
+/* ── Promise-based image loader ─────────────────────────── */
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload  = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/* ── Tape-mask detection ─────────────────────────────────────────
+   Scans srcCanvas for yellow/gold/amber/orange tape pixels (the
+   colours most commonly used to prop up products in photo shoots).
+   Returns a same-size PNG mask where:
+     transparent (alpha=0) = "inpaint here" (tape region + margin)
+     opaque white           = "preserve this" (rest of the image)
+   That mask is passed as fd.append('mask', ...) to gpt-image-1.
+   ─────────────────────────────────────────────────────────────── */
+function _rgbToHsl(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+  const l = (mx + mn) / 2;
+  if (mx === mn) return [0, 0, l];
+  const d  = mx - mn;
+  const s  = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+  let h;
+  if      (mx === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (mx === g) h = ((b - r) / d + 2) / 6;
+  else               h = ((r - g) / d + 4) / 6;
+  return [h * 360, s, l];
+}
+
+function buildTapeMask(srcCanvas) {
+  const W = srcCanvas.width, H = srcCanvas.height;
+  const px = srcCanvas.getContext('2d').getImageData(0, 0, W, H).data;
+
+  /* Step 1 — flag tape-coloured pixels.
+     Tape hues: yellow, gold, amber, orange → H ∈ [18°, 78°], S > 40%, L ∈ [28%, 88%].
+     Skip fully transparent pixels and near-white background pixels.
+     ALSO count product (opaque) pixels so we can reject false positives:
+     real tape is small; if "tape" covers a big share of the product, the
+     product itself is just tape-coloured (skin-tone / tan / amber) → not tape. */
+  const raw = new Uint8Array(W * H);
+  let count = 0, productPx = 0;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      const a = px[i + 3];
+      if (a < 20) continue;                                        // transparent
+      if (px[i] > 238 && px[i+1] > 238 && px[i+2] > 238) continue; // near-white bg
+      productPx++;
+      const [h, s, l] = _rgbToHsl(px[i], px[i+1], px[i+2]);
+      if (h >= 18 && h <= 78 && s > 0.40 && l > 0.28 && l < 0.88) {
+        raw[y * W + x] = 1;
+        count++;
+      }
+    }
+  }
+
+  // False-positive guard: real tape props are small. If "tape" exceeds 8% of
+  // the product, the product itself is tape-coloured (skin-tone / tan / amber)
+  // → treat as NO tape so we never repaint the product.
+  const tapeFrac = productPx > 0 ? count / productPx : 0;
+  console.info(`[TapeMask] ${count} tape px / ${productPx} product px = ${(tapeFrac*100).toFixed(1)}%`);
+  if (tapeFrac > 0.08) {
+    console.info(`[TapeMask] ${(tapeFrac*100).toFixed(0)}% → product colour, not tape. Skipping inpaint.`);
+    const empty = document.createElement('canvas');
+    empty.width = W; empty.height = H;
+    const ec = empty.getContext('2d');
+    ec.fillStyle = '#fff'; ec.fillRect(0, 0, W, H);  // all opaque = preserve everything
+    return { maskCanvas: empty, rawTapePx: 0 };
+  }
+
+  /* Step 2 — separable dilation by 14px so tape edges are fully covered. */
+  const R   = 14;
+  const tmp = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const x0 = Math.max(0, x - R), x1 = Math.min(W - 1, x + R);
+      for (let dx = x0; dx <= x1; dx++) { if (raw[y * W + dx]) { tmp[y * W + x] = 1; break; } }
+    }
+  }
+  const dilated = new Uint8Array(W * H);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const y0 = Math.max(0, y - R), y1 = Math.min(H - 1, y + R);
+      for (let dy = y0; dy <= y1; dy++) { if (tmp[dy * W + x]) { dilated[y * W + x] = 1; break; } }
+    }
+  }
+
+  /* Step 3 — build mask canvas: transparent = edit, opaque white = keep. */
+  const maskCv  = document.createElement('canvas');
+  maskCv.width  = W; maskCv.height = H;
+  const mCtx    = maskCv.getContext('2d');
+  const md      = mCtx.createImageData(W, H);
+  const m       = md.data;
+  for (let i = 0; i < W * H; i++) {
+    const mi = i * 4;
+    if (dilated[i]) { m[mi] = 0;   m[mi+1] = 0;   m[mi+2] = 0;   m[mi+3] = 0;   } // transparent → inpaint
+    else            { m[mi] = 255; m[mi+1] = 255; m[mi+2] = 255; m[mi+3] = 255; } // opaque      → preserve
+  }
+  mCtx.putImageData(md, 0, 0);
+
+  return { maskCanvas: maskCv, rawTapePx: count };
+}
+
+/* ── In-browser tape inpainting ──────────────────────────────────
+   Removes yellow/gold/amber/orange tape from a cutout canvas by
+   iteratively replacing tape pixels with the average colour of their
+   nearest non-tape neighbours (onion-peel from the tape edges inward).
+   Modifies the canvas in-place. Returns the same canvas for chaining.
+   Works entirely in the browser — no API call, no content policy.     */
+function inpaintTape(canvas) {
+  const W  = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const id  = ctx.getImageData(0, 0, W, H);
+  const d   = id.data;
+
+  // ── 1. Detect tape pixels (same heuristic, no dilation) ──────
+  const isTape = new Uint8Array(W * H);
+  let tapeCount = 0, productPx = 0;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 4;
+      if (d[i + 3] < 20) continue;
+      if (d[i] > 238 && d[i+1] > 238 && d[i+2] > 238) continue; // near-white bg
+      productPx++;
+      const [h, s, l] = _rgbToHsl(d[i], d[i+1], d[i+2]);
+      if (h >= 18 && h <= 78 && s > 0.40 && l > 0.28 && l < 0.88) {
+        isTape[y * W + x] = 1;
+        tapeCount++;
+      }
+    }
+  }
+  if (tapeCount === 0) return canvas; // nothing to do
+
+  // False-positive guard: if "tape" exceeds 8% of the product, the product
+  // itself is tape-coloured (skin-tone / tan / amber) — do NOT fill it.
+  if (productPx > 0 && tapeCount / productPx > 0.08) {
+    console.info(`[TapeInpaint] ${tapeCount}px = ${(tapeCount/productPx*100).toFixed(0)}% of product → product colour, not tape. Skipping.`);
+    return canvas;
+  }
+
+  // ── 2. Onion-peel fill: each pass replaces tape pixels that border
+  //       at least one non-tape, non-transparent pixel.
+  //       We use 8-connected neighbours for smooth fill.
+  const NB = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,-1],[-1,1],[1,1]];
+  const remaining = new Uint8Array(isTape);
+  let changed = true, passes = 0;
+  while (changed && passes < 300) {
+    changed = false;
+    passes++;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (!remaining[y * W + x]) continue;
+        let r = 0, g = 0, b = 0, a = 0, cnt = 0;
+        for (const [dy, dx] of NB) {
+          const ny = y + dy, nx = x + dx;
+          if (ny < 0 || ny >= H || nx < 0 || nx >= W) continue;
+          if (remaining[ny * W + nx]) continue; // still tape — skip
+          const ni = (ny * W + nx) * 4;
+          if (d[ni + 3] < 10) continue;         // transparent — skip
+          r += d[ni]; g += d[ni+1]; b += d[ni+2]; a += d[ni+3];
+          cnt++;
+        }
+        if (cnt > 0) {
+          const i = (y * W + x) * 4;
+          d[i]   = Math.round(r / cnt);
+          d[i+1] = Math.round(g / cnt);
+          d[i+2] = Math.round(b / cnt);
+          d[i+3] = Math.round(a / cnt);
+          remaining[y * W + x] = 0;
+          changed = true;
+        }
+      }
+    }
+  }
+
+  ctx.putImageData(id, 0, 0);
+  console.info(`[TapeInpaint] ${tapeCount} tape pixels filled in ${passes} pass(es)`);
+  return canvas;
+}
+
+/* ── Detect if a canvas already has alpha channel (rembg output) ── */
+function hasTransparency(canvas) {
+  const d = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+  for (let i = 3; i < d.length; i += 16) { if (d[i] < 250) return true; }
+  return false;
+}
+
+/* ── Remove white-spill contamination from semi-transparent edge pixels ──
+   Formula: clean = (pixel − white*(1−alpha)) / alpha
+   Reverses pre-multiplied white blending on the transparent fringe.       */
+function decontaminateEdges(canvas) {
+  const ctx = canvas.getContext('2d');
+  const id  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d   = id.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const a = d[i + 3];
+    if (a === 0 || a === 255) continue;
+    const af = a / 255;
+    d[i]     = Math.max(0, Math.min(255, Math.round((d[i]     - 255 * (1 - af)) / af)));
+    d[i + 1] = Math.max(0, Math.min(255, Math.round((d[i + 1] - 255 * (1 - af)) / af)));
+    d[i + 2] = Math.max(0, Math.min(255, Math.round((d[i + 2] - 255 * (1 - af)) / af)));
+  }
+  ctx.putImageData(id, 0, 0);
+}
+
+/* ── Smooth the alpha channel to remove jagged/staircase edges ──
+   Works in two passes:
+   1. Erode by 1 px — removes the outermost contaminated pixel ring
+      that BG-removal always leaves behind.
+   2. 3×3 Gaussian blur on alpha only — anti-aliases what remains,
+      giving a smooth sub-pixel transition into transparency.
+   RGB values are untouched; only the alpha channel is modified.   */
+function smoothAlphaEdges(canvas) {
+  const ctx = canvas.getContext('2d');
+  const W   = canvas.width, H = canvas.height;
+  const id  = ctx.getImageData(0, 0, W, H);
+  const d   = id.data;
+  const len = W * H;
+
+  // Extract alpha into a float array
+  const alpha = new Float32Array(len);
+  for (let i = 0; i < len; i++) alpha[i] = d[i * 4 + 3];
+
+  // Pass 1 — 1 px minimum erosion (shrinks the mask inward by 1 px)
+  const eroded = new Float32Array(len);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const idx = y * W + x;
+      let mn = alpha[idx];
+      if (y > 0)     mn = Math.min(mn, alpha[(y-1)*W + x]);
+      if (y < H-1)   mn = Math.min(mn, alpha[(y+1)*W + x]);
+      if (x > 0)     mn = Math.min(mn, alpha[y*W + x-1]);
+      if (x < W-1)   mn = Math.min(mn, alpha[y*W + x+1]);
+      eroded[idx] = mn;
+    }
+  }
+
+  // Pass 2 — 3×3 Gaussian blur on the eroded alpha only
+  const k = [1,2,1, 2,4,2, 1,2,1];  // Gaussian kernel ×16
+  const blurred = new Float32Array(len);
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      let sum = 0, wt = 0, ki = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const ny = y + dy, nx = x + dx;
+          const w = k[ki++];
+          if (ny >= 0 && ny < H && nx >= 0 && nx < W) { sum += eroded[ny*W+nx] * w; wt += w; }
+          else wt += w; // out-of-bounds treated as alpha=0
+        }
+      }
+      blurred[y*W+x] = wt ? sum / wt : 0;
+    }
+  }
+
+  // Write smoothed alpha back — RGB unchanged
+  for (let i = 0; i < len; i++) d[i*4+3] = Math.round(blurred[i]);
+  ctx.putImageData(id, 0, 0);
+}
+
+/* ── Full cutout preparation ────────────────────────────────────
+   Priority order:
+   1. Local rembg server (localhost:5001) — AI quality, full res
+   2. Transparent PNG passthrough — pre-processed by remove_bg.py
+   3. Pixel-based white BG removal — built-in JS fallback
+   ─────────────────────────────────────────────────────────── */
+/* Add a white border around the image before sending to rembg.
+   ISNet treats pixels touching the frame edge as background, which clips
+   product edges. Padding makes the product "float" so the model keeps it intact.
+   padFrac = fraction of the longer edge to add on EACH side (e.g. 0.05 = 5 %). */
+async function _addRembgPadding(b64, padFrac) {
+  const img = await loadImage(b64);
+  const W   = img.naturalWidth  || img.width;
+  const H   = img.naturalHeight || img.height;
+  const pad = Math.round(Math.max(W, H) * padFrac);
+  const cv  = document.createElement('canvas');
+  cv.width  = W + pad * 2;
+  cv.height = H + pad * 2;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.drawImage(img, pad, pad, W, H);
+  return cv.toDataURL('image/png');
+}
+
+async function prepareCutout(b64) {
+  // Path 1: local rembg AI server
+  if (rembgServerAvailable) {
+    try {
+      setProgress(5, 'rembg: KI-Freistellung läuft lokal…');
+
+      // Add white padding (5 % of max edge) before sending to rembg.
+      // ISNet treats pixels that touch the image border as background,
+      // which clips product edges. Padding gives the model clear context.
+      const paddedB64 = await _addRembgPadding(b64, 0.20); // 20 % — ISNet clips aggressively near frame edges
+
+      const resultB64 = await callRembgServer(paddedB64);
+      const img = await loadImage(resultB64);
+      const cv  = document.createElement('canvas');
+      cv.width  = img.naturalWidth || img.width;
+      cv.height = img.naturalHeight || img.height;
+      cv.getContext('2d').drawImage(img, 0, 0);
+
+      // Remove colour contamination from semi-transparent edge pixels
+      // (skipping alpha erosion — ISNet edges are already smooth).
+      decontaminateEdges(cv);
+
+      return cv;
+    } catch (e) {
+      console.warn('rembg server failed:', e.message);
+      rembgServerAvailable = false;
+      pingRembgServer();  // refresh status indicator
+    }
+  }
+
+  const img = await loadImage(b64);
+  const W   = img.naturalWidth  || img.width;
+  const H   = img.naturalHeight || img.height;
+  const cv  = document.createElement('canvas');
+  cv.width  = W;  cv.height = H;
+  cv.getContext('2d').drawImage(img, 0, 0);
+
+  // Path 2: transparent PNG (pre-processed by remove_bg.py)
+  if (hasTransparency(cv)) return cv;
+
+  // Path 3: pixel-based background removal (fallback)
+  // Detect the corner colour: if it's near-white use the white stripper,
+  // otherwise (grey/beige studio backdrop) use the flood-fill remover.
+  setProgress(5, 'Pixel-Freistellung (Fallback)…');
+  const probe = cv.getContext('2d').getImageData(0, 0, 1, 1).data;
+  const nearWhite = probe[0] > 238 && probe[1] > 238 && probe[2] > 238;
+  const cutout = nearWhite ? stripWhiteBackground(img) : stripStudioBackground(img);
+  decontaminateEdges(cutout);
+  return cutout;
+}
+
+/* ── Call local rembg server ────────────────────────────────── */
+async function callRembgServer(b64) {
+  const res = await fetch('http://localhost:5001/remove-bg', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ image: b64 }),
+    signal:  AbortSignal.timeout(180000)  // 180 s — contrast-enhanced double-pass needs more time
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => res.status);
+    throw new Error(`rembg ${res.status}: ${String(txt).slice(0, 60)}`);
+  }
+  const data = await res.json();
+  if (!data.result) throw new Error('rembg: leere Antwort');
+  return data.result;
+}
+
+/* ── Guaranteed edge-background cleanup (runs on every cutout) ───
+   Alpha-aware flood fill from the border. Safe to call on any
+   cutout regardless of how the background was removed:
+   • If the border is already transparent → no-op (returns early).
+   • If an opaque uniform background survived (grey/beige studio
+     backdrop that rembg/Stability missed) → removes it.
+   Operates in place on the canvas. Propagates through already-
+   transparent pixels so partial halos are cleaned too.
+   ─────────────────────────────────────────────────────────────── */
+function cleanupEdgeBackground(canvas) {
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.getImageData(0, 0, W, H);
+  const d   = img.data;
+
+  // Corner alpha check — if all corners already transparent, done.
+  const ca = [
+    d[3],
+    d[(W - 1) * 4 + 3],
+    d[((H - 1) * W) * 4 + 3],
+    d[((H - 1) * W + (W - 1)) * 4 + 3],
+  ];
+  if (ca.every(a => a < 40)) return canvas;   // background already removed
+
+  // Sample bg colour + brightness range from OPAQUE border pixels.
+  let br = 0, bg = 0, bb = 0, n = 0, minLo = 255;
+  const sampleEdge = (x, y) => {
+    const i = (y * W + x) * 4;
+    if (d[i + 3] > 200) {
+      br += d[i]; bg += d[i+1]; bb += d[i+2]; n++;
+      const lo = Math.min(d[i], d[i+1], d[i+2]);
+      if (lo < minLo) minLo = lo;
+    }
+  };
+  for (let x = 0; x < W; x += 3) { sampleEdge(x, 0); sampleEdge(x, H - 1); }
+  for (let y = 0; y < H; y += 3) { sampleEdge(0, y); sampleEdge(W - 1, y); }
+  if (n === 0) return canvas;
+  br = Math.round(br / n); bg = Math.round(bg / n); bb = Math.round(bb / n);
+
+  // Is the sampled background neutral (grey/white) or a specific colour?
+  const bgSat   = Math.max(br, bg, bb) - Math.min(br, bg, bb);
+  const bgIsNeutral = bgSat < 28;
+  // For neutral backdrops, accept the whole light-grey→white gradient:
+  // remove any low-saturation pixel brighter than (darkest corner − margin).
+  const LIGHT_FLOOR = Math.max(120, minLo - 55);
+  const NEUTRAL_SAT = 32;
+  const TOL2 = 46 * 46;
+
+  const visited = new Uint8Array(W * H);
+  const stack = [];
+  const pushIf = (x, y) => {
+    if (x < 0 || x >= W || y < 0 || y >= H) return;
+    const p = y * W + x;
+    if (visited[p]) return;
+    visited[p] = 1;
+    const i = p * 4;
+    const a = d[i + 3];
+    if (a < 30) { stack.push(p); return; }   // already transparent → spread through
+    // Only treat FULLY-OPAQUE pixels as removable background. Semi-transparent
+    // pixels (alpha 30–220) are the product's anti-aliased edge — never remove
+    // or spread through them, so the product is never eroded.
+    if (a < 220) return;
+    const r = d[i], g = d[i+1], b = d[i+2];
+    const sat = Math.max(r, g, b) - Math.min(r, g, b);
+    const lo  = Math.min(r, g, b);
+    let isBg;
+    if (bgIsNeutral) {
+      // Whole neutral gradient: low-saturation AND light enough
+      isBg = (sat < NEUTRAL_SAT && lo >= LIGHT_FLOOR);
+    } else {
+      // Coloured uniform backdrop: match the sampled colour
+      const dr = r - br, dg = g - bg, db = b - bb;
+      isBg = (dr*dr + dg*dg + db*db <= TOL2);
+    }
+    if (isBg) {
+      d[i + 3] = 0;
+      stack.push(p);
+    }
+  };
+  for (let x = 0; x < W; x++) { pushIf(x, 0); pushIf(x, H - 1); }
+  for (let y = 0; y < H; y++) { pushIf(0, y); pushIf(W - 1, y); }
+  while (stack.length) {
+    const p = stack.pop();
+    const x = p % W, y = (p / W) | 0;
+    pushIf(x + 1, y); pushIf(x - 1, y); pushIf(x, y + 1); pushIf(x, y - 1);
+  }
+
+  ctx.putImageData(img, 0, 0);
+  return canvas;
+}
+
+
+/* ── Uniform studio-background removal (any colour) ──────────────
+   Removes a uniform/near-uniform background of ANY colour — white,
+   grey, beige studio backdrops — by flood-filling inward from the
+   image border. Only background-coloured pixels CONNECTED to the
+   edge are removed, so same-coloured pixels inside the product are
+   preserved. Returns a canvas with transparent background.
+   ─────────────────────────────────────────────────────────────── */
+function stripStudioBackground(srcImg) {
+  const W = srcImg.width, H = srcImg.height;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const cx = cv.getContext('2d');
+  cx.drawImage(srcImg, 0, 0);
+  const img = cx.getImageData(0, 0, W, H);
+  const d   = img.data;
+
+  // ── Sample the background colour from the four corners ──────────
+  const samples = [];
+  const S = Math.max(4, Math.round(Math.min(W, H) * 0.02)); // 2% corner patch
+  const addPatch = (x0, y0) => {
+    for (let y = y0; y < y0 + S; y++)
+      for (let x = x0; x < x0 + S; x++) {
+        const i = (y * W + x) * 4;
+        samples.push([d[i], d[i+1], d[i+2]]);
+      }
+  };
+  addPatch(0, 0); addPatch(W - S, 0); addPatch(0, H - S); addPatch(W - S, H - S);
+  let br = 0, bg = 0, bb = 0;
+  for (const [r, g, b] of samples) { br += r; bg += g; bb += b; }
+  br = Math.round(br / samples.length);
+  bg = Math.round(bg / samples.length);
+  bb = Math.round(bb / samples.length);
+
+  // ── Flood fill from every border pixel ─────────────────────────
+  const TOL  = 42;          // colour-distance tolerance to background
+  const TOL2 = TOL * TOL;
+  const visited = new Uint8Array(W * H);
+  const stack = [];
+  const pushIf = (x, y) => {
+    if (x < 0 || x >= W || y < 0 || y >= H) return;
+    const p = y * W + x;
+    if (visited[p]) return;
+    visited[p] = 1;
+    const i = p * 4;
+    const dr = d[i] - br, dg = d[i+1] - bg, db = d[i+2] - bb;
+    if (dr*dr + dg*dg + db*db <= TOL2) {
+      d[i+3] = 0;                 // background → transparent
+      stack.push(p);
+    }
+  };
+  for (let x = 0; x < W; x++) { pushIf(x, 0); pushIf(x, H - 1); }
+  for (let y = 0; y < H; y++) { pushIf(0, y); pushIf(W - 1, y); }
+  while (stack.length) {
+    const p = stack.pop();
+    const x = p % W, y = (p / W) | 0;
+    pushIf(x + 1, y); pushIf(x - 1, y); pushIf(x, y + 1); pushIf(x, y - 1);
+  }
+
+  cx.putImageData(img, 0, 0);
+  return cv;
+}
+
+/* Standalone BG removal — used by prepareCutout for white-BG photos */
+function stripWhiteBackground(srcImg) {
+    const W = srcImg.width, H = srcImg.height;
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const cx = cv.getContext('2d');
+    cx.drawImage(srcImg, 0, 0);
+    const img = cx.getImageData(0, 0, W, H);
+    const d   = img.data;
+
+    /* Pass 1 – threshold sweep */
+    const B_HARD = 200;  // was 185 — catches more off-white
+    const B_SOFT = 242;
+    const SAT_MAX = 48;  // tighter: less chance of clipping coloured product
+
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i+1], b = d[i+2];
+      const lo  = Math.min(r, g, b);
+      const hi  = Math.max(r, g, b);
+      const sat = hi - lo;
+      if (sat > SAT_MAX) continue;
+      if (lo >= B_SOFT)  { d[i+3] = 0; continue; }
+      if (lo >= B_HARD) {
+        const t  = (lo - B_HARD) / (B_SOFT - B_HARD);
+        d[i+3]   = Math.round((1 - t) * d[i+3]);
+      }
+    }
+
+    /* Pass 2 – flood fill from entire perimeter (more aggressive threshold) */
+    const vis = new Uint8Array(W * H);
+    const stk = [];
+    for (let x = 0; x < W; x++) { stk.push(x); stk.push((H-1)*W + x); }
+    for (let y = 1; y < H-1; y++) { stk.push(y*W); stk.push(y*W + W-1); }
+
+    while (stk.length) {
+      const idx = stk.pop();
+      if (idx < 0 || idx >= W*H || vis[idx]) continue;
+      vis[idx] = 1;
+      const pi  = idx * 4;
+      const a   = d[pi+3];
+      const lo  = Math.min(d[pi], d[pi+1], d[pi+2]);
+      const sat = Math.max(d[pi], d[pi+1], d[pi+2]) - lo;
+      if (a > 0 && !(lo >= 160 && sat <= 70)) continue; // was 175/65
+      d[pi+3] = 0;
+      const x = idx % W, y = Math.floor(idx / W);
+      if (x > 0)   stk.push(idx - 1);
+      if (x < W-1) stk.push(idx + 1);
+      if (y > 0)   stk.push(idx - W);
+      if (y < H-1) stk.push(idx + W);
+    }
+
+    /* Pass 3 – white-spill correction on semi-transparent edge pixels
+       fg = (pixel - (1-alpha)*255) / alpha  */
+    for (let i = 0; i < d.length; i += 4) {
+      const a = d[i+3];
+      if (a === 0 || a === 255) continue;
+      const af = a / 255;
+      const remove = (1 - af) * 255;
+      d[i]   = Math.max(0, Math.min(255, Math.round((d[i]   - remove) / af)));
+      d[i+1] = Math.max(0, Math.min(255, Math.round((d[i+1] - remove) / af)));
+      d[i+2] = Math.max(0, Math.min(255, Math.round((d[i+2] - remove) / af)));
+    }
+
+    /* Pass 4 – hard cutoff: any ghost-transparent pixel → fully gone
+       Removes the diffuse white halo that causes the bright blur
+       on dark backgrounds after scaling.                           */
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i+3] < 50) { d[i+3] = 0; continue; }
+      // If still semi-transparent AND bright after spill correction → kill it
+      if (d[i+3] < 200) {
+        const lo = Math.min(d[i], d[i+1], d[i+2]);
+        if (lo > 160) d[i+3] = 0;
+      }
+    }
+
+  cx.putImageData(img, 0, 0);
+  return cv;
+}
+
+/* ── Scale any canvas to 1024×1024 (centered, transparent bg) ── */
+function scaleTo1024(src) {
+  const dst = document.createElement('canvas');
+  dst.width = dst.height = 1024;
+  const ctx = dst.getContext('2d');
+  const s = Math.min(1024 / src.width, 1024 / src.height);
+  const w = src.width * s, h = src.height * s;
+  ctx.drawImage(src, (1024 - w) / 2, (1024 - h) / 2, w, h);
+  return dst;
+}
+
+/* ── Background-only DALL·E 3 generation ──────────────────────
+   Generate the brand studio scene with NO product in it.
+   We composite the real product cutout on top afterwards.
+   This avoids the content filter (no product description sent),
+   and keeps the product pixel-perfect from the original photo.
+─────────────────────────────────────────────────────────────── */
+let _brandBgCache = null;   // shared across all 5 compositions
+
+const BG_ONLY_PROMPT =
+  'Empty professional product photography studio. ' +
+  'Pure seamless white background, clean and evenly lit from edge to edge. ' +
+  'Soft diffused studio lighting from large softboxes. No color casts, no shadows, no gradients. ' +
+  'Clean commercial e-commerce white background. ' +
+  'No objects, no products, no people, no text, no watermarks, no logos.';
+
+async function generateBrandBackground(apiKey) {
+  if (_brandBgCache) return _brandBgCache;
+  try {
+    setProgress(5, 'DALL·E 3 generiert Markenhintergrund…');
+    const r = await callDallE(apiKey, BG_ONLY_PROMPT);
+    const b64 = r.data?.[0]?.b64_json;
+    if (b64) {
+      _brandBgCache = 'data:image/png;base64,' + b64;
+      return _brandBgCache;
+    }
+    const errMsg = r.error?.message || JSON.stringify(r).slice(0, 80);
+    console.warn('DALL·E 3 bg failed:', errMsg);
+  } catch (e) {
+    console.warn('DALL·E 3 bg exception:', e.message);
+  }
+  return null;  // triggers canvas fallback background
+}
+
+/* ── Shot definitions for DALL·E 3 per-shot generation ─────── */
+const SHOT_DEFS = {
+  'Front': {
+    camera: 'Camera directly in front of the product at exact mid-height. Perfectly straight-on front view. Product centered, filling approximately 75% of frame height. Symmetrical composition.',
+    light:  'Even, soft diffused studio lighting from large softboxes on both sides. Perfectly even exposure — no harsh shadows. Subtle soft shadow directly beneath the product on the white surface.',
+  },
+  'ThreeQtr': {
+    camera: '45-degree three-quarter angle from the front-right, camera at mid-height. Shows both the front face and right side of the product simultaneously. Product centered.',
+    light:  'Soft diffused studio lighting, slightly stronger from the front-left. Clean even illumination on the front face, gentle shadow falling toward the right. Subtle drop shadow beneath the product.',
+  },
+  'Side': {
+    camera: 'Camera at exactly 90 degrees to the right of the product, at exact mid-height. Pure side profile view showing the full silhouette. Product centered.',
+    light:  'Even soft studio lighting from both sides. Clean exposure on the visible face. Very subtle shadow to the right side of the product on the white surface.',
+  },
+  'HighAngle': {
+    camera: 'Camera elevated at approximately 30-35 degrees above the product, angled downward. Shows the top surface prominently with the front and sides partially visible. Product centered.',
+    light:  'Soft overhead studio lighting supplemented by front fill. Clean even illumination, top surfaces brightly lit. Subtle shadow directly beneath the product.',
+  },
+  'LowAngle': {
+    camera: 'Camera at a low angle, approximately 15-20 degrees below mid-height, angled slightly upward toward the product. Shows the underside and lower portions prominently.',
+    light:  'Soft diffused studio lighting from front and sides. Even clean illumination. Slight shadow cast behind and beneath the product base on the white surface.',
+  },
+};
+
+const BRAND_ENVIRONMENT =
+  'BACKGROUND: Pure seamless white background — clean, bright, studio white. ' +
+  'No gradients, no textures, no colored lighting, no colored reflections on the background. ' +
+  'The background must be a clean bright white from edge to edge. ' +
+  'A very subtle, soft neutral shadow beneath the product is acceptable and natural. ' +
+  'No other objects, no text, no watermarks, no logos, no people.';
+
+/* ── OpenAI neon-image cache (one API call per unique source image) ── */
+let _litCache = {};
+
+/* ── OpenAI gpt-image-1 — generate a NEW neon-lit product image ──────
+   Pipeline (per user spec):
+     1. background already removed (cutout passed in)
+     2. forensic productDesc already analyzed upstream
+     3. here: OpenAI regenerates the product with EXTREME red neon
+        lighting baked in, photography props removed, quality preserved.
+   The OpenAI output IS the final image — no canvas blending.          */
+async function applyOpenAINeon(cutoutCanvas, apiKey, cacheKey, productDesc = '') {
+  if (_litCache[cacheKey]) return _litCache[cacheKey];
+
+  // ── Input canvas preparation ─────────────────────────────────────────────
+  // Standard mode (size:'1024x1024'): OpenAI requires a SQUARE input that matches
+  //   the requested output size. Centre the product on a 1024×1024 white canvas
+  //   with ~12.5 % padding so the product fills ~75 % of the frame.
+  //   Post-processing upscales the 1024×1024 result to 2048×2048.
+  //
+  // HD mode (size:'auto'): input can be any aspect ratio up to 1536px max edge.
+  //   OpenAI picks the nearest supported size. Padding is added in post-processing.
+  // ─────────────────────────────────────────────────────────────────────────
+
+  let srcCv;
+
+  if (!hdMode) {
+    // ── Standard: square 1024×1024 input ──────────────────────────────────
+    const SQ      = 1024;
+    const PAD_SQ  = Math.round(SQ * 0.125);   // 128 px
+    const AVAIL   = SQ - PAD_SQ * 2;          // 768 px
+    const bbox    = _getProductBBox(cutoutCanvas);
+    const bW      = bbox.maxX - bbox.minX + 1;
+    const bH      = bbox.maxY - bbox.minY + 1;
+    const scale   = Math.min(AVAIL / bW, AVAIL / bH);
+    const pW      = Math.round(bW * scale);
+    const pH      = Math.round(bH * scale);
+    const pX      = Math.round((SQ - pW) / 2);
+    const pY      = Math.round((SQ - pH) / 2);
+
+    srcCv         = document.createElement('canvas');
+    srcCv.width   = SQ;
+    srcCv.height  = SQ;
+    const ctx     = srcCv.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, SQ, SQ);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(cutoutCanvas,
+      bbox.minX, bbox.minY, bW, bH,   // source: tight bbox
+      pX, pY, pW, pH);                 // dest:   centred with padding
+
+  } else {
+    // ── HD: natural aspect ratio, max 1536px edge ─────────────────────────
+    const MAX_EDGE  = 1536;
+    const bbox      = _getProductBBox(cutoutCanvas);
+    const bW        = bbox.maxX - bbox.minX + 1;
+    const bH        = bbox.maxY - bbox.minY + 1;
+    const edgeRatio = Math.min(1, MAX_EDGE / Math.max(bW, bH));
+    const rW        = Math.round(bW * edgeRatio);
+    const rH        = Math.round(bH * edgeRatio);
+
+    srcCv           = document.createElement('canvas');
+    srcCv.width     = rW;
+    srcCv.height    = rH;
+    const ctx       = srcCv.getContext('2d');
+    ctx.fillStyle   = '#ffffff';
+    ctx.fillRect(0, 0, rW, rH);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(cutoutCanvas,
+      bbox.minX, bbox.minY, bW, bH,
+      0, 0, rW, rH);
+  }
+
+  // Use toDataURL → manual Blob (more compatible than toBlob in Safari/WebKit)
+  const dataURL  = srcCv.toDataURL('image/png');
+  const b64      = dataURL.split(',')[1];
+  const binStr   = atob(b64);
+  const bytes    = new Uint8Array(binStr.length);
+  for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+  const blob = new Blob([bytes], { type: 'image/png' });
+
+  const prompt =
+    'You are an expert e-commerce photo retoucher. Your single most important task is to ' +
+    'remove all photography props — especially tape — so the product looks factory-new. ' +
+    'Then deliver a clean professional catalogue photo. Follow every rule below exactly.\n\n' +
+
+    '════════════════════════════════════════\n' +
+    '★ TASK 1 (MANDATORY): REMOVE ALL TAPE AND PROPS\n' +
+    '════════════════════════════════════════\n' +
+    'This product was photographed with tape holding it in position. ' +
+    'Tape appears as coloured or semi-transparent STRIPS, BANDS or PATCHES stuck to the surface of the product. ' +
+    'Common colours: yellow, gold, amber, orange, clear/transparent, white, beige, silver, grey.\n\n' +
+    'You MUST remove EVERY piece of tape:\n' +
+    '- Strips wrapped around the shaft, body or tip of the product\n' +
+    '- Patches of tape stuck flat against any surface\n' +
+    '- Tape holding multiple parts together\n' +
+    '- Tape at the base or bottom to keep the product upright\n' +
+    '- Thin strips of tape you might mistake for a seam or highlight\n' +
+    '- Adhesive residue, sticky marks or glue smears left after tape removal\n\n' +
+    'ALSO remove: stands, pedestals, rods, clamps, wires or strings clearly propping up the product.\n\n' +
+    'After each removal: fill in the underlying product surface seamlessly — ' +
+    'matching material, colour and texture. The product must look completely untouched by tape.\n\n' +
+
+    '════════════════════════════════════════\n' +
+    '★ TASK 2 (MANDATORY): PRESERVE ALL PRODUCT PARTS\n' +
+    '════════════════════════════════════════\n' +
+    'Never remove or alter these — they are product components:\n' +
+    '- All silicone, rubber and plastic parts of the product body\n' +
+    '- All metal hardware: knobs, valves, connectors, clasps, screws, nozzles, fittings\n' +
+    '- The inflation hose / pump tube — the flexible tube or hose that connects the product ' +
+    'body to the pump bulb. THIS IS A PRODUCT PART, not a prop. Preserve the ENTIRE hose ' +
+    'even if it forms a loop, arc or curve. Do not shorten or remove any section of it.\n' +
+    '- The pump bulb / squeeze ball and its metal valve\n' +
+    '- Any tubing, cables or wires that are physically attached to the product body\n' +
+    'Key rule: if it is physically part of the product (not stuck on top of it), KEEP IT.\n\n' +
+
+    '════════════════════════════════════════\n' +
+    'BACKGROUND: pure flat white (#ffffff) everywhere outside the product silhouette. ' +
+    'No gradients, shadows, colour tints or vignette whatsoever.\n\n' +
+    'LIGHTING: neutral, even, soft-box studio lighting. No coloured lights, no neon, no gels.\n\n' +
+    'SHAPE & COLOUR: preserve the exact silhouette, proportions, textures and colours. ' +
+    'Do not redesign any part of the product.\n\n' +
+    'OUTPUT: photorealistic, high resolution, no watermarks, no text overlay.\n\n' +
+    '— FINAL CHECK before rendering: scan every edge and surface of the product. ' +
+    'If you can still see any tape strip, tape residue or prop, remove it now. —\n\n' +
+    (() => {
+      const notes = (document.getElementById('field-notes')?.value || '').trim();
+      return notes
+        ? ('════════════════════════════════════════\n' +
+           '★ PRODUCT-SPECIFIC NOTES (apply precisely):\n' +
+           '════════════════════════════════════════\n' + notes + '\n\n')
+        : '';
+    })() +
+    (productDesc ? ('Product reference: ' + productDesc) : '');
+
+  // ── Auto-detect tape and build inpainting mask ────────────────
+  // We scan srcCv (the image we're about to send) for yellow/gold/amber/orange
+  // tape pixels and pass an explicit mask to OpenAI so it knows EXACTLY which
+  // pixels to replace. This is far more reliable than prompt instructions alone.
+  const { maskCanvas, rawTapePx } = buildTapeMask(srcCv);
+  let maskBlob = null;
+  if (rawTapePx > 40) {
+    console.info(`[TapeMask] ${rawTapePx} tape pixels detected — sending mask to OpenAI`);
+    maskBlob = await new Promise(r => maskCanvas.toBlob(r, 'image/png'));
+  } else {
+    console.info(`[TapeMask] No significant tape detected (${rawTapePx}px) — prompt-only mode`);
+  }
+
+  const fd = new FormData();
+  fd.append('image', blob, 'product.png');
+  if (maskBlob) fd.append('mask', maskBlob, 'mask.png');
+  fd.append('model', 'gpt-image-1');
+  fd.append('n', '1');
+  // Standard: medium quality + 1024×1024 → ~$0.04/img (7× cheaper, great for iteration)
+  // HD:       high quality  + auto size   → ~$0.28/img (max sharpness for final production)
+  fd.append('size',    hdMode ? 'auto'       : '1024x1024');
+  fd.append('quality', hdMode ? 'high'       : 'medium');
+  fd.append('prompt', prompt);
+
+  const res = await fetch('https://api.openai.com/v1/images/edits', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}` },
+    body: fd,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `OpenAI HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  const apiDataUrl = 'data:image/png;base64,' + json.data[0].b64_json;
+
+  // Post-process: composite the high-res retouched product onto a 2048×2048
+  // white canvas with 12.5 % padding on every side.
+  // Padding is done HERE (not in the input) so OpenAI used every pixel on the product.
+  const composited = await _compositeWithPadding(apiDataUrl);
+  _litCache[cacheKey] = composited;
+  return composited;
+}
+
+/* Place a retouched product image centred on a 2048×2048 white canvas
+   with 12.5 % (256 px) padding on each side → product in 1536×1536 area.
+   Uses tight bounding box so empty transparent areas don't shrink the product. */
+async function _compositeWithPadding(dataUrl) {
+  const img = await loadImage(dataUrl);
+  const OUT   = 2048;
+  const PAD   = Math.round(OUT * 0.125); // 256 px (12.5 %)
+  const AVAIL = OUT - PAD * 2;           // 1536 px
+
+  // Draw the OpenAI result to a temp canvas so we can compute its bounding box
+  const tmp = document.createElement('canvas');
+  tmp.width  = img.naturalWidth;
+  tmp.height = img.naturalHeight;
+  tmp.getContext('2d').drawImage(img, 0, 0);
+
+  // OpenAI output is fully opaque — its background (often slightly grey or
+  // off-white) would otherwise be pasted in and make the bbox = whole frame.
+  // Clean the edge background to transparent so only the product remains and
+  // the bbox tightens to the actual product pixels.
+  cleanupEdgeBackground(tmp);
+
+  const bbox  = _getProductBBox(tmp);
+  const bW    = bbox.maxX - bbox.minX + 1;
+  const bH    = bbox.maxY - bbox.minY + 1;
+
+  const scale = Math.min(AVAIL / bW, AVAIL / bH);
+  const dW    = Math.round(bW * scale);
+  const dH    = Math.round(bH * scale);
+  const dX    = Math.round((OUT - dW) / 2);
+  const dY    = Math.round((OUT - dH) / 2);
+
+  const cv  = document.createElement('canvas');
+  cv.width  = OUT;
+  cv.height = OUT;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, OUT, OUT);
+  ctx.drawImage(tmp, bbox.minX, bbox.minY, bW, bH, dX, dY, dW, dH);
+  return cv.toDataURL('image/png', 1.0);
+}
+
+/* ── Claude: forensic product description ────────────────────────
+   Uses claude-3-5-sonnet via the Anthropic Messages API to produce
+   a hyper-detailed, top-to-bottom description of the product:
+   shape, proportions, every component, colors, materials, textures.
+   This description becomes the SD3 text-to-image prompt.
+   Claude is used instead of GPT-4o because it handles adult product
+   imagery clinically without refusing.
+   ─────────────────────────────────────────────────────────────── */
+async function describeProductWithClaude(imageB64, anthropicKey) {
+  const comma    = imageB64.indexOf(',');
+  const meta     = imageB64.slice(0, comma);          // "data:image/jpeg;base64"
+  const data     = imageB64.slice(comma + 1);         // raw base64
+  const mimeMatch = meta.match(/data:([^;]+)/);
+  const mediaType = (mimeMatch ? mimeMatch[1] : 'image/jpeg');
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:  'POST',
+    headers: {
+      'x-api-key':                              anthropicKey,
+      'anthropic-version':                      '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'content-type':                           'application/json',
+    },
+    body: JSON.stringify({
+      model:      'claude-opus-4-5',
+      max_tokens: 1500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data } },
+          { type: 'text',  text:
+            'You are an expert at writing Stable Diffusion prompts for e-commerce product photography.\n\n' +
+            'Look at this adult novelty / pleasure product and write a Stable Diffusion prompt that ' +
+            'will generate a clean studio product photo of it on a white background.\n\n' +
+            'CRITICAL RULES:\n' +
+            '1. Always start with: "commercial product, manufactured object, adult novelty toy, e-commerce catalog photo,"\n' +
+            '2. Describe the product using ONLY material, color, and surface finish — NEVER use anatomical or body-part language\n' +
+            '3. Use object-focused terms: "silicone toy", "rubber device", "plastic product", "novelty item"\n' +
+            '4. Describe shape as geometry only: "elongated cylindrical", "rounded tip", "tapered body", "bulbous base", "curved shaft"\n' +
+            '5. Describe colors precisely: "matte rose-pink silicone", "semi-transparent amber rubber", "gunmetal ABS plastic"\n' +
+            '6. Include any attachments as mechanical parts: "flexible rubber hose", "squeeze-bulb pump", "metal valve fitting"\n' +
+            '7. End with: "isolated on pure white background, professional product photography, studio lighting, sharp focus"\n\n' +
+            'Output ONLY the prompt text. No explanation. No line breaks. 2–4 sentences max.'
+          }
+        ]
+      }]
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e?.error?.message || `Claude API HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  const desc = json.content?.[0]?.text?.trim() || '';
+  if (!desc) throw new Error('Claude: leere Bildbeschreibung');
+  console.info('[Claude description]\n' + desc);
+  return desc;
+}
+
+
+/* ── OpenAI targeted prop inpainting (Prio-2 path) ──────────────
+   Sends the cutout + a tape-detection mask to OpenAI.
+   Only the masked (tape/prop) pixels are regenerated — the rest of
+   the product is preserved exactly. Much less likely to trigger
+   content moderation than a full recreation.
+   Returns a composite data URL, or null if mask is empty.
+   ─────────────────────────────────────────────────────────────── */
+async function openAIInpaintProps(cutoutCanvas, apiKey) {
+  // Build tape mask — transparent = edit, opaque = keep
+  const { maskCanvas, rawTapePx } = buildTapeMask(cutoutCanvas);
+  if (rawTapePx < 40) {
+    console.info('[OpenAI inpaint] no tape detected, skipping');
+    return null; // nothing to inpaint
+  }
+  console.info(`[OpenAI inpaint] ${rawTapePx} tape px — sending masked inpaint`);
+
+  // Composite cutout onto white 1024×1024 for OpenAI
+  const SQ   = 1024;
+  const PAD  = Math.round(SQ * 0.10);
+  const AVAIL = SQ - PAD * 2;
+  const bbox = _getProductBBox(cutoutCanvas);
+  const bW   = bbox.maxX - bbox.minX + 1, bH = bbox.maxY - bbox.minY + 1;
+  const sc   = Math.min(AVAIL / bW, AVAIL / bH);
+  const dW   = Math.round(bW * sc), dH = Math.round(bH * sc);
+  const dX   = Math.round((SQ - dW) / 2), dY = Math.round((SQ - dH) / 2);
+
+  const imgCv = document.createElement('canvas');
+  imgCv.width = SQ; imgCv.height = SQ;
+  const iCtx  = imgCv.getContext('2d');
+  iCtx.fillStyle = '#ffffff'; iCtx.fillRect(0, 0, SQ, SQ);
+  iCtx.imageSmoothingEnabled = true; iCtx.imageSmoothingQuality = 'high';
+  iCtx.drawImage(cutoutCanvas, bbox.minX, bbox.minY, bW, bH, dX, dY, dW, dH);
+
+  // Scale mask to same 1024×1024
+  const maskScaled = document.createElement('canvas');
+  maskScaled.width = SQ; maskScaled.height = SQ;
+  maskScaled.getContext('2d').drawImage(maskCanvas, 0, 0, SQ, SQ);
+
+  const imgBlob  = await new Promise(r => imgCv.toBlob(r, 'image/png'));
+  const maskBlob = await new Promise(r => maskScaled.toBlob(r, 'image/png'));
+
+  const fd = new FormData();
+  fd.append('image',  imgBlob,  'product.png');
+  fd.append('mask',   maskBlob, 'mask.png');
+  fd.append('model',  'gpt-image-1');
+  fd.append('n',      '1');
+  fd.append('size',   '1024x1024');
+  fd.append('quality','medium');
+  const notes = (document.getElementById('field-notes')?.value || '').trim();
+  fd.append('prompt',
+    'Remove all tape, adhesive strips and photography props from the product surface. ' +
+    'Fill each removed area with the correct underlying product material, colour and texture. ' +
+    'The product itself must remain completely unchanged.' +
+    (notes ? (' Product-specific notes: ' + notes) : ''));
+
+  const res = await fetch('https://api.openai.com/v1/images/edits', {
+    method:  'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}` },
+    body:    fd,
+    signal:  AbortSignal.timeout(180000),  // 3 min — inpaint with mask is slower
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `OpenAI inpaint HTTP ${res.status}`);
+  }
+  const json    = await res.json();
+  const dataUrl = 'data:image/png;base64,' + json.data[0].b64_json;
+  return _compositeWithPadding(dataUrl);
+}
+
+
+/* ── Stability AI background removal — returns a canvas ─────────
+   Sends the original photo to Stability's dedicated segmentation
+   model and returns a Canvas with the product on transparent bg.
+   Much better than rembg for grey gradients, reflections, and
+   complex studio backgrounds.
+   ─────────────────────────────────────────────────────────────── */
+async function removeBackgroundStability(sourceB64, stabilityKey) {
+  const img = await loadImage(sourceB64);
+  const W   = img.naturalWidth  || img.width;
+  const H   = img.naturalHeight || img.height;
+  const MAX = 2048;
+  const sc  = Math.min(1, MAX / Math.max(W, H));
+  const sW  = Math.round(W * sc), sH = Math.round(H * sc);
+
+  const tmpCv = document.createElement('canvas');
+  tmpCv.width = sW; tmpCv.height = sH;
+  const tCtx  = tmpCv.getContext('2d');
+  tCtx.imageSmoothingEnabled = true;
+  tCtx.imageSmoothingQuality = 'high';
+  tCtx.drawImage(img, 0, 0, sW, sH);
+
+  const imgBlob = await new Promise(r => tmpCv.toBlob(r, 'image/png'));
+  const fd      = new FormData();
+  fd.append('image',         imgBlob, 'product.png');
+  fd.append('output_format', 'png');
+
+  const res = await fetch('https://api.stability.ai/v2beta/stable-image/edit/remove-background', {
+    method:  'POST',
+    headers: { 'Authorization': `Bearer ${stabilityKey}`, 'Accept': 'application/json' },
+    body:    fd,
+    signal:  AbortSignal.timeout(60000),
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e?.errors?.[0] || e?.message || `Stability remove-background HTTP ${res.status}`);
+  }
+
+  const json = await res.json();
+  if (!json.image) throw new Error('Stability remove-background: leere Antwort');
+
+  // Draw the transparent-bg result into a canvas
+  const cutoutImg = await loadImage('data:image/png;base64,' + json.image);
+  const cv        = document.createElement('canvas');
+  cv.width        = cutoutImg.naturalWidth  || cutoutImg.width;
+  cv.height       = cutoutImg.naturalHeight || cutoutImg.height;
+  cv.getContext('2d').drawImage(cutoutImg, 0, 0);
+  return cv;
+}
+
+
+/* ── Stability AI pipeline ────────────────────────────────────────
+   Uses Stability AI's deterministic /edit/remove-background model —
+   a segmentation network, not a generative one. It cuts the product
+   out of any background (grey gradient, reflections, studio floor)
+   and returns exact original pixels on a transparent background.
+   Then: JS tape inpaint → 2048×2048 white canvas composite.
+
+   Why not text-to-image (SD3)?
+   All mainstream text-to-image APIs (OpenAI, Stability, fal.ai, etc.)
+   block adult product content via moderation. SD3 img2img introduces
+   diffusion blur at any strength. remove-background is deterministic,
+   sharp, and content-policy-free — ideal for product photography.
+   ─────────────────────────────────────────────────────────────── */
+
+
+/* ── NovitaAI text-to-image ──────────────────────────────────────
+   NovitaAI explicitly allows adult content. Pipeline:
+     1. Claude describes product in forensic detail
+     2. NovitaAI SDXL generates a clean studio photo from description
+     3. Composite 2048×2048 with 12.5% padding
+
+   NovitaAI API is async: submit job → poll for TASK_STATUS_SUCCEED.
+   ─────────────────────────────────────────────────────────────── */
+async function generateWithNovitaAI(description, novitaKey) {
+  // Claude already outputs a full SD prompt starting with "commercial product, manufactured object..."
+  // We just ensure the photography framing is appended if not already present.
+  const photoSuffix =
+    'isolated on pure white background #ffffff, professional product photography, ' +
+    'even studio lighting, sharp focus, high resolution, catalogue quality, ' +
+    'no shadows, no gradients, no props';
+
+  const prompt = description
+    ? (description.includes('white background') ? description : `${description} ${photoSuffix}`)
+    : `commercial product, manufactured object, adult novelty toy, ${photoSuffix}`;
+
+  /* ── /v3/async/txt2img — CORS-safe, confirmed working endpoint ─ */
+  const submitRes = await fetch('https://api.novita.ai/v3/async/txt2img', {
+    method:  'POST',
+    headers: {
+      'Authorization': `Bearer ${novitaKey}`,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify({
+      extra:   { response_image_type: 'png' },
+      request: {
+        model_name:      'sd_xl_base_1.0.safetensors',
+        prompt:          prompt.slice(0, 1000),
+        negative_prompt: 'person, human, body parts, feet, hands, face, skin, anatomy, ' +
+                         'blurry, low quality, grey background, shadow, watermark, text, deformed',
+        width:           1024,
+        height:          1024,
+        image_num:       1,
+        steps:           20,
+        seed:            -1,
+        sampler_name:    'Euler a',
+        guidance_scale:  7.5,
+      },
+    }),
+    signal: AbortSignal.timeout(30000),
+  });
+
+  if (!submitRes.ok) {
+    const rawErr = await submitRes.text().catch(() => '');
+    console.error('[NovitaAI] submit error:', rawErr);
+    let p = {}; try { p = JSON.parse(rawErr); } catch {}
+    throw new Error(p?.message || p?.reason || rawErr.slice(0, 300) || `HTTP ${submitRes.status}`);
+  }
+
+  const submitJson = await submitRes.json();
+  console.info('[NovitaAI] submit OK:', JSON.stringify(submitJson));
+  const task_id = submitJson.task_id;
+  if (!task_id) throw new Error('NovitaAI: keine task_id — ' + JSON.stringify(submitJson).slice(0, 200));
+
+  /* ── Poll for result (max 120s) ──────────────────────────────── */
+  for (let i = 0; i < 60; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    const pollRes = await fetch(
+      `https://api.novita.ai/v3/async/task-result?task_id=${encodeURIComponent(task_id)}`,
+      { headers: { 'Authorization': `Bearer ${novitaKey}` } }
+    );
+    if (!pollRes.ok) continue;
+    const poll = await pollRes.json();
+    const status = poll.task?.status;
+    if (status === 'TASK_STATUS_SUCCEED') {
+      const imageUrl = poll.images?.[0]?.image_url;
+      if (!imageUrl) throw new Error('NovitaAI: kein Bild — ' + JSON.stringify(poll).slice(0, 200));
+      const imgRes = await fetch(imageUrl);
+      const blob   = await imgRes.blob();
+      return await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload  = () => res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(blob);
+      });
+    }
+    if (status === 'TASK_STATUS_FAILED')
+      throw new Error('NovitaAI: Task fehlgeschlagen — ' + (poll.task?.reason || 'unbekannt'));
+  }
+  throw new Error('NovitaAI: Timeout nach 120s');
+}
+
+
+// cleanProductB64 = the product already on a white background (BG removed, tape fixed).
+// Claude describes this clean image → NovitaAI Flux generates from that description.
+async function applyNovitaAI(cleanProductB64, novitaKey) {
+  const anthropicKey = localStorage.getItem('t4j_anthropic_key') || '';
+
+  /* ── Step 1: Claude describes the clean product ─────────────── */
+  let description = '';
+  if (anthropicKey) {
+    try {
+      setProgress(5, 'Claude: Produktbeschreibung wird erstellt…');
+      description = await describeProductWithClaude(cleanProductB64, anthropicKey);
+    } catch (e) {
+      console.warn('Claude description failed (non-fatal):', e.message);
+    }
+  }
+
+  /* ── Step 2: NovitaAI generates the product image ───────────── */
+  setProgress(5, 'Novita AI: Produktbild wird generiert…');
+  const dataUrl = await generateWithNovitaAI(description, novitaKey);
+
+  /* ── Step 3: Composite 2048×2048 with 12.5% padding ─────────── */
+  const outImg = await loadImage(dataUrl);
+  const OUT = 2048, PAD = Math.round(OUT * 0.125), AVAIL = OUT - PAD * 2;
+  const iW  = outImg.naturalWidth || outImg.width;
+  const iH  = outImg.naturalHeight || outImg.height;
+  const sc  = Math.min(AVAIL / iW, AVAIL / iH);
+  const dW  = Math.round(iW * sc), dH = Math.round(iH * sc);
+  const dX  = Math.round((OUT - dW) / 2), dY = Math.round((OUT - dH) / 2);
+
+  const cv  = document.createElement('canvas');
+  cv.width  = OUT; cv.height = OUT;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, OUT, OUT);
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(outImg, dX, dY, dW, dH);
+  return cv.toDataURL('image/png', 1.0);
+}
+
+
+
+async function applyBrandStyle(sourceB64, apiKey, compIdx = 0, productDesc = '') {
+
+  const stabilityKey = localStorage.getItem('t4j_stability_key') || '';
+  const cacheKey     = `${compIdx}:${sourceB64.slice(0, 500)}`;
+
+  /* ── STEP 1: Background removal — rembg PRIORITISED ──────────────
+     1. Local rembg server (best quality, full res) — preferred
+     2. Stability AI remove-background — only if rembg server is offline
+     3. Local pixel fallback (inside prepareCutout)                      */
+  setProgress(5, `Freisteller erstellen (${compIdx + 1}/5)…`);
+  let cutout;
+  if (rembgServerAvailable) {
+    cutout = await prepareCutout(sourceB64);   // uses rembg Path 1
+    console.info('[BG] rembg used (prioritised)');
+  } else if (stabilityKey) {
+    try {
+      cutout = await removeBackgroundStability(sourceB64, stabilityKey);
+      console.info('[BG] Stability remove-background used (rembg offline)');
+    } catch (e) {
+      console.warn('[BG] Stability failed, local fallback:', e.message);
+      cutout = await prepareCutout(sourceB64);
+    }
+  } else {
+    cutout = await prepareCutout(sourceB64);
+  }
+
+  // Guaranteed cleanup: remove any opaque uniform background (grey/beige
+  // studio backdrop) that the removal step left behind. No-op if the
+  // background is already transparent.
+  cleanupEdgeBackground(cutout);
+
+  /* ── STEP 2: OpenAI — behaviour set by user's OpenAI-Modus toggle ──
+     • 'recreate'  → full product recreation (clean, may alter details)
+                     falls back to masked inpaint if blocked (adult)
+     • 'inpaint'   → masked inpaint ONLY: OpenAI repaints just the
+                     detected tape/prop pixels, product stays exact     */
+  if (apiKey && imageMode === 'recreate') {
+    try {
+      setProgress(5, `OpenAI: Produktbild wird neu generiert (${compIdx + 1}/5)…`);
+      return await applyOpenAINeon(cutout, apiKey, cacheKey, productDesc);
+    } catch (e) {
+      const msg     = e.message || String(e);
+      const blocked = msg.toLowerCase().includes('safety') || msg.toLowerCase().includes('sexual');
+      console.warn('OpenAI recreate failed:', msg);
+      if (!blocked) showError(`OpenAI fehlgeschlagen: ${msg}`);
+      // blocked → fall through to masked inpaint below
+    }
+  }
+
+  if (apiKey) {
+    // Masked inpaint — primary path in 'inpaint' mode, fallback in 'recreate'
+    try {
+      setProgress(5, `OpenAI: Props werden entfernt (${compIdx + 1}/5)…`);
+      const result = await openAIInpaintProps(cutout, apiKey);
+      if (result) return result;   // null = no tape found → composite clean below
+    } catch (e) {
+      const msg     = e.message || String(e);
+      const blocked = msg.toLowerCase().includes('safety') || msg.toLowerCase().includes('sexual');
+      console.warn('OpenAI inpaint failed:', msg);
+      if (!blocked) showError(`OpenAI Inpaint fehlgeschlagen: ${msg}`);
+    }
+  }
+
+  /* ── STEP 3: Canvas — JS tape removal + white bg (always sharp) ── */
+  inpaintTape(cutout);
+  return canvasFallbackStyle(cutout);
+}
+
+/* ── Canvas fallback — 2048×2048, white bg, product centred with 12.5 % padding ──────── */
+function canvasFallbackStyle(cutout) {
+  const OUT   = 2048;
+  const PAD   = Math.round(OUT * 0.125); // 256 px (12.5 %)
+  const AVAIL = OUT - PAD * 2;           // 1536 px
+
+  // Scale and position based on the TIGHT BOUNDING BOX of visible product pixels.
+  // Scaling on full canvas dimensions wastes space on transparent areas (e.g. the 20%
+  // rembg padding) and makes the product appear small with an obvious cut-off edge.
+  // Bounding-box scaling fills the available area with the actual product pixels,
+  // giving equal white space around whatever the photographer captured.
+  const bbox  = _getProductBBox(cutout);
+  const bW    = bbox.maxX - bbox.minX + 1;
+  const bH    = bbox.maxY - bbox.minY + 1;
+
+  const scale = Math.min(AVAIL / bW, AVAIL / bH);
+  const dW    = Math.round(bW * scale);
+  const dH    = Math.round(bH * scale);
+  const dX    = Math.round((OUT - dW) / 2);
+  const dY    = Math.round((OUT - dH) / 2);
+
+  const cv  = document.createElement('canvas');
+  cv.width  = OUT;
+  cv.height = OUT;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, OUT, OUT);
+
+  // Draw only the bounding-box region of the cutout, scaled to fill available area
+  ctx.drawImage(cutout, bbox.minX, bbox.minY, bW, bH, dX, dY, dW, dH);
+
+  return cv.toDataURL('image/png', 1.0);
+}
+
+/* Return the bounding box of all non-transparent pixels with a safety margin.
+   Low alpha threshold (> 4) catches semi-transparent hose/tube edges that
+   the tighter threshold would miss, preventing them from being cropped out.
+   A 1.5 % margin is added on each side so no product pixel sits exactly at
+   the bbox edge (thin hoses at the canvas edge were being cut off). */
+function _getProductBBox(canvas) {
+  const W    = canvas.width, H = canvas.height;
+  const data = canvas.getContext('2d').getImageData(0, 0, W, H).data;
+  let minX = W, minY = H, maxX = 0, maxY = 0;
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      if (data[(y * W + x) * 4 + 3] > 4) {  // lowered threshold: catch thin semi-transparent edges
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+  }
+  if (minX > maxX) return { minX: 0, minY: 0, maxX: W - 1, maxY: H - 1 }; // fully transparent fallback
+  // Add 1.5 % safety margin so no product pixel sits right at the crop edge
+  const mx = Math.round(Math.max(W, H) * 0.015);
+  return {
+    minX: Math.max(0,     minX - mx),
+    minY: Math.max(0,     minY - mx),
+    maxX: Math.min(W - 1, maxX + mx),
+    maxY: Math.min(H - 1, maxY + mx),
+  };
+}
+
+function switchLang(lang, btn) {
+  document.querySelectorAll('.lang-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('lang-' + lang).classList.add('active');
+}
+
+/* ── Supabase Upload button ──────────────────────────────────── */
+async function startSupabaseUpload() {
+  if (!resultData) return;
+
+  const sbKey = (document.getElementById('supabaseKeyInput').value || localStorage.getItem('t4j_supabase_key') || '').trim();
+  if (!sbKey) {
+    showSupabaseToast('Fehler', 0, null,
+      'Kein service_role Key gesetzt. Bitte im API-Panel eintragen (Supabase → Settings → API → service_role).');
+    return;
+  }
+
+  const btn  = document.getElementById('btn-supabase');
+  const text = document.getElementById('btn-supabase-text');
+  btn.classList.add('uploading');
+  text.textContent = 'Lädt hoch…';
+
+  try {
+    await uploadToSupabase(resultData, sbKey);
+    btn.classList.remove('uploading');
+    btn.classList.add('done');
+    text.textContent = '✓ Hochgeladen';
+    // Reset button after 6 s so it can be clicked again
+    setTimeout(() => {
+      btn.classList.remove('done');
+      text.textContent = 'Supabase Upload';
+    }, 6000);
+  } catch (e) {
+    btn.classList.remove('uploading');
+    btn.classList.add('error');
+    text.textContent = '✗ Fehler';
+    showSupabaseToast('Fehler', 0, null, e.message);
+    setTimeout(() => {
+      btn.classList.remove('error');
+      text.textContent = 'Supabase Upload';
+    }, 6000);
+  }
+}
+
+/* ── CSV (Supabase products table) ───────────────────────────── */
+function buildSupabaseCSV() {
+  const d = resultData;
+  const sku = d.sku;
+  const rawCat = (document.getElementById('field-category')?.value || '').trim();
+  const { cat, sub } = parseCategoryField(rawCat);
+  const mat        = (document.getElementById('field-material')?.value || '').trim();
+  const priceRaw   = document.getElementById('field-price')?.value;
+  const oldPriceRaw= document.getElementById('field-old-price')?.value;
+  const badge      = document.getElementById('field-badge')?.value || '';
+  const lvl        = document.getElementById('field-level')?.value || 'All levels';
+  const featured   = document.getElementById('field-featured')?.checked ? 'true' : 'false';
+  const price      = priceRaw !== '' && priceRaw != null ? parseFloat(priceRaw) : '';
+  const oldPrice   = oldPriceRaw !== '' && oldPriceRaw != null ? parseFloat(oldPriceRaw) : '';
+  const imagePath  = `${sku}.jpg`;
+
+  const headers = ['name','brand','cat','sub','price','old_price','badge','mat','lvl','description_de','description_en','description_es','image_path','featured'];
+  const row = [
+    d.name,
+    'Toys4Joys',
+    cat || '',
+    sub,
+    price,
+    oldPrice,
+    badge,
+    mat,
+    lvl,
+    d.de,
+    d.en,
+    d.es,
+    imagePath,
+    featured
+  ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`);
+
+  return '﻿' + [headers.join(','), row.join(',')].join('\n');
+}
+
+function downloadCSV() {
+  if (!resultData) return;
+  const csv  = buildSupabaseCSV();
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  triggerDownload(blob, `${resultData.sku}_produkt.csv`);
+  animateDownloadBtn('btn-csv');
+  showToast('CSV exportiert');
+}
+
+/* ── ZIP (JSZip-powered real ZIP) ────────────────────────────── */
+async function downloadZIP() {
+  if (!resultData) return;
+
+  const btn = document.getElementById('btn-zip');
+  btn.disabled = true;
+  btn.innerHTML = '<div style="width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:currentColor;border-radius:50%;animation:spin 0.8s linear infinite"></div> Packe ZIP…';
+
+  try {
+    // Load JSZip dynamically
+    if (!window.JSZip) {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    }
+
+    const zip = new JSZip();
+    const sku = resultData.sku;
+
+    // CSV file (Supabase products table format)
+    zip.file(`${sku}/produkt.csv`, buildSupabaseCSV());
+
+    // Images — one file per composition
+    let savedCount = 0;
+    for (let i = 0; i < (resultData.images || []).length; i++) {
+      const src  = resultData.images[i];
+      const name = `${sku}_bild_${i+1}_${(COMPOSITIONS[i]?.name || 'bild').toLowerCase()}.png`;
+      if (src.startsWith('data:')) {
+        const base64 = src.split(',')[1];
+        const binary = atob(base64);
+        const bytes  = new Uint8Array(binary.length);
+        for (let j = 0; j < binary.length; j++) bytes[j] = binary.charCodeAt(j);
+        zip.file(`${sku}/${name}`, new Blob([bytes], { type: 'image/png' }));
+        savedCount++;
+      } else {
+        try {
+          const r = await fetch(src);
+          if (r.ok) { zip.file(`${sku}/${name}`, await r.blob()); savedCount++; }
+        } catch { zip.file(`${sku}/${name.replace('.png','.url.txt')}`, src); }
+      }
+    }
+
+    // README
+    const readme = [
+      'TOYS4JOYS — KI-Produkt-Export',
+      '================================',
+      `SKU:         ${sku}`,
+      `Name:        ${resultData.name}`,
+      `Generiert:   ${resultData.timestamp}`,
+      '',
+      'Dateien:',
+      `  produkt.csv        — CSV-Tabelle (Supabase products, UTF-8 BOM)`,
+      ...(resultData.images || []).map((_, i) =>
+        `  ${sku}_bild_${i+1}_${(COMPOSITIONS[i]?.name || 'bild').toLowerCase()}.png  — ${COMPOSITIONS[i]?.name || 'Bild ' + (i+1)}`),
+      `  README.txt         — Diese Datei`,
+    ].join('\n');
+    zip.file(`${sku}/README.txt`, readme);
+
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+    triggerDownload(blob, `${sku}_export.zip`);
+
+    btn.disabled = false;
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Heruntergeladen';
+    btn.classList.add('done');
+    setTimeout(() => {
+      btn.classList.remove('done');
+      btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> ZIP Herunterladen';
+    }, 3000);
+    showToast(`ZIP exportiert — ${savedCount}/5 Bilder als PNG`);
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = 'ZIP Herunterladen';
+    showError('ZIP-Fehler: ' + err.message);
+  }
+}
+
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+/* ── Helpers ─────────────────────────────────────────────────── */
+function triggerDownload(blob, filename) {
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url; link.download = filename;
+  document.body.appendChild(link); link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function animateDownloadBtn(id) {
+  const btn = document.getElementById(id);
+  btn.classList.add('done');
+  setTimeout(() => btn.classList.remove('done'), 2500);
+}
+
+let toastTimer;
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  toast.classList.toggle('error', isError);
+  clearTimeout(toastTimer);
+  toast.classList.add('show');
+  toastTimer = setTimeout(() => toast.classList.remove('show'), isError ? 5000 : 3200);
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>

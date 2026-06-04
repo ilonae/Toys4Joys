@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+langgraph = ">=0.2.0"
+langchain-core = ">=0.3.0"
+langchain-ollama = ">=0.2.0"
+feedparser = ">=6.0.0"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"

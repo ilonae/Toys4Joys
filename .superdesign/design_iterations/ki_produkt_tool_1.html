@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KI-Produkt-Tool — Toys4Joys</title>
+<link rel="stylesheet" href="theme_toys4joys_1.css"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--background) !important;
+    color: var(--foreground) !important;
+    font-family: var(--font-sans) !important;
+    min-height: 100vh !important;
+    line-height: 1.6 !important;
+    overflow-x: hidden !important;
+  }
+
+  /* ── Scrollbar ────────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--background); }
+  ::-webkit-scrollbar-thumb { background: var(--foreground-subtle); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ── Header ───────────────────────────────────────────────── */
+  .header {
+    background: var(--surface) !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    padding: 0 2rem !important;
+    height: 56px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+  }
+
+  .logo {
+    font-family: var(--font-mono) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.12em !important;
+    color: var(--foreground) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: var(--accent-glow);
+    animation: pulse-dot 2.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.75); }
+  }
+
+  .header-sub {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    color: var(--foreground-muted) !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  /* ── Main Layout ──────────────────────────────────────────── */
+  .main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+
+  .page-title {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.14em !important;
+    color: var(--accent) !important;
+    text-transform: uppercase !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .page-heading {
+    font-size: 1.6rem !important;
+    font-weight: 600 !important;
+    color: var(--foreground) !important;
+    margin-bottom: 2rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* ── Input Grid ───────────────────────────────────────────── */
+  .input-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  @media (max-width: 640px) {
+    .input-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* ── Upload Zone ──────────────────────────────────────────── */
+  .upload-zone {
+    background: var(--surface) !important;
+    border: 1.5px dashed var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    min-height: 260px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all var(--transition-base) !important;
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .upload-zone:hover {
+    border-color: var(--border-hover) !important;
+    background: var(--surface-2) !important;
+  }
+
+  .upload-zone.drag-over {
+    border-color: var(--accent) !important;
+    background: var(--accent-dim) !important;
+    transform: scale(1.01) !important;
+    box-shadow: var(--shadow-accent) !important;
+  }
+
+  .upload-zone.has-preview {
+    border-style: solid !important;
+    border-color: var(--border) !important;
+  }
+
+  .upload-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: opacity var(--transition-base);
+  }
+
+  .upload-icon {
+    color: var(--accent) !important;
+    opacity: 0.8;
+  }
+
+  .upload-label {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.1em !important;
+    color: var(--foreground-muted) !important;
+    text-transform: uppercase !important;
+  }
+
+  .upload-sub {
+    font-size: 11px !important;
+    color: var(--foreground-subtle) !important;
+  }
+
+  #file-input { display: none; }
+
+  .preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-md);
+    animation: fadeInScale 0.4s ease-out;
+  }
+
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(7,5,9,0.85) 0%, transparent 50%);
+    display: flex;
+    align-items: flex-end;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .preview-badge {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    letter-spacing: 0.1em !important;
+    color: var(--foreground-muted) !important;
+    background: rgba(7,5,9,0.7) !important;
+    padding: 4px 8px !important;
+    border-radius: var(--radius) !important;
+    border: 1px solid var(--border-subtle) !important;
+  }
+
+  .preview-remove {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(7,5,9,0.8) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    color: var(--foreground-muted) !important;
+    cursor: pointer !important;
+    padding: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: all var(--transition-fast) !important;
+    z-index: 2 !important;
+  }
+
+  .preview-remove:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+  }
+
+  /* ── Raw Info Panel ───────────────────────────────────────── */
+  .info-panel {
+    background: var(--surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .panel-label {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    letter-spacing: 0.12em !important;
+    color: var(--accent) !important;
+    text-transform: uppercase !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .field-label {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    letter-spacing: 0.08em !important;
+    color: var(--foreground-muted) !important;
+    text-transform: uppercase !important;
+  }
+
+  .field-input {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius) !important;
+    color: var(--foreground) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    outline: none !important;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast) !important;
+    width: 100% !important;
+    resize: none !important;
+  }
+
+  .field-input::placeholder {
+    color: var(--foreground-subtle) !important;
+  }
+
+  .field-input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-dim) !important;
+  }
+
+  /* ── CTA Button ───────────────────────────────────────────── */
+  .cta-wrap { margin-bottom: 2rem; }
+
+  .btn-primary {
+    background: var(--accent) !important;
+    color: #fff !important;
+    font-family: var(--font-mono) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 14px 32px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    transition: all var(--transition-base) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    box-shadow: var(--accent-glow) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: scale(0.97) !important;
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.4 !important;
+    cursor: not-allowed !important;
+  }
+
+  .btn-primary.loading {
+    animation: btn-pulse 1.6s ease-in-out infinite !important;
+  }
+
+  @keyframes btn-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+  }
+
+  .btn-ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    transform: scale(0);
+    animation: ripple 0.4s linear;
+    pointer-events: none;
+  }
+
+  @keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  /* ── Progress ─────────────────────────────────────────────── */
+  .progress-wrap {
+    background: var(--surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1.25rem 1.5rem !important;
+    margin-bottom: 2rem !important;
+    display: none !important;
+  }
+
+  .progress-wrap.visible { display: block !important; }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .progress-status {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    color: var(--foreground-muted) !important;
+    letter-spacing: 0.06em !important;
+    transition: all var(--transition-base) !important;
+  }
+
+  .progress-pct {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    color: var(--accent) !important;
+    font-weight: 700 !important;
+  }
+
+  .progress-bar-track {
+    background: var(--surface-3) !important;
+    border-radius: 1px !important;
+    height: 3px !important;
+    margin-bottom: 1.25rem !important;
+    overflow: hidden !important;
+  }
+
+  .progress-bar-fill {
+    height: 100% !important;
+    background: var(--accent) !important;
+    border-radius: 1px !important;
+    width: 0% !important;
+    transition: width 0.6s ease-out !important;
+    box-shadow: 0 0 8px var(--accent) !important;
+  }
+
+  .progress-steps {
+    display: flex;
+    gap: 0;
+    justify-content: space-between;
+  }
+
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    position: relative;
+  }
+
+  .step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    width: 100%;
+    height: 1px;
+    background: var(--border-subtle);
+    z-index: 0;
+  }
+
+  .step-dot {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-subtle);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--foreground-subtle);
+    transition: all var(--transition-base);
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-item.active .step-dot {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+    box-shadow: 0 0 12px rgba(255,23,68,0.3);
+    animation: step-pulse 1.2s ease-in-out infinite;
+  }
+
+  .step-item.done .step-dot {
+    border-color: var(--success);
+    background: rgba(0,229,160,0.12);
+    color: var(--success);
+  }
+
+  @keyframes step-pulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(255,23,68,0.3); }
+    50% { box-shadow: 0 0 20px rgba(255,23,68,0.6); }
+  }
+
+  .step-label {
+    font-family: var(--font-mono) !important;
+    font-size: 9px !important;
+    letter-spacing: 0.08em !important;
+    color: var(--foreground-subtle) !important;
+    text-transform: uppercase !important;
+    text-align: center !important;
+    transition: color var(--transition-base) !important;
+  }
+
+  .step-item.active .step-label { color: var(--accent) !important; }
+  .step-item.done .step-label { color: var(--success) !important; }
+
+  /* ── Result Section ───────────────────────────────────────── */
+  .result-section {
+    display: none !important;
+    animation: slideUp 0.5s ease-out !important;
+  }
+
+  .result-section.visible { display: block !important; }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    font-family: var(--font-mono) !important;
+    font-size: 10px !important;
+    letter-spacing: 0.14em !important;
+    color: var(--accent) !important;
+    text-transform: uppercase !important;
+    margin-bottom: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .result-grid {
+    display: grid !important;
+    grid-template-columns: 260px 1fr !important;
+    gap: 1.5rem !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  @media (max-width: 640px) {
+    .result-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* ── Product Image ────────────────────────────────────────── */
+  .product-image-wrap {
+    aspect-ratio: 1;
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    animation: fadeIn 0.6s ease-out 0.1s both !important;
+  }
+
+  .product-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .img-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--surface-2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .img-spinner {
+    width: 32px; height: 32px;
+    border: 2px solid var(--border-subtle);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .img-loading-text {
+    font-family: var(--font-mono) !important;
+    font-size: 9px !important;
+    letter-spacing: 0.1em !important;
+    color: var(--foreground-muted) !important;
+    text-transform: uppercase !important;
+  }
+
+  .image-label {
+    position: absolute;
+    bottom: 8px; left: 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--foreground-muted);
+    background: rgba(7,5,9,0.75);
+    padding: 3px 7px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* ── Text Output ──────────────────────────────────────────── */
+  .text-output {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    animation: fadeInRight 0.5s ease-out 0.2s both;
+  }
+
+  @keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(-10px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .product-name-wrap {}
+
+  .output-field-label {
+    font-family: var(--font-mono) !important;
+    font-size: 9px !important;
+    letter-spacing: 0.12em !important;
+    color: var(--foreground-muted) !important;
+    text-transform: uppercase !important;
+    margin-bottom: 4px !important;
+  }
+
+  .product-name-value {
+    font-family: var(--font-mono) !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: var(--foreground) !important;
+    letter-spacing: 0.02em !important;
+    animation: fadeIn 0.4s ease-out 0.3s both !important;
+  }
+
+  /* ── Language Tabs ────────────────────────────────────────── */
+  .lang-tabs {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden !important;
+  }
+
+  .lang-tab-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .lang-tab-btn {
+    flex: 1;
+    background: transparent !important;
+    border: none !important;
+    padding: 10px !important;
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em !important;
+    color: var(--foreground-muted) !important;
+    cursor: pointer !important;
+    transition: all var(--transition-fast) !important;
+    position: relative !important;
+    text-transform: uppercase !important;
+  }
+
+  .lang-tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transition: transform var(--transition-base);
+  }
+
+  .lang-tab-btn:hover { color: var(--foreground) !important; }
+
+  .lang-tab-btn.active {
+    color: var(--accent) !important;
+  }
+
+  .lang-tab-btn.active::after { transform: scaleX(1); }
+
+  .lang-tab-content { padding: 1rem; }
+
+  .lang-panel {
+    display: none;
+    font-size: 13px !important;
+    color: var(--foreground) !important;
+    line-height: 1.7 !important;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .lang-panel.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── Download Bar ─────────────────────────────────────────── */
+  .download-bar {
+    background: var(--surface) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1rem 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 1rem !important;
+    flex-wrap: wrap !important;
+    animation: slideUp 0.4s ease-out 0.4s both !important;
+  }
+
+  .download-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .download-title {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    letter-spacing: 0.08em !important;
+    color: var(--foreground) !important;
+    font-weight: 700 !important;
+  }
+
+  .download-sub {
+    font-size: 11px !important;
+    color: var(--foreground-muted) !important;
+  }
+
+  .download-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-download {
+    background: transparent !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    color: var(--foreground) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    padding: 9px 18px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all var(--transition-base) !important;
+  }
+
+  .btn-download:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    box-shadow: var(--shadow-accent) !important;
+  }
+
+  .btn-download:active { transform: scale(0.97) !important; }
+
+  .btn-download.btn-zip {
+    background: var(--accent-dim) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+  }
+
+  .btn-download.btn-zip:hover {
+    background: var(--accent) !important;
+    color: #fff !important;
+    box-shadow: var(--accent-glow) !important;
+  }
+
+  .btn-download.done {
+    border-color: var(--success) !important;
+    color: var(--success) !important;
+  }
+
+  /* ── JSON Preview ─────────────────────────────────────────── */
+  .json-preview {
+    background: var(--surface-2) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1rem 1.5rem !important;
+    margin-top: 1rem !important;
+    display: none !important;
+    animation: slideUp 0.3s ease-out !important;
+  }
+
+  .json-preview.visible { display: block !important; }
+
+  .json-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .json-label {
+    font-family: var(--font-mono) !important;
+    font-size: 9px !important;
+    letter-spacing: 0.12em !important;
+    color: var(--foreground-muted) !important;
+    text-transform: uppercase !important;
+  }
+
+  .json-copy {
+    background: transparent !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius) !important;
+    color: var(--foreground-muted) !important;
+    font-family: var(--font-mono) !important;
+    font-size: 9px !important;
+    letter-spacing: 0.08em !important;
+    padding: 3px 8px !important;
+    cursor: pointer !important;
+    transition: all var(--transition-fast) !important;
+  }
+
+  .json-copy:hover { border-color: var(--accent) !important; color: var(--accent) !important; }
+
+  pre.json-code {
+    font-family: var(--font-mono) !important;
+    font-size: 11px !important;
+    color: var(--foreground-muted) !important;
+    line-height: 1.7 !important;
+    overflow-x: auto !important;
+    white-space: pre !important;
+  }
+
+  pre.json-code .key   { color: #ff8a80; }
+  pre.json-code .str   { color: #b9f6ca; }
+  pre.json-code .punct { color: var(--foreground-subtle); }
+
+  /* ── Toast ────────────────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 2rem; right: 2rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    color: var(--foreground);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all var(--transition-base);
+    z-index: 999;
+    min-width: 240px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast .toast-icon { color: var(--success); }
+
+  /* ── Utility ──────────────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 1.5rem 0;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: var(--radius);
+    border: 1px solid;
+  }
+
+  .badge-accent {
+    color: var(--accent);
+    border-color: rgba(255,23,68,0.3);
+    background: var(--accent-dim);
+  }
+
+  .badge-muted {
+    color: var(--foreground-muted);
+    border-color: var(--border-subtle);
+    background: var(--surface-3);
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    TOYS4JOYS
+    <span style="color:var(--foreground-subtle);font-weight:400;margin:0 4px">·</span>
+    KI-PRODUKT-TOOL
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <span class="header-sub">GPT-4o + DALL·E 3</span>
+    <span class="badge badge-accent">
+      <span style="width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse-dot 2s infinite"></span>
+      LIVE
+    </span>
+  </div>
+</header>
+
+<!-- ── MAIN ───────────────────────────────────────────────────────── -->
+<main class="main">
+
+  <p class="page-title">Produktaufbereitung</p>
+  <h1 class="page-heading">Foto, Name &amp; Beschreibung — automatisch</h1>
+
+  <!-- INPUT GRID -->
+  <div class="input-grid">
+
+    <!-- Upload Zone -->
+    <div>
+      <p class="output-field-label" style="margin-bottom:8px">Produktfoto *</p>
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept="image/*"/>
+        <div class="upload-inner" id="uploadInner">
+          <i data-lucide="upload-cloud" class="upload-icon" style="width:36px;height:36px"></i>
+          <span class="upload-label">iPhone-Foto hochladen</span>
+          <span class="upload-sub">JPG, PNG, HEIC · Drag &amp; Drop</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Info -->
+    <div class="info-panel">
+      <p class="panel-label">Rohinfos <span style="color:var(--foreground-subtle);font-weight:400">(optional)</span></p>
+
+      <div class="field-group">
+        <label class="field-label">Modell / Artikelnr.</label>
+        <input type="text" class="field-input" id="field-model" placeholder="z.B. WC-001, SKU-4420"/>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Material</label>
+        <input type="text" class="field-input" id="field-material" placeholder="z.B. Vollleder, Nylon, Latex"/>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Maße / Besonderheiten</label>
+        <textarea class="field-input" id="field-notes" rows="3" placeholder="z.B. 5cm breit, verstellbar, mit D-Ring, Reißverschluss..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <button class="btn-primary" id="btn-generate" onclick="startGeneration(event)">
+      <i data-lucide="zap" style="width:16px;height:16px"></i>
+      <span id="btn-text">Analysieren &amp; Generieren</span>
+    </button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-header">
+      <span class="progress-status" id="progressStatus">Initialisiere…</span>
+      <span class="progress-pct" id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-steps">
+      <div class="step-item" id="step-1">
+        <div class="step-dot">1</div>
+        <span class="step-label">Analyse</span>
+      </div>
+      <div class="step-item" id="step-2">
+        <div class="step-dot">2</div>
+        <span class="step-label">Name</span>
+      </div>
+      <div class="step-item" id="step-3">
+        <div class="step-dot">3</div>
+        <span class="step-label">DE</span>
+      </div>
+      <div class="step-item" id="step-4">
+        <div class="step-dot">4</div>
+        <span class="step-label">EN</span>
+      </div>
+      <div class="step-item" id="step-5">
+        <div class="step-dot">5</div>
+        <span class="step-label">ES</span>
+      </div>
+      <div class="step-item" id="step-6">
+        <div class="step-dot">6</div>
+        <span class="step-label">DALL·E</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SECTION -->
+  <div class="result-section" id="resultSection">
+
+    <div class="result-header">
+      <i data-lucide="check-circle-2" style="width:14px;height:14px;color:var(--success)"></i>
+      Ergebnis
+      <span class="badge badge-muted" id="result-sku-badge"></span>
+    </div>
+
+    <div class="result-grid">
+
+      <!-- Product Image -->
+      <div>
+        <p class="output-field-label" style="margin-bottom:8px">Produktbild — DALL·E 3</p>
+        <div class="product-image-wrap" id="productImageWrap">
+          <div class="img-loading-overlay" id="imgLoadingOverlay">
+            <div class="img-spinner"></div>
+            <span class="img-loading-text">Rendering…</span>
+          </div>
+          <img id="productImage" src="" alt="Generated product" style="display:none"/>
+          <span class="image-label">800 × 800 · #070509</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <span class="badge badge-muted"><i data-lucide="aperture" style="width:9px;height:9px"></i> Studio Lit</span>
+          <span class="badge badge-muted"><i data-lucide="zap" style="width:9px;height:9px"></i> Neon Red</span>
+          <span class="badge badge-accent"><i data-lucide="image" style="width:9px;height:9px"></i> PNG</span>
+        </div>
+      </div>
+
+      <!-- Text Outputs -->
+      <div class="text-output">
+
+        <div class="product-name-wrap">
+          <p class="output-field-label">Produktname</p>
+          <p class="product-name-value" id="outputName">—</p>
+        </div>
+
+        <div class="divider" style="margin:0.5rem 0"></div>
+
+        <!-- Language Tabs -->
+        <div>
+          <p class="output-field-label" style="margin-bottom:8px">Beschreibung</p>
+          <div class="lang-tabs">
+            <div class="lang-tab-nav">
+              <button class="lang-tab-btn active" onclick="switchLang('de', this)">DE</button>
+              <button class="lang-tab-btn" onclick="switchLang('en', this)">EN</button>
+              <button class="lang-tab-btn" onclick="switchLang('es', this)">ES</button>
+            </div>
+            <div class="lang-tab-content">
+              <div class="lang-panel active" id="lang-de">—</div>
+              <div class="lang-panel" id="lang-en">—</div>
+              <div class="lang-panel" id="lang-es">—</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Download Bar -->
+    <div class="download-bar">
+      <div class="download-info">
+        <span class="download-title">Export</span>
+        <span class="download-sub">Bild (PNG) + CSV-Tabelle + JSON — als ZIP-Archiv</span>
+      </div>
+      <div class="download-actions">
+        <button class="btn-download" id="btn-csv" onclick="downloadCSV()">
+          <i data-lucide="table" style="width:13px;height:13px"></i>
+          CSV
+        </button>
+        <button class="btn-download" id="btn-json-toggle" onclick="toggleJSON()">
+          <i data-lucide="code-2" style="width:13px;height:13px"></i>
+          JSON
+        </button>
+        <button class="btn-download btn-zip" id="btn-zip" onclick="downloadZIP()">
+          <i data-lucide="archive" style="width:13px;height:13px"></i>
+          ZIP Herunterladen
+        </button>
+      </div>
+    </div>
+
+    <!-- JSON Preview -->
+    <div class="json-preview" id="jsonPreview">
+      <div class="json-header">
+        <span class="json-label">JSON Output</span>
+        <button class="json-copy" id="jsonCopyBtn" onclick="copyJSON()">Kopieren</button>
+      </div>
+      <pre class="json-code" id="jsonCode"></pre>
+    </div>
+
+  </div>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i data-lucide="check-circle" class="toast-icon" style="width:16px;height:16px"></i>
+  <span id="toastMsg">Fertig</span>
+</div>
+
+<!-- ── SCRIPTS ──────────────────────────────────────────────────── -->
+<script>
+lucide.createIcons();
+
+/* ── State ─────────────────────────────────────────────────────── */
+let uploadedFile = null;
+let resultData   = null;
+
+/* ── Upload ─────────────────────────────────────────────────────── */
+const uploadZone = document.getElementById('uploadZone');
+const fileInput  = document.getElementById('file-input');
+
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('drag-over');
+});
+['dragleave','dragend'].forEach(ev =>
+  uploadZone.addEventListener(ev, () => uploadZone.classList.remove('drag-over'))
+);
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) setPreview(file);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) setPreview(fileInput.files[0]);
+});
+
+function setPreview(file) {
+  uploadedFile = file;
+  uploadZone.classList.add('has-preview');
+  document.getElementById('uploadInner').style.opacity = '0';
+
+  const img = document.createElement('img');
+  img.className = 'preview-image';
+  const reader = new FileReader();
+  reader.onload = e => img.src = e.target.result;
+  reader.readAsDataURL(file);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'preview-overlay';
+  overlay.innerHTML = `<span class="preview-badge">${file.name}</span>`;
+
+  const remove = document.createElement('button');
+  remove.className = 'preview-remove';
+  remove.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+  remove.onclick = e => { e.stopPropagation(); clearPreview(); };
+
+  uploadZone.appendChild(img);
+  uploadZone.appendChild(overlay);
+  uploadZone.appendChild(remove);
+}
+
+function clearPreview() {
+  uploadedFile = null;
+  uploadZone.classList.remove('has-preview');
+  uploadZone.querySelectorAll('.preview-image,.preview-overlay,.preview-remove').forEach(el => el.remove());
+  document.getElementById('uploadInner').style.opacity = '1';
+  fileInput.value = '';
+}
+
+/* ── Progress helpers ───────────────────────────────────────────── */
+const steps = [
+  { id: 'step-1', label: 'GPT-4o analysiert das Foto…',          pct: 12  },
+  { id: 'step-2', label: 'Produktname wird generiert…',           pct: 28  },
+  { id: 'step-3', label: 'Beschreibung DE wird geschrieben…',     pct: 44  },
+  { id: 'step-4', label: 'Beschreibung EN wird geschrieben…',     pct: 60  },
+  { id: 'step-5', label: 'Beschreibung ES wird geschrieben…',     pct: 76  },
+  { id: 'step-6', label: 'DALL·E 3 rendert Produktbild…',         pct: 92  },
+];
+
+function setProgress(stepIdx) {
+  const s = steps[stepIdx];
+  document.getElementById('progressStatus').textContent = s.label;
+  document.getElementById('progressPct').textContent    = s.pct + '%';
+  document.getElementById('progressFill').style.width   = s.pct + '%';
+  steps.forEach((st, i) => {
+    const el = document.getElementById(st.id);
+    el.classList.toggle('done',   i < stepIdx);
+    el.classList.toggle('active', i === stepIdx);
+  });
+}
+
+function completeProgress() {
+  document.getElementById('progressStatus').textContent = 'Abgeschlossen — alle Assets bereit.';
+  document.getElementById('progressPct').textContent    = '100%';
+  document.getElementById('progressFill').style.width   = '100%';
+  steps.forEach(st => {
+    const el = document.getElementById(st.id);
+    el.classList.remove('active');
+    el.classList.add('done');
+  });
+}
+
+/* ── Mock data ──────────────────────────────────────────────────── */
+const MOCK_PRODUCTS = [
+  {
+    name: 'Wrist Cuffs — Vollleder Schwarz',
+    de: 'Gefertigt aus vegetabil gegerbtem Vollleder, 4 mm stark. Innenseite mit weichem Neopren unterlegt — für Tragekomfort auch über längere Sessions. Breite 5 cm, verstellbar über drei Druckknöpfe, D-Ring aus Edelstahl 304.',
+    en: 'Vegetable-tanned full-grain leather, 4 mm thick. Neoprene-lined interior for extended wear comfort. 5 cm wide, adjustable via three press studs, 304 stainless steel D-ring.',
+    es: 'Cuero de plena flor curtido al vegetal, 4 mm de grosor. Interior forrado en neopreno para mayor comodidad. Ancho 5 cm, ajustable con tres corchetes, argolla en D de acero inoxidable 304.',
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=90&fit=crop'
+  },
+  {
+    name: 'Collar — Tactical Black, O-Ring',
+    de: 'Collar aus ballistische Nylon-Verstärkung, außen mit mattem Kunstleder beschichtet. Integrierter O-Ring, 25 mm, Zugbelastung bis 80 kg geprüft. Schnellverschluss seitlich, kein Spiel im geschlossenen Zustand.',
+    en: 'Ballistic nylon core with matte faux-leather outer shell. Integrated 25 mm O-ring, load-tested to 80 kg. Side quick-release buckle, zero play when locked.',
+    es: 'Núcleo de nylon balístico con exterior en cuero sintético mate. Argolla O integrada de 25 mm, probada hasta 80 kg. Cierre rápido lateral, sin juego cuando está cerrado.',
+    image: 'https://images.unsplash.com/photo-1611930022073-b7a4ba5fcccd?w=800&q=90&fit=crop'
+  },
+];
+
+/* ── Generation flow ────────────────────────────────────────────── */
+async function startGeneration(e) {
+  // ripple effect
+  const btn  = document.getElementById('btn-generate');
+  const rect = btn.getBoundingClientRect();
+  const rip  = document.createElement('span');
+  rip.className = 'btn-ripple';
+  rip.style.cssText = `width:${rect.width}px;height:${rect.width}px;left:${e.clientX-rect.left-rect.width/2}px;top:${e.clientY-rect.top-rect.width/2}px`;
+  btn.appendChild(rip);
+  setTimeout(() => rip.remove(), 420);
+
+  // disable
+  btn.disabled = true;
+  btn.classList.add('loading');
+  document.getElementById('btn-text').textContent = 'Generiere…';
+
+  // show progress
+  const pw = document.getElementById('progressWrap');
+  pw.classList.add('visible');
+
+  // hide old results
+  document.getElementById('resultSection').classList.remove('visible');
+
+  // step timings (ms)
+  const delays = [0, 900, 1700, 2400, 3100, 3900];
+  for (let i = 0; i < steps.length; i++) {
+    await delay(i === 0 ? 200 : delays[i] - delays[i-1]);
+    setProgress(i);
+  }
+
+  // pick mock result
+  const mock = MOCK_PRODUCTS[Math.floor(Math.random() * MOCK_PRODUCTS.length)];
+  const sku  = document.getElementById('field-model').value.trim() || 'T4J-' + Math.floor(Math.random()*9000+1000);
+  resultData = { ...mock, sku, timestamp: new Date().toISOString() };
+
+  await delay(1200);
+  completeProgress();
+  await delay(400);
+
+  // populate result
+  populateResult(resultData);
+
+  // reset button
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  document.getElementById('btn-text').textContent = 'Erneut Generieren';
+  lucide.createIcons();
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function populateResult(d) {
+  // Product name
+  document.getElementById('outputName').textContent = d.name;
+  document.getElementById('result-sku-badge').textContent = d.sku;
+
+  // Descriptions
+  document.getElementById('lang-de').textContent = d.de;
+  document.getElementById('lang-en').textContent = d.en;
+  document.getElementById('lang-es').textContent = d.es;
+
+  // Image
+  const wrap     = document.getElementById('productImageWrap');
+  const overlay  = document.getElementById('imgLoadingOverlay');
+  const imgEl    = document.getElementById('productImage');
+
+  overlay.style.display = 'flex';
+  imgEl.style.display   = 'none';
+
+  const tmpImg = new Image();
+  tmpImg.onload = () => {
+    imgEl.src = d.image;
+    imgEl.style.display = 'block';
+    overlay.style.display = 'none';
+  };
+  tmpImg.onerror = () => {
+    overlay.innerHTML = '<span class="img-loading-text" style="color:var(--foreground-muted)">Bild nicht verfügbar</span>';
+  };
+  tmpImg.src = d.image;
+
+  // Update JSON preview
+  updateJSONCode(d);
+
+  // Show result
+  document.getElementById('resultSection').classList.add('visible');
+  lucide.createIcons();
+
+  showToast('Produkt erfolgreich generiert');
+}
+
+/* ── Language tabs ──────────────────────────────────────────────── */
+function switchLang(lang, btn) {
+  document.querySelectorAll('.lang-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('lang-' + lang).classList.add('active');
+}
+
+/* ── JSON ───────────────────────────────────────────────────────── */
+function updateJSONCode(d) {
+  const obj = {
+    sku:            d.sku,
+    name:           d.name,
+    description_de: d.de,
+    description_en: d.en,
+    description_es: d.es,
+    image_url:      d.image,
+    generated_at:   d.timestamp
+  };
+  const raw = JSON.stringify(obj, null, 2);
+  // Syntax highlight
+  const highlighted = raw
+    .replace(/("[\w_]+")\s*:/g, '<span class="key">$1</span>:')
+    .replace(/:\s*(".*?")/g, ': <span class="str">$1</span>')
+    .replace(/[{}[\],]/g, '<span class="punct">$&</span>');
+  document.getElementById('jsonCode').innerHTML = highlighted;
+}
+
+let jsonVisible = false;
+function toggleJSON() {
+  jsonVisible = !jsonVisible;
+  document.getElementById('jsonPreview').classList.toggle('visible', jsonVisible);
+  const btn = document.getElementById('btn-json-toggle');
+  btn.style.borderColor = jsonVisible ? 'var(--accent)' : '';
+  btn.style.color       = jsonVisible ? 'var(--accent)' : '';
+}
+
+function copyJSON() {
+  if (!resultData) return;
+  const obj = {
+    sku:            resultData.sku,
+    name:           resultData.name,
+    description_de: resultData.de,
+    description_en: resultData.en,
+    description_es: resultData.es,
+    image_url:      resultData.image,
+    generated_at:   resultData.timestamp
+  };
+  navigator.clipboard.writeText(JSON.stringify(obj, null, 2)).then(() => {
+    const btn = document.getElementById('jsonCopyBtn');
+    btn.textContent = 'Kopiert ✓';
+    btn.style.color = 'var(--success)';
+    setTimeout(() => { btn.textContent = 'Kopieren'; btn.style.color = ''; }, 2000);
+  });
+}
+
+/* ── CSV Download ───────────────────────────────────────────────── */
+function downloadCSV() {
+  if (!resultData) return;
+  const headers = ['sku','name','description_de','description_en','description_es','image_url','generated_at'];
+  const row     = [
+    resultData.sku,
+    resultData.name,
+    resultData.de,
+    resultData.en,
+    resultData.es,
+    resultData.image,
+    resultData.timestamp
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`);
+
+  const csv  = [headers.join(','), row.join(',')].join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  triggerDownload(blob, `${resultData.sku}_produkt.csv`);
+  animateDownloadBtn('btn-csv');
+  showToast('CSV exportiert');
+}
+
+/* ── ZIP Download (client-side simulation) ──────────────────────── */
+async function downloadZIP() {
+  if (!resultData) return;
+
+  const btn = document.getElementById('btn-zip');
+  btn.disabled = true;
+  btn.innerHTML = '<div style="width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:currentColor;border-radius:50%;animation:spin 0.8s linear infinite"></div> Packe ZIP…';
+
+  await delay(900);
+
+  // Build ZIP manifest as JSON (real ZIP needs JSZip; we bundle a data package instead)
+  const obj = {
+    sku:            resultData.sku,
+    name:           resultData.name,
+    description_de: resultData.de,
+    description_en: resultData.en,
+    description_es: resultData.es,
+    image_url:      resultData.image,
+    generated_at:   resultData.timestamp
+  };
+
+  // CSV content
+  const headers = ['sku','name','description_de','description_en','description_es','image_url','generated_at'];
+  const row     = Object.values(obj).map(v => `"${String(v).replace(/"/g,'""')}"`);
+  const csvContent = [headers.join(','), row.join(',')].join('\n');
+
+  // README
+  const readme = `TOYS4JOYS — KI-Produkt-Export\n================================\nSKU: ${obj.sku}\nGeneriert: ${obj.generated_at}\n\nDateien in diesem Paket:\n- produkt.json        JSON-Datensatz\n- produkt.csv         CSV-Tabelle (UTF-8 BOM)\n- image_url.txt       URL des generierten DALL·E 3 Bildes\n- README.txt          Diese Datei\n\nBild-URL:\n${obj.image_url}\n`;
+
+  // Since real ZIP generation requires JSZip (not loaded here), we produce
+  // a self-contained HTML data package that references all assets clearly.
+  // For production, replace with: https://stuk.github.io/jszip/
+  const htmlBundle = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Export ${obj.sku}</title>
+<style>body{font-family:monospace;background:#070509;color:#f0ecf5;padding:2rem;max-width:800px;margin:0 auto}
+h1{color:#FF1744;font-size:1rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.5rem}
+section{background:#0f0d12;border:1px solid #1a1720;border-radius:4px;padding:1rem;margin-bottom:1rem}
+h2{font-size:.7rem;letter-spacing:.12em;color:#7a7585;text-transform:uppercase;margin-bottom:.75rem}
+pre{white-space:pre-wrap;font-size:11px;color:#b9f6ca;line-height:1.7}
+img{max-width:100%;border-radius:4px;display:block;margin-top:.5rem}
+a{color:#FF1744}</style></head>
+<body>
+<h1>TOYS4JOYS — Export // ${obj.sku}</h1>
+<section><h2>JSON</h2><pre>${JSON.stringify(obj,null,2)}</pre></section>
+<section><h2>CSV</h2><pre>${csvContent}</pre></section>
+<section><h2>Produktbild (DALL·E 3)</h2>
+<a href="${obj.image_url}" target="_blank">${obj.image_url}</a>
+<img src="${obj.image_url}" alt="Product"/>
+</section>
+<section><h2>README</h2><pre>${readme}</pre></section>
+</body></html>`;
+
+  const blob = new Blob([htmlBundle], { type: 'text/html;charset=utf-8;' });
+  triggerDownload(blob, `${resultData.sku}_export_paket.html`);
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Heruntergeladen';
+  btn.classList.add('done');
+  setTimeout(() => {
+    btn.classList.remove('done');
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg> ZIP Herunterladen';
+  }, 3000);
+  showToast('Export-Paket heruntergeladen');
+}
+
+/* ── Helpers ────────────────────────────────────────────────────── */
+function triggerDownload(blob, filename) {
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href  = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function animateDownloadBtn(id) {
+  const btn = document.getElementById(id);
+  btn.classList.add('done');
+  setTimeout(() => btn.classList.remove('done'), 2500);
+}
+
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  clearTimeout(toastTimer);
+  toast.classList.add('show');
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
+// Init icons
+lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Vite (React frontend)",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+      "runtimeArgs": ["/tmp/t4j-vite.py"],
+      "port": 5173
+    },
+    {
+      "name": "Vercel Dev (API server)",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+      "runtimeArgs": ["/tmp/t4j-vercel.py"],
+      "port": 3000
+    },
+    {
+      "name": "Sanity Studio",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+      "runtimeArgs": ["/tmp/t4j-sanity.py"],
+      "port": 3333
+    }
+  ,{
+      "name": "KI-Produkt-Tool (Design Preview)",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+      "runtimeArgs": ["/tmp/t4j-design.py"],
+      "port": 4000
+    }
+  ,{
+      "name": "rembg (BG Removal Server)",
+      "runtimeExecutable": "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+      "runtimeArgs": ["/tmp/t4j-rembg.py"],
+      "port": 5001
+    }
+  ]
+}
