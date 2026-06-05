@@ -2,6 +2,7 @@
   "name": "toys4joys",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:full": "concurrently -n \"api,vite\" -c \"yellow,cyan\" \"vercel dev --listen 3000\" \"vite\"",
@@ -13,7 +14,8 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "typecheck": "tsc --noEmit",
-    "export:prod": "node scripts/export-prod-to-dev.mjs"
+    "export:prod": "node scripts/export-prod-to-dev.mjs",
+    "copy:images": "node scripts/copy-images-prod-to-dev.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.3.0",
