@@ -159,7 +159,7 @@ function ShippingContent() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: C.border, gap: '1px', borderBottom: `1px solid ${C.border}` }}>
         {[
           { n: '24h',      label: 'Versand an Werktagen' },
-          { n: '€50',      label: 'Ab hier kostenlos' },
+          { n: '€49',      label: 'Ab hier kostenlos' },
           { n: '30 Tage',  label: 'Rückgaberecht' },
         ].map((s, i) => (
           <div key={s.label} style={{ background: C.bg, padding: '48px 40px' }}>
@@ -313,7 +313,7 @@ function TermsContent() {
       },
       {
         heading: 'Versand',
-        items: ['Versand innerhalb von 24h an Werktagen. Kostenlos ab €50. Details: Versand & Rückgabe.'],
+        items: ['Versand innerhalb von 24h an Werktagen. Kostenlos ab €49. Details: Versand & Rückgabe.'],
       },
       {
         heading: 'Mindestalter',

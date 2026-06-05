@@ -272,7 +272,7 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
       }}>
         <Tag>Versand</Tag>
         <h2 style={{ fontSize: 'clamp(22px, 3vw, 38px)', fontWeight: 700, color: C.text, letterSpacing: '-0.01em' }}>
-          Versand innerhalb von 24h. Kostenlos ab €50.
+          Versand innerhalb von 24h. Kostenlos ab €49.
         </h2>
         <p style={{ fontSize: '13px', color: C.textMid, maxWidth: '400px', lineHeight: 1.7 }}>
           Diskret verpackt. Kein Absender auf der Box. Schnelle Lieferung europaweit.

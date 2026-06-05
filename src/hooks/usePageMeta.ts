@@ -14,7 +14,7 @@ const META: Record<Page, { title: string; description: string }> = {
   },
   shipping: {
     title: 'Versand & Rückgabe — TOYS4JOYS',
-    description: 'Versand innerhalb von 24h, kostenlos ab €50. Diskrete Verpackung, kein Absender. 30 Tage Rückgabe.',
+    description: 'Versand innerhalb von 24h, kostenlos ab €49. Diskrete Verpackung, kein Absender. 30 Tage Rückgabe.',
   },
   privacy: {
     title: 'Datenschutz — TOYS4JOYS',
@@ -54,7 +54,7 @@ const META: Record<Page, { title: string; description: string }> = {
   cart: {
     title: 'Warenkorb — TOYS4JOYS',
     description:
-      'Deine ausgewählten Artikel im Überblick. Versand innerhalb 24h, kostenlos ab €50. Sicher zur Kasse gehen.',
+      'Deine ausgewählten Artikel im Überblick. Versand innerhalb 24h, kostenlos ab €49. Sicher zur Kasse gehen.',
   },
   checkout: {
     title: 'Kasse — TOYS4JOYS',

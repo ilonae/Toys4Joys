@@ -44,14 +44,14 @@ describe('Cart', () => {
     expect(screen.getByText('Zweites Produkt')).toBeInTheDocument()
   })
 
-  it('shows free shipping when total ≥ 50', () => {
+  it('shows free shipping when total ≥ 49', () => {
     const items = [mockItem({ product: { id: 'p-1', name: 'Artikel', brand: 'Brand', cat: 'Dildos', sub: '', price: 60, old: null, badge: null, rating: 4, rev: 1, mat: 'Silikon', lvl: 'Beginner', desc: '', stock: 0, images: [] } })]
     render(<Cart items={items} total={60} onNavigate={noop} onSetQty={noop} onRemove={noop} />)
     const matches = screen.getAllByText(/kostenlos/i)
     expect(matches.length).toBeGreaterThan(0)
   })
 
-  it('shows shipping cost when total < 50', () => {
+  it('shows shipping cost when total < 49', () => {
     const items = [mockItem({ product: { id: 'p-1', name: 'Artikel', brand: 'Brand', cat: 'Dildos', sub: '', price: 30, old: null, badge: null, rating: 4, rev: 1, mat: 'Silikon', lvl: 'Beginner', desc: '', stock: 0, images: [] } })]
     render(<Cart items={items} total={30} onNavigate={noop} onSetQty={noop} onRemove={noop} />)
     expect(screen.getByText('€4.99')).toBeInTheDocument()

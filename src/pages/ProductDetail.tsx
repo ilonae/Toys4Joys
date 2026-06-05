@@ -274,7 +274,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
 
           {/* Shipping note */}
           <div style={{ fontSize: '11px', color: C.textDim, borderTop: `1px solid ${C.border}`, paddingTop: '16px' }}>
-            Versand innerhalb 24h · Kostenlos ab €50 · Diskrete Verpackung · 30 Tage Rückgabe
+            Versand innerhalb 24h · Kostenlos ab €49 · Diskrete Verpackung · 30 Tage Rückgabe
           </div>
         </div>
       </div>
