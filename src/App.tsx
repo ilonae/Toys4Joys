@@ -162,6 +162,7 @@ function AppInner() {
         )}
         {nav.page === 'profile' && (
           <ProfilePage
+            initialSection={nav.sub}
             onNavigate={(page) => navigate(page)}
             wishlist={wish.list}
             wishCount={wish.count}

@@ -21,28 +21,69 @@ function Field({
   placeholder?: string; type?: string; disabled?: boolean; error?: string; hint?: string
 }) {
   const [focused, setFocused] = useState(false)
+  const borderColor = error
+    ? C.accent
+    : focused
+      ? C.accent
+      : disabled
+        ? C.border
+        : C.borderMid
+  const boxShadow = focused && !error
+    ? `0 0 0 3px ${C.accent}22`
+    : error
+      ? `0 0 0 3px ${C.accent}22`
+      : 'none'
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-      <label style={{ fontSize: '10px', letterSpacing: '0.1em', color: C.textDim, textTransform: 'uppercase' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+      <label style={{
+        fontSize: '10px', letterSpacing: '0.14em', color: focused ? C.text : C.textDim,
+        textTransform: 'uppercase', transition: 'color 0.15s',
+        display: 'flex', alignItems: 'center', gap: '6px',
+      }}>
         {label}
+        {disabled && (
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke={C.textDim} strokeWidth="1.5" aria-hidden="true">
+            <rect x="3" y="7" width="10" height="7" rx="1" />
+            <path d="M5 7V5a3 3 0 0 1 6 0v2" />
+          </svg>
+        )}
       </label>
       <input
         type={type} value={value} disabled={disabled} placeholder={placeholder}
         onChange={e => onChange?.(e.target.value)}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={{
-          background: disabled ? C.bgCard : C.bgSurface,
-          border: `1px solid ${error ? C.accent : focused ? C.borderMid : C.border}`,
-          color: disabled ? C.textDim : C.text,
-          padding: '10px 12px', fontSize: '13px',
+          background: disabled ? 'transparent' : C.bgSurface,
+          border: `1px solid ${borderColor}`,
+          color: disabled ? C.textMid : C.text,
+          padding: '12px 14px',
+          fontSize: '13px', letterSpacing: '0.01em',
           outline: 'none', fontFamily: 'inherit',
-          transition: 'border-color 0.15s',
+          borderRadius: '2px',
+          transition: 'border-color 0.18s, box-shadow 0.18s, background 0.18s',
+          boxShadow,
           cursor: disabled ? 'not-allowed' : 'text',
           width: '100%', boxSizing: 'border-box' as const,
         }}
       />
-      {error && <span style={{ fontSize: '10px', color: C.accent }}>{error}</span>}
-      {hint  && !error && <span style={{ fontSize: '10px', color: C.textDim }}>{hint}</span>}
+      {error && (
+        <span style={{
+          fontSize: '11px', color: C.accent, letterSpacing: '0.03em',
+          display: 'flex', alignItems: 'center', gap: '6px',
+        }}>
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <circle cx="8" cy="8" r="6.5" />
+            <line x1="8" y1="5" x2="8" y2="9" />
+            <circle cx="8" cy="11.5" r="0.6" fill="currentColor" />
+          </svg>
+          {error}
+        </span>
+      )}
+      {hint && !error && (
+        <span style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.02em', lineHeight: 1.5 }}>
+          {hint}
+        </span>
+      )}
     </div>
   )
 }
@@ -50,21 +91,45 @@ function Field({
 function SelectField({ label, value, onChange, options }: {
   label: string; value: string; onChange: (v: string) => void; options: string[]
 }) {
+  const [focused, setFocused] = useState(false)
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-      <label style={{ fontSize: '10px', letterSpacing: '0.1em', color: C.textDim, textTransform: 'uppercase' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+      <label style={{
+        fontSize: '10px', letterSpacing: '0.14em', color: focused ? C.text : C.textDim,
+        textTransform: 'uppercase', transition: 'color 0.15s',
+      }}>
         {label}
       </label>
-      <select
-        value={value} onChange={e => onChange(e.target.value)}
-        style={{
-          background: C.bgSurface, border: `1px solid ${C.border}`, color: C.text,
-          padding: '10px 12px', fontSize: '13px', outline: 'none', fontFamily: 'inherit',
-          width: '100%', cursor: 'pointer', appearance: 'auto',
-        }}
-      >
-        {options.map(o => <option key={o} value={o}>{o}</option>)}
-      </select>
+      <div style={{ position: 'relative' }}>
+        <select
+          value={value} onChange={e => onChange(e.target.value)}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          style={{
+            background: C.bgSurface,
+            border: `1px solid ${focused ? C.accent : C.borderMid}`,
+            color: C.text,
+            padding: '12px 36px 12px 14px',
+            fontSize: '13px', letterSpacing: '0.01em',
+            outline: 'none', fontFamily: 'inherit',
+            borderRadius: '2px',
+            transition: 'border-color 0.18s, box-shadow 0.18s',
+            boxShadow: focused ? `0 0 0 3px ${C.accent}22` : 'none',
+            width: '100%', cursor: 'pointer', appearance: 'none',
+            WebkitAppearance: 'none' as const, MozAppearance: 'none' as const,
+          }}
+        >
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+        <svg
+          width="11" height="11" viewBox="0 0 12 12" fill="none"
+          style={{
+            position: 'absolute', right: '14px', top: '50%',
+            transform: 'translateY(-50%)', pointerEvents: 'none', color: C.textMid,
+          }}
+        >
+          <path d="M2 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
     </div>
   )
 }
@@ -559,6 +624,7 @@ function SettingsSection({ onNavigate, t }: { onNavigate: (p: Page) => void; t: 
 // ── Main page ──────────────────────────────────────────────────────────────────
 
 interface Props {
+  initialSection?: string
   onNavigate: (page: Page) => void
   wishlist:   Product[]
   wishCount:  number
@@ -568,12 +634,25 @@ interface Props {
   wished:     (id: string) => boolean
 }
 
-export default function ProfilePage({ onNavigate, wishlist, wishCount, onProduct, onAdd, onWish, wished }: Props) {
+const VALID_SECTIONS = ['overview', 'orders', 'wishlist', 'settings'] as const
+
+function asSection(s: string | undefined): Section {
+  return (VALID_SECTIONS as readonly string[]).includes(s ?? '')
+    ? (s as Section)
+    : 'overview'
+}
+
+export default function ProfilePage({ initialSection, onNavigate, wishlist, wishCount, onProduct, onAdd, onWish, wished }: Props) {
   const { user, logout } = useAuth()
   const { t, locale }    = useLocale()
   const { orders }       = useOrders()
-  const [section, setSection] = useState<Section>('overview')
+  const [section, setSection] = useState<Section>(asSection(initialSection))
   const dateLocale = locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : 'en-GB'
+
+  // Sync when the user picks a different section from the header dropdown
+  useEffect(() => {
+    if (initialSection) setSection(asSection(initialSection))
+  }, [initialSection])
 
   const TAB_LABELS: { id: Section; label: string }[] = [
     { id: 'overview',  label: t.profile.overview.toUpperCase() },

@@ -150,8 +150,8 @@ export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Prop
                     <div style={{ fontSize: '12px', color: C.text, marginBottom: '2px' }}>{fullName(user)}</div>
                     <div style={{ fontSize: '10px', color: C.textDim }}>{user.email}</div>
                   </div>
-                  <MenuRow label={t.nav.profile.toUpperCase()} onClick={() => { onNavigate('profile'); setShowUserMenu(false) }} />
-                  <MenuRow label={t.nav.orders.toUpperCase()}  onClick={() => { onNavigate('profile'); setShowUserMenu(false) }} />
+                  <MenuRow label={t.nav.profile.toUpperCase()} onClick={() => { onNavigate('profile', undefined, 'overview'); setShowUserMenu(false) }} />
+                  <MenuRow label={t.nav.orders.toUpperCase()}  onClick={() => { onNavigate('profile', undefined, 'orders');   setShowUserMenu(false) }} />
                   {user.isAdmin && (
                     <>
                       <div style={{ borderTop: `1px solid ${C.border}` }} />
