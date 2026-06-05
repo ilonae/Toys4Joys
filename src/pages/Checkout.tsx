@@ -3,6 +3,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { stripePromise, API_BASE } from '@/lib/stripe'
 import { C } from '@/tokens'
 import { useAuth } from '@/contexts/AuthContext'
+import AddressAutocomplete from '@/components/AddressAutocomplete'
 import type { CartItem, Page, ShippingAddress } from '@/types'
 import Btn from '@/components/ui/Btn'
 import Tag from '@/components/ui/Tag'
@@ -10,10 +11,10 @@ import Tag from '@/components/ui/Tag'
 // ── Shared field component ─────────────────────────────────────────────────
 
 function Field({
-  label, value, onChange, placeholder, required, type = 'text',
+  label, value, onChange, placeholder, required, type = 'text', error,
 }: {
   label: string; value: string; onChange: (v: string) => void
-  placeholder?: string; required?: boolean; type?: string
+  placeholder?: string; required?: boolean; type?: string; error?: string
 }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -28,7 +29,7 @@ function Field({
         required={required}
         style={{
           background: C.bgCard,
-          border: `1px solid ${C.border}`,
+          border: `1px solid ${error ? C.accent : C.border}`,
           color: C.text,
           padding: '10px 12px',
           fontSize: '13px',
@@ -38,8 +39,9 @@ function Field({
           boxSizing: 'border-box',
         }}
         onFocus={e => { e.target.style.borderColor = C.accent }}
-        onBlur={e => { e.target.style.borderColor = C.border }}
+        onBlur={e => { e.target.style.borderColor = error ? C.accent : C.border }}
       />
+      {error && <span style={{ fontSize: '10px', color: C.accent }}>{error}</span>}
     </label>
   )
 }
@@ -56,37 +58,55 @@ function AddressStep({
   const [firstName, setFirstName] = useState(initial.firstName ?? '')
   const [lastName,  setLastName]  = useState(initial.lastName  ?? '')
   const [email,     setEmail]     = useState(initial.email     ?? '')
+  const [phone,     setPhone]     = useState(initial.phone     ?? '')
   const [street,    setStreet]    = useState(initial.street    ?? '')
   const [zip,       setZip]       = useState(initial.zip       ?? '')
   const [city,      setCity]      = useState(initial.city      ?? '')
   const [country,   setCountry]   = useState(initial.country   ?? 'Deutschland')
-  const [err,       setErr]       = useState<string | null>(null)
+  const [errs,      setErrs]      = useState<Record<string, string>>({})
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email.includes('@')) { setErr('Bitte gib eine gültige E-Mail-Adresse ein.'); return }
-    if (!street || !zip || !city) { setErr('Bitte fülle alle Pflichtfelder aus.'); return }
-    setErr(null)
-    onConfirm({ firstName, lastName, email, street, zip, city, country })
+    const e2: Record<string, string> = {}
+    if (!firstName.trim())       e2.firstName = 'Pflichtfeld'
+    if (!lastName.trim())        e2.lastName  = 'Pflichtfeld'
+    if (!email.includes('@'))    e2.email     = 'Gültige E-Mail erforderlich'
+    if (!phone.trim())           e2.phone     = 'Pflichtfeld'
+    if (!street.trim())          e2.street    = 'Pflichtfeld'
+    if (!zip.trim())             e2.zip       = 'Pflichtfeld'
+    if (!city.trim())            e2.city      = 'Pflichtfeld'
+    if (!country.trim())         e2.country   = 'Pflichtfeld'
+    if (Object.keys(e2).length) { setErrs(e2); return }
+    setErrs({})
+    onConfirm({ firstName, lastName, email, phone, street, zip, city, country })
   }
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        <Field label="Vorname" value={firstName} onChange={setFirstName} placeholder="Anna" />
-        <Field label="Nachname" value={lastName} onChange={setLastName} placeholder="Müller" />
+        <Field label="Vorname" value={firstName} onChange={setFirstName} placeholder="Anna"   required error={errs.firstName} />
+        <Field label="Nachname" value={lastName} onChange={setLastName}  placeholder="Müller" required error={errs.lastName} />
       </div>
-      <Field label="E-Mail" value={email} onChange={setEmail} placeholder="anna@example.com" required type="email" />
-      <Field label="Straße & Hausnummer" value={street} onChange={setStreet} placeholder="Musterstraße 1" required />
+      <Field label="E-Mail" value={email} onChange={setEmail} placeholder="anna@example.com" required type="email" error={errs.email} />
+      <Field label="Telefon" value={phone} onChange={setPhone} placeholder="+49 30 123456" required type="tel" error={errs.phone} />
+      <AddressAutocomplete
+        label="Straße & Hausnummer"
+        value={street}
+        onChange={setStreet}
+        onSelect={s => { setStreet(s.street); setZip(s.zip); setCity(s.city); setCountry(s.country) }}
+        placeholder="Musterstraße 1"
+        required
+        error={errs.street}
+      />
       <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '12px' }}>
-        <Field label="PLZ" value={zip} onChange={setZip} placeholder="10115" required />
-        <Field label="Stadt" value={city} onChange={setCity} placeholder="Berlin" required />
+        <Field label="PLZ"   value={zip}  onChange={setZip}  placeholder="10115"  required error={errs.zip} />
+        <Field label="Stadt" value={city} onChange={setCity} placeholder="Berlin" required error={errs.city} />
       </div>
-      <Field label="Land" value={country} onChange={setCountry} placeholder="Deutschland" />
+      <Field label="Land" value={country} onChange={setCountry} placeholder="Deutschland" required error={errs.country} />
 
-      {err && (
+      {Object.keys(errs).length > 0 && (
         <div style={{ fontSize: '12px', color: C.accent, padding: '10px', border: `1px solid ${C.accentDim}`, background: C.bgCard }}>
-          {err}
+          Bitte fülle alle Pflichtfelder aus.
         </div>
       )}
 
@@ -214,7 +234,7 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
 
   // Determine initial step — skip address if user already has a saved address
   const savedAddr = user?.address
-  const hasSavedAddress = !!(savedAddr?.street && savedAddr?.city && savedAddr?.zip)
+  const hasSavedAddress = !!(savedAddr?.street && savedAddr?.city && savedAddr?.zip && user?.phone)
 
   const [step,          setStep]          = useState<'address' | 'payment'>(hasSavedAddress ? 'payment' : 'address')
   const [shippingAddr,  setShippingAddr]  = useState<ShippingAddress | null>(
@@ -223,6 +243,7 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
           firstName: user.firstName,
           lastName:  user.lastName,
           email:     user.email,
+          phone:     user.phone,
           street:    savedAddr!.street,
           zip:       savedAddr!.zip,
           city:      savedAddr!.city,
@@ -315,9 +336,10 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
             <AddressStep
               onConfirm={handleAddressConfirm}
               initial={{
-                firstName: user?.firstName ?? '',
-                lastName:  user?.lastName  ?? '',
-                email:     user?.email     ?? '',
+                firstName: user?.firstName        ?? '',
+                lastName:  user?.lastName         ?? '',
+                email:     user?.email            ?? '',
+                phone:     user?.phone            ?? '',
                 street:    user?.address?.street  ?? '',
                 zip:       user?.address?.zip     ?? '',
                 city:      user?.address?.city    ?? '',

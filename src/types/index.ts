@@ -73,6 +73,7 @@ export interface ShippingAddress {
   firstName: string
   lastName:  string
   email:     string
+  phone:     string
   street:    string
   zip:       string
   city:      string

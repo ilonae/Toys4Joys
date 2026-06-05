@@ -23,7 +23,7 @@ export interface User {
   isAdmin:   boolean
 }
 
-export type ProfileData = Partial<Omit<User, 'id' | 'email'>>
+export type ProfileData = Partial<Omit<User, 'id' | 'email' | 'isAdmin'>>
 
 export function fullName(u: User) {
   return [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email
@@ -188,6 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ...user,
       firstName: data.firstName ?? user.firstName,
       lastName:  data.lastName  ?? user.lastName,
+      phone:     data.phone     ?? user.phone,
       address: { ...user.address, ...(data.address ?? {}) },
     }
 
@@ -198,11 +199,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
     }
 
-    // Upsert profiles table (address + name)
+    // Upsert profiles table (address + name + phone)
     await supabase.from('profiles').upsert({
       id:         user.id,
       first_name: nextUser.firstName,
       last_name:  nextUser.lastName,
+      phone:      nextUser.phone,
       street:     nextUser.address.street,
       zip:        nextUser.address.zip,
       city:       nextUser.address.city,

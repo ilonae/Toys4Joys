@@ -7,6 +7,7 @@ import Tag from '@/components/ui/Tag'
 import Btn from '@/components/ui/Btn'
 import ProductCard from '@/components/ProductCard'
 import { trackingUrl, detectCarrier } from '@/lib/tracking'
+import AddressAutocomplete from '@/components/AddressAutocomplete'
 import type { Page, Product, OrderStatus } from '@/types'
 
 // ── Shared field components ────────────────────────────────────────────────────
@@ -381,6 +382,7 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
   const [firstName,   setFirstName]   = useState(user?.firstName ?? '')
   const [lastName,    setLastName]    = useState(user?.lastName  ?? '')
+  const [phone,       setPhone]       = useState(user?.phone     ?? '')
   const [infoErrors,  setInfoErrors]  = useState<Record<string, string>>({})
   const [infoSaved,   setInfoSaved]   = useState(false)
   const [infoLoading, setInfoLoading] = useState(false)
@@ -397,6 +399,7 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
     if (!user) return
     setFirstName(user.firstName)
     setLastName(user.lastName)
+    setPhone(user.phone)
     setAddr(user.address)
   }, [user])
 
@@ -428,9 +431,10 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
     const errs: Record<string, string> = {}
     if (!firstName.trim()) errs.firstName = 'Pflichtfeld'
     if (!lastName.trim())  errs.lastName  = 'Pflichtfeld'
+    if (!phone.trim())     errs.phone     = 'Pflichtfeld'
     if (Object.keys(errs).length) { setInfoErrors(errs); return }
     setInfoErrors({}); setInfoLoading(true)
-    await updateProfile({ firstName: firstName.trim(), lastName: lastName.trim() })
+    await updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim() })
     setInfoLoading(false); setInfoSaved(true)
     setTimeout(() => setInfoSaved(false), 2500)
   }
@@ -469,7 +473,8 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
               label="E-Mail" value={user.email} disabled
               hint="E-Mail-Änderung via Support: hallo@toys4joys.de"
             />
-            <SaveBar saved={infoSaved} loading={infoLoading} onReset={() => { setFirstName(user.firstName); setLastName(user.lastName); setInfoErrors({}) }} />
+            <Field label="Telefon" value={phone} onChange={setPhone} placeholder="+49 30 123456" error={infoErrors.phone} />
+            <SaveBar saved={infoSaved} loading={infoLoading} onReset={() => { setFirstName(user.firstName); setLastName(user.lastName); setPhone(user.phone); setInfoErrors({}) }} />
           </form>
         </div>
       </div>
@@ -483,13 +488,17 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
         </div>
         <div style={{ padding: '48px 56px' }}>
           <form onSubmit={handleAddrSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Field
-              label="Straße und Hausnummer" value={addr.street}
+            <AddressAutocomplete
+              label="Straße und Hausnummer"
+              value={addr.street}
               onChange={v => setAddrField('street', v)}
-              placeholder="Musterstraße 42" error={addrErrors.street}
+              onSelect={s => setAddr(a => ({ ...a, street: s.street, zip: s.zip, city: s.city, country: s.country }))}
+              placeholder="Musterstraße 42"
+              required
+              error={addrErrors.street}
             />
             <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '12px' }}>
-              <Field label="PLZ"  value={addr.zip}  onChange={v => setAddrField('zip', v)}  placeholder="10115"  error={addrErrors.zip} />
+              <Field label="PLZ"   value={addr.zip}  onChange={v => setAddrField('zip', v)}  placeholder="10115"  error={addrErrors.zip} />
               <Field label="Stadt" value={addr.city} onChange={v => setAddrField('city', v)} placeholder="Berlin" error={addrErrors.city} />
             </div>
             <SelectField label="Land" value={addr.country} onChange={v => setAddrField('country', v)} options={COUNTRIES} />
