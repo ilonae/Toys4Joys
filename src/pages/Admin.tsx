@@ -298,7 +298,7 @@ function ProductsTab() {
     setLoading(true)
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock')
+      .select('id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock, supplier_sku')
       .order('created_at', { ascending: false })
     if (!error && data) {
       setProducts(data.map((row: any) => ({
@@ -312,7 +312,10 @@ function ProductsTab() {
         // carry raw fields for form
         image_path: row.image_path,
         featured: row.featured ?? false,
+        supplier_sku: row.supplier_sku ?? null,
       } as any)))
+    } else if (error) {
+      console.error('[Admin] loadProducts failed:', error.message)
     }
     setLoading(false)
   }
@@ -354,7 +357,7 @@ function ProductsTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                {['Bild', 'Name', 'Marke', 'Lief.-SKU', 'Preis', 'Bestand', 'Status', ''].map(h => (
+                {['Bild', 'Name', 'Marke', 'Lief.-SKU', 'Preis', 'Bestand', 'Badge', ''].map(h => (
                   <th key={h} style={{ padding: '10px 16px', fontSize: '10px', letterSpacing: '0.08em', color: C.textDim, textAlign: 'left', fontWeight: 400, textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>

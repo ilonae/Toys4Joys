@@ -78,12 +78,19 @@ export function useAllOrders() {
         },
         body: JSON.stringify({ orderId, status, trackingNumber }),
       })
-      const json = await res.json()
-      if (!res.ok) return (json.error as string) ?? 'Fehler beim Aktualisieren'
+      // Be defensive: a 500 from a function may not return JSON
+      let json: any = null
+      try { json = await res.json() } catch { /* ignore non-JSON bodies */ }
+      if (!res.ok) {
+        const detail = json?.error ?? json?.message ?? `HTTP ${res.status}`
+        console.error('[updateStatus] failed:', res.status, detail)
+        return `Aktualisierung fehlgeschlagen (${res.status}): ${detail}`
+      }
       refetch()
       return null
-    } catch {
-      return 'Netzwerkfehler'
+    } catch (e) {
+      console.error('[updateStatus] network error:', e)
+      return 'Netzwerkfehler — siehe Browser-Konsole'
     }
   }
 
