@@ -267,16 +267,28 @@ async function main() {
   )
   console.log(`    ${products.length} products\n`)
 
-  // ── Step 1: Set rating > 3.5 on ALL products ──────────────────────────────
-  console.log('⭐  Setting base ratings (3.6–5.0) on all products…')
-  const ratingUpdates = products.map(p => ({
+  const BATCH = 50
+
+  // ── Step 1: Reset ALL products to rating 0 / no reviews ───────────────────
+  console.log('🔄  Resetting all product ratings to 0…')
+  for (let i = 0; i < products.length; i += BATCH) {
+    const ids = products.slice(i, i + BATCH).map(p => `id.eq.${p.id}`).join(',')
+    await rest('PATCH', `/products?or=(${ids})`, { rating: 0, rev: 0 })
+  }
+  console.log(`  ✓ ${products.length} products reset`)
+
+  // ── Step 2: Select 30% of products to receive ratings + reviews ────────────
+  // Shuffle and take the first 30%
+  const shuffled = [...products].sort(() => Math.random() - 0.5)
+  const selected = shuffled.slice(0, Math.ceil(products.length * 0.30))
+  console.log(`\n⭐  Assigning ratings to ${selected.length} products (30%)…`)
+
+  const ratingUpdates = selected.map(p => ({
     id:     p.id,
     rating: randomBaseRating(),
     rev:    0,
   }))
 
-  // Upsert in batches
-  const BATCH = 50
   for (let i = 0; i < ratingUpdates.length; i += BATCH) {
     const batch = ratingUpdates.slice(i, i + BATCH)
     await rest('POST', '/products?on_conflict=id', batch, {
@@ -284,20 +296,18 @@ async function main() {
     })
     process.stdout.write(`  ${Math.min(i + BATCH, ratingUpdates.length)}/${ratingUpdates.length} updated\r`)
   }
-  console.log(`\n  ✓ All ${products.length} products have rating > 3.5`)
+  console.log(`\n  ✓ Done — 70% of products have no rating`)
 
   // ── Step 2: Clear old seeded reviews ─────────────────────────────────────
   console.log('\n🗑   Clearing old reviews…')
   await rest('DELETE', '/reviews?id=neq.00000000-0000-0000-0000-000000000000', null)
   console.log('  ✓ Cleared')
 
-  // ── Step 3: Insert written reviews for 25% of products ───────────────────
-  console.log('\n📝  Generating written reviews for 25% of products…')
+  // ── Step 3: Insert written reviews for the selected 30% ──────────────────
+  console.log('\n📝  Generating written reviews for rated products…')
   const toInsert = []
 
-  products.forEach((product, i) => {
-    if (i % 4 !== 0) return
-
+  selected.forEach((product) => {
     const baseRating = ratingUpdates.find(r => r.id === product.id)?.rating ?? 4.0
     const numReviews = 1 + Math.floor(Math.random() * 3) // 1–3
 
@@ -343,19 +353,19 @@ async function main() {
   console.log(`  ✓ ${updated} products recalculated`)
 
   // ── Summary ────────────────────────────────────────────────────────────────
-  const allRatings = ratingUpdates.map(r => r.rating)
-  const avgAll = (allRatings.reduce((a,b) => a+b,0) / allRatings.length).toFixed(2)
+  const avgBase = (ratingUpdates.reduce((a,b) => a + b.rating, 0) / ratingUpdates.length).toFixed(2)
   const avgReviews = toInsert.length
     ? (toInsert.reduce((s,r) => s + r.rating, 0) / toInsert.length).toFixed(2)
     : '—'
 
   console.log(`
 ✅  Done!
-    Products with rating > 3.5 : ${products.length} / ${products.length} (100%)
-    Average base rating         : ${avgAll} ★
+    Total products              : ${products.length}
+    Products with rating (30%)  : ${selected.length}
+    Products without rating     : ${products.length - selected.length}
+    Average rating (rated only) : ${avgBase} ★
     Written reviews inserted    : ${toInsert.length}
     Average review rating       : ${avgReviews} ★
-    Products with reviews       : ~${Math.ceil(products.length / 4)} (25%)
   `)
 }
 
