@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "export:prod": "node scripts/export-prod-to-dev.mjs",
     "copy:images": "node scripts/copy-images-prod-to-dev.mjs",
-    "seed:reviews": "node scripts/seed-reviews.mjs"
+    "seed:reviews": "node scripts/seed-reviews.mjs",
+    "translate:products": "node scripts/translate-products.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.3.0",
