@@ -304,9 +304,15 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
 
       <div style={{ padding: '40px 32px', borderBottom: `1px solid ${C.border}`, maxWidth: '720px' }}>
         {tab === 'desc' && (
-          <p style={{ fontSize: '14px', fontWeight: 300, color: C.textMid, lineHeight: 1.8 }}>
-            {product.desc}
-          </p>
+          product.desc?.trim() ? (
+            <p style={{ fontSize: '14px', fontWeight: 300, color: C.textMid, lineHeight: 1.8, whiteSpace: 'pre-line' }}>
+              {product.desc}
+            </p>
+          ) : (
+            <p style={{ fontSize: '13px', color: C.textDim, fontStyle: 'italic' }}>
+              Keine Beschreibung vorhanden.
+            </p>
+          )
         )}
         {tab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
