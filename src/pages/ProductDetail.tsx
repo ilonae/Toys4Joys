@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { C } from '@/tokens'
 import type { Product } from '@/types'
-import { useRelatedProducts } from '@/hooks/useProducts'
+import { useRelatedProducts, useReviews } from '@/hooks/useProducts'
 import Badge from '@/components/ui/Badge'
 import PhotoBox from '@/components/ui/PhotoBox'
 import Btn from '@/components/ui/Btn'
@@ -39,7 +39,8 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
 
   const currentUrl = product.images[activeImg] ?? product.image
 
-  const { products: related } = useRelatedProducts(product.cat, product.id)
+  const { products: related }     = useRelatedProducts(product.cat, product.id)
+  const { reviews, loading: revLoading } = useReviews(product.id)
 
   const tabs: { key: Tab; label: string }[] = [
     { key: 'desc', label: 'Beschreibung' },
@@ -324,10 +325,47 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
           </div>
         )}
         {tab === 'reviews' && (
-          <div>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: C.text, marginBottom: '8px' }}>{product.rating}</div>
-            <div style={{ color: C.accent, fontSize: '18px', marginBottom: '16px' }}>{'★'.repeat(Math.round(product.rating))}</div>
-            <div style={{ fontSize: '12px', color: C.textDim }}>Basierend auf {product.rev} Bewertungen</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+
+            {/* Aggregate header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '24px', paddingBottom: '24px', borderBottom: `1px solid ${C.border}` }}>
+              <div>
+                <div style={{ fontSize: '48px', fontWeight: 700, color: C.text, lineHeight: 1 }}>{product.rating.toFixed(1)}</div>
+                <div style={{ color: C.accent, fontSize: '20px', letterSpacing: '0.1em', marginTop: '6px' }}>
+                  {'★'.repeat(Math.round(product.rating))}{'☆'.repeat(5 - Math.round(product.rating))}
+                </div>
+                <div style={{ fontSize: '11px', color: C.textDim, marginTop: '4px', letterSpacing: '0.06em' }}>
+                  {product.rev} {product.rev === 1 ? 'Bewertung' : 'Bewertungen'}
+                </div>
+              </div>
+            </div>
+
+            {/* Individual reviews */}
+            {revLoading ? (
+              <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>LADE BEWERTUNGEN…</div>
+            ) : reviews.length === 0 ? (
+              <div style={{ fontSize: '13px', color: C.textDim }}>Noch keine Bewertungen.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: C.border }}>
+                {reviews.map(r => (
+                  <div key={r.id} style={{ background: C.bg, padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>{r.author}</div>
+                        <div style={{ color: C.accent, fontSize: '13px', letterSpacing: '0.06em' }}>
+                          {'★'.repeat(r.rating)}
+                          <span style={{ color: C.border }}>{'★'.repeat(5 - r.rating)}</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '11px', color: C.textDim, flexShrink: 0 }}>
+                        {new Date(r.created_at).toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '13px', color: C.textMid, lineHeight: 1.75 }}>{r.body}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

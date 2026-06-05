@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import type { Product } from '@/types'
 import { fetchProducts, fetchFeaturedProducts, fetchRelatedProducts, fetchSubcategories } from '@/lib/queries'
+import { supabase } from '@/lib/supabase'
+
+export interface Review {
+  id:         string
+  author:     string
+  rating:     number
+  body:       string
+  created_at: string
+}
 
 interface State {
   products: Product[]
@@ -54,6 +63,27 @@ export function useSubcategories(cat: string): { subs: string[]; loading: boolea
   }, [cat])
 
   return { subs, loading }
+}
+
+export function useReviews(productId: string): { reviews: Review[]; loading: boolean } {
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!productId) return
+    setLoading(true)
+    supabase
+      .from('reviews')
+      .select('id, author, rating, body, created_at')
+      .eq('product_id', productId)
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error) setReviews((data ?? []) as Review[])
+        setLoading(false)
+      })
+  }, [productId])
+
+  return { reviews, loading }
 }
 
 export function useRelatedProducts(cat: string, excludeId: string): State {
