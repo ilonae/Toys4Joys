@@ -87,172 +87,155 @@ function starFromBase(base) {
 }
 
 // ── Review text generation ────────────────────────────────────────────────────
+// Real customers:
+//  - rarely name the product
+//  - often write just one thing (shipping, texture, size, reaction)
+//  - mix of formal and very casual, lowercase, short fragments
+//  - sometimes just emojis or two words
+//  - 3★ is mild disappointment not a rant
 
-const OPENERS_5 = [
-  n => `${n} — einfach perfekt.`,
-  n => `Absolut begeistert von ${n}!`,
-  n => `${n} hat meine Erwartungen übertroffen.`,
-  n => `Sehr zufrieden mit ${n}.`,
-  n => `${n} ist genau das, was ich gesucht habe.`,
-  n => `Ich bestelle ${n} nicht zum letzten Mal.`,
-  n => `${n} — ein Kauf ohne Reue.`,
-  n => `${n} überzeugt auf ganzer Linie.`,
-]
-const OPENERS_4 = [
-  n => `${n} macht insgesamt einen guten Eindruck.`,
-  n => `Bin zufrieden mit ${n}.`,
-  n => `${n} erfüllt seinen Zweck sehr gut.`,
-  n => `Gutes Produkt — ${n} hält was es verspricht.`,
-  n => `${n} ist solide verarbeitet und macht Spaß.`,
-  n => `Mit ${n} bin ich insgesamt sehr happy.`,
-]
-const OPENERS_3 = [
-  n => `${n} ist okay, aber nichts Weltbewegendes.`,
-  n => `Für den Preis ist ${n} in Ordnung.`,
-  n => `${n} erfüllt seinen Zweck, mehr aber auch nicht.`,
-  n => `Mittelmäßig — ${n} ist solide aber nicht begeisternd.`,
+// styles: ultra_short | shipping | texture | fit | reaction | partner | critical
+// each review picks ONE style at random
+
+const ULTRA_SHORT = {
+  5: ['top!','perfekt ✓','mega gut','wieder kaufen','❤️','sehr zufrieden','empfehlenswert','klasse','passt perfekt','genau richtig','top qualität','sehr gut 👍'],
+  4: ['solide','gut, gerne wieder','passt','bin zufrieden','ok+','macht was es soll'],
+  3: ['naja','geht so','ist ok','für den preis ok','mittelmäßig','nicht schlecht aber auch nicht gut'],
+}
+
+const SHIPPING_ONLY = [
+  'kam in 2 tagen an, verpackung war total unauffällig. mehr will ich gar nicht wissen 😄',
+  'Lieferung super diskret und schnell. Paket sah aus wie normale Post.',
+  'versand war blitzschnell und die verpackung verrät nichts. danke!',
+  'In 3 Tagen da, neutrales Paket. Genau das was man sich erhofft.',
+  'schnell geliefert und kein Absender drauf — perfekt so.',
+  'kam schneller als erwartet. Verpackung einwandfrei neutral.',
+  'lieferzeit top, diskret verpackt wie immer. produkt selbst auch gut.',
+  '2 Tage, neutrales Paket. Was will man mehr.',
 ]
 
-const MATERIAL_COMMENTS = {
-  'Silikon': [
-    'Das Silikon fühlt sich angenehm weich an und ist leicht zu reinigen.',
-    'Körpersicheres Silikon, völlig geruchsneutral.',
-    'Das Material ist hautfreundlich und sehr pflegeleicht.',
+const TEXTURE_FEEL = [
+  'Material fühlt sich viel hochwertiger an als gedacht.',
+  'Textur ist angenehm, kein komischer Geruch.',
+  'weich aber trotzdem stabil. genau richtig.',
+  'Oberfläche ist sehr glatt, fühlt sich gut an.',
+  'riecht nach nichts, material ist super.',
+  'Haptik ist wirklich gut für den Preis.',
+  'viel weicher als erwartet, angenehm auf der Haut.',
+  'Kein Eigengeruch, lässt sich gut reinigen.',
+  'fühlt sich hochwertig an, nicht billig.',
+  'Material überraschend angenehm.',
+]
+
+const FIT_SIZE = {
+  5: [
+    'Größe stimmt genau, hab nach der Tabelle bestellt.',
+    'Sitzt perfekt, hab Größe M genommen.',
+    'Passt wie angegeben, bin sehr zufrieden.',
+    'Maße sind exakt wie beschrieben.',
   ],
-  'Latex': [
-    'Das Latex liegt eng an und fühlt sich hochwertig an.',
-    'Qualitativ gutes Latex — kein unangenehmer Geruch nach dem Lüften.',
-    'Das Material ist strapazierfähig und sieht toll aus.',
+  4: [
+    'Passt gut, eine Nummer größer wäre auch ok gewesen.',
+    'Größe stimmt, vielleicht minimal kleiner als auf dem Foto.',
+    'Sitzt gut, hätte aber auch die nächste Größe nehmen können.',
   ],
-  'Leder': [
-    'Echtes Leder, sauber vernäht und angenehm in der Haptik.',
-    'Das Leder ist weich und langlebig.',
-    'Verarbeitung ist tadellos — Leder-Qualität stimmt.',
-  ],
-  'Neopren': [
-    'Neopren sitzt komfortabel und ist sehr pflegeleicht.',
-    'Das Material ist überraschend weich.',
-  ],
-  'Stahl': [
-    'Hochwertiger Stahl, schwer und wertig in der Hand.',
-    'Robuste Verarbeitung, glatte Oberfläche.',
-  ],
-  'TPE': [
-    'TPE-Material ist hautfreundlich und angenehm weich.',
-    'Material fühlt sich täuschend echt an.',
+  3: [
+    'Etwas kleiner als gedacht, beim nächsten Mal eine Größe mehr.',
+    'Maße stimmen aber irgendwie fühlt es sich kleiner an.',
+    'Größe ok, aber auf dem Foto wirkte es größer.',
   ],
 }
 
-const DELIVERY = [
-  'Lieferung war diskret und schnell.',
-  'Diskret verpackt — perfekt.',
-  'Versand hat nur zwei Tage gedauert.',
-  'Schnelle Lieferung, neutrale Verpackung wie versprochen.',
-  'Kam in einem unscheinbaren Paket an.',
-  'Blitzschnelle Lieferung, alles gut verpackt.',
-]
-
-const QUALITY_GOOD = [
-  'Verarbeitung ist makellos.',
-  'Qualität für den Preis ist absolut top.',
-  'Alles exakt so wie auf den Fotos.',
-  'Keine scharfen Kanten, alles sauber verarbeitet.',
-  'Deutlich hochwertiger als erwartet.',
-]
-const QUALITY_OK = [
-  'Qualität ist für den Preis in Ordnung.',
-  'Verarbeitung könnte etwas sorgfältiger sein.',
-  'Material ist okay, fühlt sich nicht billig an.',
-]
-
-const CAT_COMMENTS = {
-  'Latex & Fetischwear': [
-    'Sitzt wie eine zweite Haut.',
-    'Das Anziehen braucht Übung — das Ergebnis ist es wert.',
-    'Mein Partner war sofort begeistert.',
-    'Sieht umwerfend aus und trägt sich erstaunlich komfortabel.',
-    'Sehr sexy, Passform stimmt.',
+const REACTION = {
+  5: [
+    'Bin verliebt. Beste Bestellung seit langem.',
+    'Wow. Einfach wow.',
+    'Hab es gleich ausprobiert — nicht enttäuscht worden.',
+    'Ich war skeptisch, aber jetzt bin ich überzeugt.',
+    'Nicht mein erstes hier, immer wieder gerne.',
+    'Macht genau was ich mir erhofft hatte ❤️',
+    'Hab es als Überraschung bestellt — Volltreffer.',
   ],
-  'BDSM & Kontrolle': [
-    'Keine scharfen Kanten, alles sicher — wichtig bei diesem Produkt.',
-    'Robust genug für intensive Sessions.',
-    'Genau die richtige Balance zwischen Komfort und Funktion.',
-    'Stabil verarbeitet, hält was es verspricht.',
-    'Mein Partner und ich sind beide sehr zufrieden.',
+  4: [
+    'Bin zufrieden, würde es wieder kaufen.',
+    'Gut, kleiner Abzug für die Lieferzeit.',
+    'Erfüllt seinen Zweck gut, nichts zu meckern.',
+    'Macht Spaß, Preis ist fair.',
   ],
-  'Vibratoren & Elektro': [
-    'Überraschend leise für die Leistung.',
-    'Die verschiedenen Intensitätsstufen sind gut abgestuft.',
-    'Akku hält länger als angegeben.',
-    'Wasserdicht wie beschrieben, funktioniert einwandfrei.',
-    'Die Vibration ist kräftig ohne aufdringlich zu sein.',
-  ],
-  'Dildos': [
-    'Größe und Gewicht sind genau richtig.',
-    'Material ist körpersicher und komplett geruchsneutral.',
-    'Sehr realistisch, Qualität stimmt.',
-    'Sauger hält perfekt — praktisches Feature.',
-    'Genau so wie auf den Bildern.',
-  ],
-  'Anal': [
-    'Größe ist ideal für den Einstieg.',
-    'Sicherheitsbase sitzt fest.',
-    'Oberfläche ist glatt und angenehm.',
-    'Gradueller Aufbau ist perfekt zum Eingewöhnen.',
-    'Material ist weich genug mit ausreichend Stabilität.',
+  3: [
+    'War etwas enttäuscht, hatte mehr erwartet.',
+    'Ist okay aber nicht das was ich mir vorgestellt hab.',
+    'Funktioniert, aber für den Preis erwartet man mehr.',
+    'Naja. Nicht schlecht, aber auch nicht besonders.',
   ],
 }
 
-const LEVEL_COMMENTS = {
-  'Beginner':     ['Perfekt für Einsteiger.', 'Ideal zum Ausprobieren.', 'Einsteigerfreundlich — gute Wahl.'],
-  'Intermediate': ['Für Geübte genau richtig.'],
-  'Advanced':     ['Anspruchsvoll und befriedigend.', 'Für Erfahrene — sehr lohnend.'],
-  'Expert':       ['Nichts für Anfänger, aber genau das macht es interessant.'],
-  'All levels':   [],
-}
+const PARTNER = [
+  'Mein Partner ist begeistert lol',
+  'wir sind beide sehr zufrieden 😏',
+  'Meine Freundin liebt es.',
+  'Hat meinem Mann sehr gefallen.',
+  'Zu zweit getestet — Daumen hoch von beiden.',
+  'Mein Freund hat sich sehr gefreut ❤️',
+  'Wir nutzen es regelmäßig, top.',
+]
+
+const COMBO_SHIPPING_PRODUCT = [
+  'schnell geliefert und das produkt ist gut. was will man mehr.',
+  'Lieferung war diskret, Produkt hält was es verspricht.',
+  'Kam schnell an, Qualität stimmt. Gerne wieder.',
+  'verpackung super unauffällig, inhalt macht spaß 😄',
+  'Diskreter Versand + gute Qualität = happy customer.',
+  'Schnell, diskret, gut. Drei Worte die alles sagen.',
+]
 
 function generateBody(product, stars) {
-  const name = product.name
-  const cat  = product.cat  ?? ''
-  const mat  = product.mat  ?? ''
-  const lvl  = product.lvl  ?? 'All levels'
-
-  const sentences = []
-
-  const openers = stars === 5 ? OPENERS_5 : stars === 4 ? OPENERS_4 : OPENERS_3
-  sentences.push(pick(openers)(name))
-
-  // Material comment
-  const matchedMat = Object.keys(MATERIAL_COMMENTS).find(
-    m => mat.toLowerCase().includes(m.toLowerCase())
-  )
-  if (matchedMat && Math.random() < 0.55) {
-    sentences.push(pick(MATERIAL_COMMENTS[matchedMat]))
+  // Style weights per star level
+  // ultra_short, shipping, texture, fit, reaction, partner, combo
+  const styleWeights = {
+    5: ['ultra','ultra','shipping','texture','fit','reaction','reaction','partner','combo','combo'],
+    4: ['ultra','shipping','shipping','texture','fit','reaction','combo','combo'],
+    3: ['ultra','texture','fit','reaction','reaction'],
   }
 
-  // Category comment
-  const catLines = CAT_COMMENTS[cat]
-  if (catLines && Math.random() < 0.65) {
-    sentences.push(pick(catLines))
+  const style = pick(styleWeights[stars] ?? styleWeights[4])
+
+  // ~15% of all reviews: apply casual lowercase transform
+  const casual = Math.random() < 0.15
+
+  let body = ''
+
+  switch (style) {
+    case 'ultra':
+      body = pick(ULTRA_SHORT[stars] ?? ULTRA_SHORT[4])
+      break
+    case 'shipping':
+      body = pick(SHIPPING_ONLY)
+      break
+    case 'texture':
+      body = pick(TEXTURE_FEEL)
+      // 40% chance: add a short shipping note
+      if (Math.random() < 0.4) body += ' ' + pick(['Lieferung auch top.','Versand schnell und diskret.','Versand war prima.'])
+      break
+    case 'fit':
+      body = pick((FIT_SIZE[stars] ?? FIT_SIZE[4]))
+      if (Math.random() < 0.35) body += ' ' + pick(SHIPPING_ONLY).split('.')[0] + '.'
+      break
+    case 'reaction':
+      body = pick(REACTION[stars] ?? REACTION[4])
+      if (stars >= 4 && Math.random() < 0.45) body += ' ' + pick(['Versand war auch super diskret.','Lieferung top.','Kam schnell an.'])
+      break
+    case 'partner':
+      body = pick(PARTNER)
+      if (Math.random() < 0.5) body += ' ' + pick(['Versand war diskret.','Kam schnell an.','Qualität stimmt.'])
+      break
+    case 'combo':
+    default:
+      body = pick(COMBO_SHIPPING_PRODUCT)
+      break
   }
 
-  // Level comment
-  const lvlLines = LEVEL_COMMENTS[lvl]
-  if (lvlLines?.length && Math.random() < 0.3) {
-    sentences.push(pick(lvlLines))
-  }
-
-  // Quality comment
-  if (stars >= 4 && Math.random() < 0.55) {
-    sentences.push(pick(QUALITY_GOOD))
-  } else if (stars === 3 && Math.random() < 0.45) {
-    sentences.push(pick(QUALITY_OK))
-  }
-
-  // Delivery (60% of reviews)
-  if (Math.random() < 0.6) sentences.push(pick(DELIVERY))
-
-  return sentences.slice(0, 3).join(' ')
+  return casual ? body.toLowerCase() : body
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
