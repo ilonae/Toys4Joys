@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { productImageUrl } from '@/lib/queries'
 import Tag from '@/components/ui/Tag'
 import Btn from '@/components/ui/Btn'
+import { trackingUrl, detectCarrier } from '@/lib/tracking'
 import type { Page, Product, Category, Level, BadgeType, OrderStatus } from '@/types'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -85,6 +86,7 @@ interface ProductFormData {
   price: string; old_price: string; badge: BadgeType | ''
   rating: string; rev: string; mat: string; lvl: Level
   description: string; stock: string; featured: boolean
+  supplier_sku: string
 }
 
 const EMPTY_FORM: ProductFormData = {
@@ -92,6 +94,7 @@ const EMPTY_FORM: ProductFormData = {
   price: '', old_price: '', badge: '',
   rating: '0', rev: '0', mat: '', lvl: 'All levels',
   description: '', stock: '0', featured: false,
+  supplier_sku: '',
 }
 
 function ProductFormModal({
@@ -117,9 +120,10 @@ function ProductFormModal({
           rev:         String(product.rev),
           mat:         product.mat,
           lvl:         product.lvl,
-          description: product.desc,
-          stock:       String(product.stock),
-          featured:    (product as any).featured ?? false,
+          description:  product.desc,
+          stock:        String(product.stock),
+          featured:     (product as any).featured ?? false,
+          supplier_sku: (product as any).supplier_sku ?? '',
         }
       : EMPTY_FORM
   )
@@ -163,9 +167,10 @@ function ProductFormModal({
       mat:         form.mat.trim(),
       lvl:         form.lvl,
       description: form.description.trim(),
-      stock:       parseInt(form.stock)    || 0,
-      featured:    form.featured,
-      updated_at:  new Date().toISOString(),
+      stock:        parseInt(form.stock)    || 0,
+      featured:     form.featured,
+      supplier_sku: form.supplier_sku.trim() || null,
+      updated_at:   new Date().toISOString(),
     }
 
     const newPath = (form as any)._imagePath
@@ -233,6 +238,7 @@ function ProductFormModal({
           <F label="Alter Preis (€)" value={form.old_price} onChange={set('old_price')} type="number" placeholder="39.99" />
           <Sel label="Badge" value={form.badge ?? ''} onChange={set('badge')} options={BADGES} />
           <F label="Lagerbestand" value={form.stock} onChange={set('stock')} type="number" placeholder="0" />
+          <F label="Lieferanten-SKU" value={form.supplier_sku} onChange={set('supplier_sku')} placeholder="z.B. XD-19022" />
           <F label="Material" value={form.mat} onChange={set('mat')} placeholder="Silikon, Latex…" />
           <Sel label="Level" value={form.lvl} onChange={set('lvl')} options={LEVELS} />
           <F label="Bewertung (0–5)" value={form.rating} onChange={set('rating')} type="number" placeholder="4.5" />
@@ -348,7 +354,7 @@ function ProductsTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                {['Bild', 'Name', 'Marke', 'Kategorie', 'Preis', 'Bestand', 'Status', ''].map(h => (
+                {['Bild', 'Name', 'Marke', 'Lief.-SKU', 'Preis', 'Bestand', 'Status', ''].map(h => (
                   <th key={h} style={{ padding: '10px 16px', fontSize: '10px', letterSpacing: '0.08em', color: C.textDim, textAlign: 'left', fontWeight: 400, textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
@@ -369,8 +375,8 @@ function ProductsTab() {
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
                   </td>
                   <td style={{ padding: '10px 16px', fontSize: '11px', color: C.textMid }}>{p.brand}</td>
-                  <td style={{ padding: '10px 16px', fontSize: '11px', color: C.textMid, maxWidth: '140px' }}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.cat}</div>
+                  <td style={{ padding: '10px 16px', fontSize: '11px', color: C.textDim, fontFamily: 'monospace' }}>
+                    {(p as any).supplier_sku ?? '—'}
                   </td>
                   <td style={{ padding: '10px 16px', fontSize: '12px', color: C.text, whiteSpace: 'nowrap' }}>€{p.price.toFixed(2)}</td>
                   <td style={{ padding: '10px 16px', fontSize: '12px', color: p.stock === 0 ? C.accent : C.textMid }}>
@@ -652,12 +658,27 @@ function OrdersTab() {
                 )}
 
                 {/* Tracking number */}
-                {order.tracking_number && (
-                  <div>
-                    <div style={{ fontSize: '10px', letterSpacing: '0.08em', color: C.textDim, textTransform: 'uppercase', marginBottom: '8px' }}>Sendungsnummer</div>
-                    <div style={{ fontSize: '13px', color: C.text, fontFamily: 'monospace', letterSpacing: '0.06em' }}>{order.tracking_number}</div>
-                  </div>
-                )}
+                {order.tracking_number && (() => {
+                  const url     = trackingUrl(order.tracking_number)
+                  const carrier = detectCarrier(order.tracking_number)
+                  return (
+                    <div>
+                      <div style={{ fontSize: '10px', letterSpacing: '0.08em', color: C.textDim, textTransform: 'uppercase', marginBottom: '8px' }}>
+                        Sendungsnummer{carrier ? ` · ${carrier}` : ''}
+                      </div>
+                      {url ? (
+                        <a href={url} target="_blank" rel="noopener noreferrer"
+                          style={{ fontSize: '13px', color: C.accent, fontFamily: 'monospace', letterSpacing: '0.06em', textDecoration: 'none' }}>
+                          {order.tracking_number} →
+                        </a>
+                      ) : (
+                        <div style={{ fontSize: '13px', color: C.text, fontFamily: 'monospace', letterSpacing: '0.06em' }}>
+                          {order.tracking_number}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })()}
 
                 {/* Stripe PI + refund */}
                 {order.stripe_payment_intent_id && (

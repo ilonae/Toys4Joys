@@ -6,6 +6,7 @@ import { useOrders } from '@/hooks/useOrders'
 import Tag from '@/components/ui/Tag'
 import Btn from '@/components/ui/Btn'
 import ProductCard from '@/components/ProductCard'
+import { trackingUrl, detectCarrier } from '@/lib/tracking'
 import type { Page, Product, OrderStatus } from '@/types'
 
 // ── Shared field components ────────────────────────────────────────────────────
@@ -279,15 +280,34 @@ function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
             </div>
 
             {/* Tracking number */}
-            {order.tracking_number && (
-              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <div style={{ fontSize: '10px', letterSpacing: '0.1em', color: C.textDim }}>SENDUNGSNUMMER</div>
-                <div style={{ fontSize: '13px', color: C.text, fontFamily: 'monospace', letterSpacing: '0.06em' }}>
-                  {order.tracking_number}
+            {order.tracking_number && (() => {
+              const url     = trackingUrl(order.tracking_number)
+              const carrier = detectCarrier(order.tracking_number)
+              return (
+                <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontSize: '10px', letterSpacing: '0.1em', color: C.textDim }}>
+                    SENDUNGSNUMMER{carrier ? ` · ${carrier}` : ''}
+                  </div>
+                  {url ? (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '13px', color: C.accent, fontFamily: 'monospace', letterSpacing: '0.06em', textDecoration: 'none' }}
+                    >
+                      {order.tracking_number} →
+                    </a>
+                  ) : (
+                    <div style={{ fontSize: '13px', color: C.text, fontFamily: 'monospace', letterSpacing: '0.06em' }}>
+                      {order.tracking_number}
+                    </div>
+                  )}
+                  <div style={{ fontSize: '11px', color: C.textDim }}>
+                    {url ? 'Klicke zum Verfolgen deines Pakets.' : 'Tracke dein Paket beim entsprechenden Versanddienstleister.'}
+                  </div>
                 </div>
-                <div style={{ fontSize: '11px', color: C.textDim }}>Tracke dein Paket beim entsprechenden Versanddienstleister.</div>
-              </div>
-            )}
+              )
+            })()}
 
             {/* Delivery address if available */}
             {order.shipping_address && (

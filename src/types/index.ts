@@ -19,8 +19,9 @@ export interface Product {
   lvl: Level
   desc: string
   stock: number
-  image?: string     // primary image URL (resolved)
-  images: string[]   // all image URLs in display order
+  supplier_sku?: string | null   // SKU from the supplier/wholesaler
+  image?: string                 // primary image URL (resolved)
+  images: string[]               // all image URLs in display order
 }
 
 export type Category =

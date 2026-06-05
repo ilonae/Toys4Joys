@@ -18,6 +18,7 @@ export interface User {
   email:     string
   firstName: string
   lastName:  string
+  phone:     string
   address:   UserAddress
   isAdmin:   boolean
 }
@@ -65,16 +66,17 @@ function deError(msg: string): string {
 }
 
 /** Fetch the profiles row for a given user id */
-async function fetchProfile(userId: string): Promise<Partial<UserAddress & { firstName: string; lastName: string; isAdmin: boolean }>> {
+async function fetchProfile(userId: string): Promise<Partial<UserAddress & { firstName: string; lastName: string; phone: string; isAdmin: boolean }>> {
   const { data } = await supabase
     .from('profiles')
-    .select('first_name, last_name, street, zip, city, country, is_admin')
+    .select('first_name, last_name, street, zip, city, country, is_admin, phone')
     .eq('id', userId)
     .single()
   if (!data) return {}
   return {
     firstName: data.first_name ?? '',
     lastName:  data.last_name  ?? '',
+    phone:     data.phone      ?? '',
     street:    data.street     ?? '',
     zip:       data.zip        ?? '',
     city:      data.city       ?? '',
@@ -92,6 +94,7 @@ async function buildUser(supaUser: SupabaseUser): Promise<User> {
     email:     supaUser.email ?? '',
     firstName: profile.firstName ?? meta.firstName ?? '',
     lastName:  profile.lastName  ?? meta.lastName  ?? '',
+    phone:     profile.phone     ?? '',
     isAdmin:   profile.isAdmin   ?? false,
     address: {
       street:  profile.street  ?? '',
