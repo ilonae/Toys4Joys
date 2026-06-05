@@ -4,6 +4,7 @@ import { stripePromise, API_BASE } from '@/lib/stripe'
 import { C } from '@/tokens'
 import { useAuth } from '@/contexts/AuthContext'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
+import { calcShipping, FREE_THRESHOLD, SHIPPING_RATE, getShippingZone } from '@/lib/shipping'
 import type { CartItem, Page, ShippingAddress } from '@/types'
 import Btn from '@/components/ui/Btn'
 import Tag from '@/components/ui/Tag'
@@ -229,9 +230,6 @@ interface Props {
 export default function Checkout({ items, total, onNavigate, onClearCart }: Props) {
   const { user } = useAuth()
 
-  const shipping   = total >= 50 ? 0 : 4.99
-  const grandTotal = total + shipping
-
   // Determine initial step — skip address if user already has a saved address
   const savedAddr = user?.address
   const hasSavedAddress = !!(savedAddr?.street && savedAddr?.city && savedAddr?.zip && user?.phone)
@@ -254,6 +252,12 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
   const [clientSecret, setClientSecret]  = useState<string | null>(null)
   const [fetchError,   setFetchError]    = useState<string | null>(null)
   const [success,      setSuccess]       = useState(false)
+
+  // Shipping: recalculates whenever country changes
+  const shippingCountry = shippingAddr?.country ?? user?.address?.country
+  const shipping        = calcShipping(total, shippingCountry)
+  const grandTotal      = total + shipping
+  const zone            = getShippingZone(shippingCountry)
 
   // Create payment intent once address is confirmed
   useEffect(() => {
@@ -422,7 +426,14 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
 
         <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: C.textMid }}>
-            <span>Versand</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span>Versand</span>
+              {shipping > 0 && (
+                <span style={{ fontSize: '10px', color: C.textDim }}>
+                  Ab €{FREE_THRESHOLD[zone]} kostenlos
+                </span>
+              )}
+            </div>
             <span style={{ color: shipping === 0 ? C.accent : C.textMid }}>
               {shipping === 0 ? 'Kostenlos' : `€${shipping.toFixed(2)}`}
             </span>

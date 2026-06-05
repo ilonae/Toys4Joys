@@ -5,8 +5,12 @@ import Icon from '@/components/ui/Icon'
 import Btn from '@/components/ui/Btn'
 import PhotoBox from '@/components/ui/PhotoBox'
 import Tag from '@/components/ui/Tag'
+import { FREE_THRESHOLD, SHIPPING_RATE } from '@/lib/shipping'
 
-const FREE_SHIPPING = 50
+// Cart doesn't know the destination country yet → show German threshold
+// as the baseline; full zone pricing is shown in Checkout once address is entered.
+const CART_ZONE_THRESHOLD = FREE_THRESHOLD.germany
+const CART_ZONE_RATE      = SHIPPING_RATE.germany
 
 interface Props {
   items: CartItem[]
@@ -17,9 +21,9 @@ interface Props {
 }
 
 export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: Props) {
-  const shipping = total >= FREE_SHIPPING ? 0 : 4.99
-  const missing  = FREE_SHIPPING - total
-  const pct      = Math.min(100, (total / FREE_SHIPPING) * 100)
+  const shipping = total >= CART_ZONE_THRESHOLD ? 0 : CART_ZONE_RATE
+  const missing  = CART_ZONE_THRESHOLD - total
+  const pct      = Math.min(100, (total / CART_ZONE_THRESHOLD) * 100)
 
   // ── Empty state ────────────────────────────────────────────────────────────
   if (items.length === 0) {
@@ -173,22 +177,19 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
         {/* ── Order summary sidebar ────────────────────────────────────────── */}
         <div style={{ width: '340px', flexShrink: 0, position: 'sticky', top: '56px' }}>
 
-          {/* Free shipping progress */}
+          {/* Free shipping progress (Germany baseline) */}
           <div style={{ padding: '32px', borderBottom: `1px solid ${C.border}` }}>
             {missing > 0 ? (
               <>
                 <div style={{ fontSize: '11px', color: C.textMid, marginBottom: '14px', lineHeight: 1.6 }}>
-                  Noch <span style={{ color: C.accent, fontWeight: 500 }}>€{missing.toFixed(2)}</span> bis zum kostenlosen Versand
+                  Noch <span style={{ color: C.accent, fontWeight: 500 }}>€{missing.toFixed(2)}</span> bis zum kostenlosen Versand (DE)
                 </div>
                 <div style={{ height: '2px', background: C.border, overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%', background: C.accent,
-                    width: `${pct}%`, transition: 'width 0.4s ease',
-                  }} />
+                  <div style={{ height: '100%', background: C.accent, width: `${pct}%`, transition: 'width 0.4s ease' }} />
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
                   <span style={{ fontSize: '9px', color: C.textDim, letterSpacing: '0.08em' }}>€0</span>
-                  <span style={{ fontSize: '9px', color: C.textDim, letterSpacing: '0.08em' }}>€{FREE_SHIPPING}</span>
+                  <span style={{ fontSize: '9px', color: C.textDim, letterSpacing: '0.08em' }}>€{CART_ZONE_THRESHOLD}</span>
                 </div>
               </>
             ) : (
@@ -196,6 +197,19 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
                 <span>✓</span> KOSTENLOSER VERSAND INKLUSIVE
               </div>
             )}
+            {/* Zone overview */}
+            <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {[
+                { label: 'Deutschland',   free: FREE_THRESHOLD.germany,       rate: SHIPPING_RATE.germany },
+                { label: 'Europa',        free: FREE_THRESHOLD.europe,        rate: SHIPPING_RATE.europe },
+                { label: 'International', free: FREE_THRESHOLD.international, rate: SHIPPING_RATE.international },
+              ].map(z => (
+                <div key={z.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: C.textDim }}>
+                  <span>{z.label}</span>
+                  <span>ab €{z.free} kostenlos · sonst €{z.rate.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Totals */}
@@ -208,7 +222,7 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
               <span>€{total.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: C.textMid }}>
-              <span>Versand</span>
+              <span>Versand <span style={{ fontSize: '10px', color: C.textDim }}>(DE)</span></span>
               <span style={{ color: shipping === 0 ? C.accent : C.textMid }}>
                 {shipping === 0 ? 'Kostenlos' : `€${shipping.toFixed(2)}`}
               </span>

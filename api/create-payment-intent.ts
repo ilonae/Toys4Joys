@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { calcShipping } from './_shipping'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -43,7 +44,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!amount || amount <= 0)  return res.status(400).json({ error: 'Invalid amount' })
     if (!items?.length)          return res.status(400).json({ error: 'No items provided' })
 
-    const shipping = amount >= 50 ? 0 : 4.99
+    const country  = shipping_address?.country
+    const shipping = calcShipping(amount, country)
     const total    = amount + shipping
 
     // ── Create pending order in Supabase ──────────────────────────────────
