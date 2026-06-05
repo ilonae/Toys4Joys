@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { C } from '@/tokens'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
+import type { Translations } from '@/lib/i18n'
 import type { RegisterResult } from '@/contexts/AuthContext'
 import { API_BASE } from '@/lib/stripe'
 
@@ -106,7 +108,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 
 // ── Login form ─────────────────────────────────────────────────────────────
 
-function LoginForm({ onSuccess }: { onSuccess: () => void }) {
+function LoginForm({ onSuccess, t }: { onSuccess: () => void; t: Translations }) {
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -116,7 +118,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) { setError('Bitte alle Felder ausfüllen.'); return }
+    if (!email || !password) { setError(t.auth.errAllFields); return }
     setLoading(true); setError(null)
     const err = await login(email, password)
     setLoading(false)
@@ -126,9 +128,9 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <Field label="E-Mail" type="email" value={email} onChange={setEmail} placeholder="deine@email.de" />
-      <Field label="Passwort" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
-      <Checkbox checked={remember} onChange={setRemember}>Angemeldet bleiben</Checkbox>
+      <Field label={t.checkout.email}     type="email"    value={email}    onChange={setEmail}    placeholder={t.auth.emailPlaceholder} />
+      <Field label={t.auth.signInBtn}     type="password" value={password} onChange={setPassword} placeholder={t.auth.passwordPlaceholder} />
+      <Checkbox checked={remember} onChange={setRemember}>{t.auth.rememberMe}</Checkbox>
 
       {error && (
         <div style={{ fontSize: '11px', color: C.accent, padding: '10px', border: `1px solid ${C.accentDim}`, background: C.bgCard }}>
@@ -136,13 +138,13 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
       )}
 
-      <SubmitBtn loading={loading}>ANMELDEN</SubmitBtn>
+      <SubmitBtn loading={loading}>{t.auth.signInBtn}</SubmitBtn>
 
       <button
         type="button"
         style={{ background: 'none', border: 'none', color: C.textDim, fontSize: '11px', letterSpacing: '0.06em', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: 0 }}
       >
-        Passwort vergessen?
+        {t.auth.forgotPassword}
       </button>
     </form>
   )
@@ -150,7 +152,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
 // ── Register form ──────────────────────────────────────────────────────────
 
-function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
+function RegisterForm({ onSuccess, t }: { onSuccess: () => void; t: Translations }) {
   const { register } = useAuth()
   const [firstName, setFirstName] = useState('')
   const [lastName,  setLastName]  = useState('')
@@ -162,17 +164,17 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [globalError, setGlobalError] = useState<string | null>(null)
-  const [confirmed, setConfirmed] = useState(false) // email confirmation pending
+  const [confirmed, setConfirmed] = useState(false)
 
   const validate = () => {
     const e: Record<string, string> = {}
-    if (!firstName.trim()) e.firstName = 'Pflichtfeld'
-    if (!lastName.trim())  e.lastName  = 'Pflichtfeld'
-    if (!email.includes('@')) e.email = 'Ungültige E-Mail'
-    if (password.length < 8) e.password = 'Mindestens 8 Zeichen'
-    if (password !== confirm) e.confirm = 'Passwörter stimmen nicht überein'
-    if (!age) e.age = 'Du musst 18+ sein'
-    if (!agb) e.agb = 'Bitte AGB akzeptieren'
+    if (!firstName.trim()) e.firstName = t.auth.errRequired
+    if (!lastName.trim())  e.lastName  = t.auth.errRequired
+    if (!email.includes('@')) e.email = t.auth.errInvalidEmail
+    if (password.length < 8) e.password = t.auth.errPasswordShort
+    if (password !== confirm) e.confirm = t.auth.errPasswordMismatch
+    if (!age) e.age = t.auth.errAgeRequired
+    if (!agb) e.agb = t.auth.errTermsRequired
     return e
   }
 
@@ -186,55 +188,51 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
     if (result.error) {
       setGlobalError(result.error)
     } else if (result.needsConfirmation) {
-      // Email confirmation required — show success screen instead of closing
       setConfirmed(true)
     } else {
-      // Auto-confirm (dev) — sign-in happened immediately
       onSuccess()
     }
   }
 
-  // ── Confirmation-sent screen ───────────────────────────────────────────────
   if (confirmed) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', textAlign: 'center', padding: '8px 0' }}>
         <div style={{ fontSize: '32px', lineHeight: 1 }}>✉️</div>
         <div>
           <div style={{ fontSize: '13px', color: C.text, fontWeight: 500, letterSpacing: '0.06em', marginBottom: '8px' }}>
-            BESTÄTIGUNGSMAIL GESENDET
+            {t.auth.confirmationSent}
           </div>
           <div style={{ fontSize: '12px', color: C.textMid, lineHeight: 1.7 }}>
-            Wir haben eine Bestätigungs-E-Mail an<br />
+            {t.auth.confirmationText1}<br />
             <span style={{ color: C.text }}>{email}</span><br />
-            gesendet. Bitte klick auf den Link darin, um dein Konto zu aktivieren.
+            {t.auth.confirmationText2}
           </div>
         </div>
         <div style={{ fontSize: '11px', color: C.textDim, lineHeight: 1.6 }}>
-          Keine E-Mail erhalten? Schau in deinen Spam-Ordner oder wende dich an unseren Support.
+          {t.auth.checkSpam}
         </div>
       </div>
     )
   }
 
-  // ── Registration form ──────────────────────────────────────────────────────
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        <Field label="Vorname" value={firstName} onChange={setFirstName} placeholder="Max"       error={errors.firstName} />
-        <Field label="Nachname" value={lastName}  onChange={setLastName}  placeholder="Mustermann" error={errors.lastName} />
+        <Field label={t.checkout.firstName} value={firstName} onChange={setFirstName} placeholder={t.auth.firstNamePlaceholder} error={errors.firstName} />
+        <Field label={t.checkout.lastName}  value={lastName}  onChange={setLastName}  placeholder={t.auth.lastNamePlaceholder}  error={errors.lastName} />
       </div>
-      <Field label="E-Mail" type="email" value={email} onChange={setEmail} placeholder="deine@email.de" error={errors.email} />
-      <Field label="Passwort" type="password" value={password} onChange={setPassword} placeholder="Mindestens 8 Zeichen" error={errors.password} />
-      <Field label="Passwort wiederholen" type="password" value={confirm} onChange={setConfirm} placeholder="••••••••" error={errors.confirm} />
+      <Field label={t.checkout.email}            type="email"    value={email}    onChange={setEmail}    placeholder={t.auth.emailPlaceholder}    error={errors.email} />
+      <Field label={t.auth.signInBtn}            type="password" value={password} onChange={setPassword} placeholder={t.auth.passwordMin}         error={errors.password} />
+      <Field label={t.auth.confirmPasswordLabel} type="password" value={confirm}  onChange={setConfirm}  placeholder={t.auth.passwordPlaceholder} error={errors.confirm} />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '4px' }}>
         <div>
-          <Checkbox checked={age} onChange={setAge}>Ich bin 18 Jahre oder älter</Checkbox>
+          <Checkbox checked={age} onChange={setAge}>{t.auth.ageConfirm}</Checkbox>
           {errors.age && <span style={{ fontSize: '10px', color: C.accent, marginLeft: '22px' }}>{errors.age}</span>}
         </div>
         <div>
           <Checkbox checked={agb} onChange={setAgb}>
-            Ich akzeptiere die <span style={{ color: C.accent, cursor: 'pointer' }}>AGB</span> und <span style={{ color: C.accent, cursor: 'pointer' }}>Datenschutzerklärung</span>
+            {t.auth.termsAcceptPre} <span style={{ color: C.accent, cursor: 'pointer' }}>{t.footer.terms}</span> {t.auth.termsAcceptMid} <span style={{ color: C.accent, cursor: 'pointer' }}>{t.footer.privacy}</span>
           </Checkbox>
           {errors.agb && <span style={{ fontSize: '10px', color: C.accent, marginLeft: '22px' }}>{errors.agb}</span>}
         </div>
@@ -246,7 +244,7 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
       )}
 
-      <SubmitBtn loading={loading}>KONTO ERSTELLEN</SubmitBtn>
+      <SubmitBtn loading={loading}>{t.auth.createAccountBtn}</SubmitBtn>
     </form>
   )
 }
@@ -255,15 +253,14 @@ function RegisterForm({ onSuccess }: { onSuccess: () => void }) {
 
 type TrackStatus = 'idle' | 'loading' | 'found' | 'error'
 
-const STATUS_LABEL: Record<string, string> = {
-  succeeded:              'Bezahlt ✓',
-  processing:             'In Bearbeitung',
-  requires_payment_method: 'Zahlung ausstehend',
-  requires_confirmation:  'Bestätigung ausstehend',
-  canceled:               'Storniert',
-}
-
-function TrackForm() {
+function TrackForm({ t }: { t: Translations }) {
+  const STATUS_LABEL: Record<string, string> = {
+    succeeded:               t.auth.statusSucceeded,
+    processing:              t.auth.statusProcessing,
+    requires_payment_method: t.auth.statusPaymentPending,
+    requires_confirmation:   t.auth.statusConfirmationPending,
+    canceled:                t.auth.statusCancelled,
+  }
   const [orderId, setOrderId] = useState('')
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<TrackStatus>('idle')
@@ -272,7 +269,7 @@ function TrackForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!orderId.trim()) { setErrorMsg('Bitte Bestellnummer eingeben.'); return }
+    if (!orderId.trim()) { setErrorMsg(t.auth.errOrderIdRequired); return }
     setStatus('loading'); setErrorMsg('')
     try {
       const res = await fetch(`${API_BASE}/api/track-order`, {
@@ -284,7 +281,7 @@ function TrackForm() {
       if (data.error) { setErrorMsg(data.error); setStatus('error') }
       else { setResult(data); setStatus('found') }
     } catch {
-      setErrorMsg('Server nicht erreichbar. Bitte später erneut versuchen.')
+      setErrorMsg(t.auth.errServerUnreachable)
       setStatus('error')
     }
   }
@@ -296,22 +293,22 @@ function TrackForm() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ padding: '20px', border: `1px solid ${isOk ? C.accentDim : C.border}`, background: C.bgCard }}>
-          <div style={{ fontSize: '10px', letterSpacing: '0.1em', color: C.textDim, marginBottom: '8px' }}>BESTELLSTATUS</div>
+          <div style={{ fontSize: '10px', letterSpacing: '0.1em', color: C.textDim, marginBottom: '8px' }}>{t.auth.orderStatusLabel}</div>
           <div style={{ fontSize: '20px', color: isOk ? C.accent : C.textMid, letterSpacing: '0.05em', marginBottom: '4px' }}>
             {label}
           </div>
           <div style={{ fontSize: '12px', color: C.textMid }}>
-            Betrag: <span style={{ color: C.text }}>€{amount}</span>
+            {t.auth.orderAmountLabel}: <span style={{ color: C.text }}>€{amount}</span>
           </div>
           <div style={{ fontSize: '10px', color: C.textDim, marginTop: '12px', letterSpacing: '0.04em' }}>
-            Bestell-ID: {orderId}
+            {t.auth.orderIdLabel}: {orderId}
           </div>
         </div>
         <button
           onClick={() => { setStatus('idle'); setResult(null); setOrderId(''); setEmail('') }}
           style={{ background: 'none', border: 'none', color: C.textDim, fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit', letterSpacing: '0.06em', textAlign: 'left', padding: 0 }}
         >
-          ← Neue Suche
+          {t.auth.newSearch}
         </button>
       </div>
     )
@@ -320,20 +317,20 @@ function TrackForm() {
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div style={{ fontSize: '12px', color: C.textMid, lineHeight: 1.7 }}>
-        Gib deine Bestell-ID ein (beginnt mit <span style={{ color: C.text, fontFamily: 'monospace' }}>pi_</span>) — sie steht in deiner Bestätigungs-E-Mail.
+        {t.auth.trackHint}
       </div>
       <Field
-        label="Bestell-ID"
+        label={t.auth.trackOrderIdLabel}
         value={orderId}
         onChange={setOrderId}
-        placeholder="pi_3Nxxx..."
+        placeholder={t.auth.trackOrderIdPlaceholder}
       />
       <Field
-        label="E-Mail (optional)"
+        label={t.auth.trackEmailLabel}
         type="email"
         value={email}
         onChange={setEmail}
-        placeholder="deine@email.de"
+        placeholder={t.auth.emailPlaceholder}
       />
 
       {errorMsg && (
@@ -342,7 +339,7 @@ function TrackForm() {
         </div>
       )}
 
-      <SubmitBtn loading={status === 'loading'}>BESTELLUNG VERFOLGEN</SubmitBtn>
+      <SubmitBtn loading={status === 'loading'}>{t.auth.trackBtn}</SubmitBtn>
     </form>
   )
 }
@@ -357,11 +354,11 @@ interface Props {
 }
 
 export default function AuthModal({ open, initialTab = 'login', onClose, onSuccess }: Props) {
+  const { t } = useLocale()
   const [tab, setTab] = useState<Tab>(initialTab)
 
   useEffect(() => { if (open) setTab(initialTab) }, [open, initialTab])
 
-  // close on Escape
   useEffect(() => {
     if (!open) return
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -390,9 +387,8 @@ export default function AuthModal({ open, initialTab = 'login', onClose, onSucce
           maxHeight: '90vh', overflowY: 'auto',
         }}
       >
-        {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px 0' }}>
-          <div style={{ fontSize: '11px', letterSpacing: '0.14em', color: C.textDim }}>KONTO</div>
+          <div style={{ fontSize: '11px', letterSpacing: '0.14em', color: C.textDim }}>{t.auth.accountHeader}</div>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', color: C.textDim, cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '2px 4px', fontFamily: 'inherit' }}
@@ -401,18 +397,16 @@ export default function AuthModal({ open, initialTab = 'login', onClose, onSucce
           </button>
         </div>
 
-        {/* Tabs */}
         <div style={{ display: 'flex', gap: '24px', padding: '16px 24px 0', borderBottom: `1px solid ${C.border}` }}>
-          <TabBtn active={tab === 'login'}    onClick={() => setTab('login')}>ANMELDEN</TabBtn>
-          <TabBtn active={tab === 'register'} onClick={() => setTab('register')}>REGISTRIEREN</TabBtn>
-          <TabBtn active={tab === 'track'}    onClick={() => setTab('track')}>BESTELLUNG</TabBtn>
+          <TabBtn active={tab === 'login'}    onClick={() => setTab('login')}>{t.auth.loginTab}</TabBtn>
+          <TabBtn active={tab === 'register'} onClick={() => setTab('register')}>{t.auth.registerTab}</TabBtn>
+          <TabBtn active={tab === 'track'}    onClick={() => setTab('track')}>{t.auth.trackTab}</TabBtn>
         </div>
 
-        {/* Body */}
         <div style={{ padding: '24px' }}>
-          {tab === 'login'    && <LoginForm    onSuccess={() => { onSuccess(); onClose() }} />}
-          {tab === 'register' && <RegisterForm onSuccess={() => { onSuccess(); onClose() }} />}
-          {tab === 'track'    && <TrackForm />}
+          {tab === 'login'    && <LoginForm    t={t} onSuccess={() => { onSuccess(); onClose() }} />}
+          {tab === 'register' && <RegisterForm t={t} onSuccess={() => { onSuccess(); onClose() }} />}
+          {tab === 'track'    && <TrackForm    t={t} />}
         </div>
       </div>
     </div>

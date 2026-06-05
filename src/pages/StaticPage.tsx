@@ -1,5 +1,6 @@
 import React from 'react'
 import { C } from '@/tokens'
+import { useLocale } from '@/contexts/LocaleContext'
 import Tag from '@/components/ui/Tag'
 import Btn from '@/components/ui/Btn'
 import type { Page } from '@/types'
@@ -501,17 +502,53 @@ interface Props {
 }
 
 export default function StaticPage({ page, onNavigate }: Props) {
+  const { t, locale } = useLocale()
   const config = PAGE_CONFIG[page]
   if (!config) return null
   const { tag, title, Content } = config
+
+  // Localized page title (falls back to German)
+  const localizedTitle = (() => {
+    switch (page) {
+      case 'about':      return t.static.aboutTitle
+      case 'shipping':   return t.static.shippingTitle
+      case 'privacy':    return t.static.privacyTitle
+      case 'terms':      return t.static.termsTitle
+      case 'imprint':    return t.static.imprintTitle
+      case 'withdrawal': return t.static.withdrawalTitle
+      default:           return title
+    }
+  })()
+
+  // Notice banner for non-German locales (content stays in German for legal accuracy)
+  const NoticeBanner = locale !== 'de' ? (
+    <div style={{
+      padding: '14px 56px',
+      background: C.bgCard,
+      borderBottom: `1px solid ${C.border}`,
+      fontSize: '12px',
+      color: C.textDim,
+      letterSpacing: '0.04em',
+      lineHeight: 1.6,
+      display: 'flex', alignItems: 'center', gap: '10px',
+    }}>
+      <span style={{ color: C.accent }}>🇩🇪</span>
+      <span>{t.static.legalOnly}</span>
+    </div>
+  ) : null
+
+  const BackBtn = (
+    <Btn variant="outline" onClick={() => onNavigate('shop')}>← {t.nav.shop}</Btn>
+  )
 
   // About has its own full image hero — skip the shared header
   if (page === 'about') {
     return (
       <div style={{ borderTop: `1px solid ${C.border}` }}>
+        {NoticeBanner}
         <Content />
         <div style={{ padding: '40px 56px', borderTop: `1px solid ${C.border}` }}>
-          <Btn variant="outline" onClick={() => onNavigate('shop')}>← ZURÜCK ZUM SHOP</Btn>
+          {BackBtn}
         </div>
       </div>
     )
@@ -520,6 +557,7 @@ export default function StaticPage({ page, onNavigate }: Props) {
   // All other pages: full-width with editorial header + content
   return (
     <div style={{ borderTop: `1px solid ${C.border}` }}>
+      {NoticeBanner}
       {/* Page header */}
       <div style={{
         padding: '64px 56px',
@@ -531,14 +569,14 @@ export default function StaticPage({ page, onNavigate }: Props) {
           fontSize: 'clamp(28px, 4vw, 52px)', fontWeight: 700,
           letterSpacing: '-0.02em', color: C.text, margin: 0, lineHeight: 1.05,
         }}>
-          {title}
+          {localizedTitle}
         </h1>
       </div>
 
       <Content />
 
       <div style={{ padding: '40px 48px', borderTop: `1px solid ${C.border}` }}>
-        <Btn variant="outline" onClick={() => onNavigate('shop')}>← ZURÜCK ZUM SHOP</Btn>
+        {BackBtn}
       </div>
     </div>
   )

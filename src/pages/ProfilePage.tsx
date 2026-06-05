@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { C } from '@/tokens'
 import { useAuth, fullName } from '@/contexts/AuthContext'
 import type { UserAddress } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
+import type { Translations } from '@/lib/i18n'
 import { useOrders } from '@/hooks/useOrders'
 import Tag from '@/components/ui/Tag'
 import Btn from '@/components/ui/Btn'
@@ -67,7 +69,7 @@ function SelectField({ label, value, onChange, options }: {
   )
 }
 
-function SaveBar({ saved, loading, onReset }: { saved: boolean; loading: boolean; onReset: () => void }) {
+function SaveBar({ saved, loading, onReset, t }: { saved: boolean; loading: boolean; onReset: () => void; t: Translations }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '8px' }}>
       <button
@@ -78,15 +80,15 @@ function SaveBar({ saved, loading, onReset }: { saved: boolean; loading: boolean
           cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'background 0.15s',
         }}
       >
-        {loading ? 'SPEICHERN…' : 'SPEICHERN'}
+        {loading ? t.profile.saving : t.profile.saveButton}
       </button>
       <button
         type="button" onClick={onReset}
         style={{ background: 'none', border: 'none', color: C.textDim, fontSize: '11px', letterSpacing: '0.08em', cursor: 'pointer', fontFamily: 'inherit' }}
       >
-        ZURÜCKSETZEN
+        {t.profile.reset}
       </button>
-      {saved && <span style={{ fontSize: '11px', color: C.accent }}>✓ Gespeichert</span>}
+      {saved && <span style={{ fontSize: '11px', color: C.accent }}>{t.profile.saved}</span>}
     </div>
   )
 }
@@ -103,12 +105,12 @@ type Section = 'overview' | 'orders' | 'wishlist' | 'settings'
 
 // ── Overview ──────────────────────────────────────────────────────────────────
 
-function OverviewSection({ user, wishCount, orderCount, onSection, onNavigate }: {
+function OverviewSection({ user, wishCount, orderCount, onSection, t }: {
   user: NonNullable<ReturnType<typeof useAuth>['user']>
   wishCount: number
   orderCount: number
   onSection: (s: Section) => void
-  onNavigate: (p: Page) => void
+  t: Translations
 }) {
   const hasAddress = user.address?.street && user.address?.city
 
@@ -117,9 +119,9 @@ function OverviewSection({ user, wishCount, orderCount, onSection, onNavigate }:
       {/* Stat strip */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', background: C.border, gap: '1px', borderBottom: `1px solid ${C.border}` }}>
         {[
-          { n: String(orderCount), label: 'Bestellungen',  action: () => onSection('orders') },
-          { n: String(wishCount), label: 'Wunschliste',   action: () => onSection('wishlist') },
-          { n: '30',            label: 'Tage Rückgabe',   action: undefined },
+          { n: String(orderCount), label: t.profile.orders,        action: () => onSection('orders') },
+          { n: String(wishCount),  label: t.profile.wishlistItems, action: () => onSection('wishlist') },
+          { n: '30',               label: t.profile.returns,       action: undefined },
         ].map(s => (
           <div
             key={s.label}
@@ -142,7 +144,7 @@ function OverviewSection({ user, wishCount, orderCount, onSection, onNavigate }:
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 420px', borderBottom: `1px solid ${C.border}` }}>
         {/* Address */}
         <div style={{ padding: '56px 48px', borderRight: `1px solid ${C.border}` }}>
-          <div style={{ fontSize: '10px', letterSpacing: '0.16em', color: C.textDim, marginBottom: '24px' }}>LIEFERADRESSE</div>
+          <div style={{ fontSize: '10px', letterSpacing: '0.16em', color: C.textDim, marginBottom: '24px' }}>{t.profile.deliveryAddress}</div>
           {hasAddress ? (
             <div style={{ fontSize: '14px', color: C.textMid, lineHeight: 2, marginBottom: '28px' }}>
               <span style={{ color: C.text }}>{fullName(user)}</span><br />
@@ -152,14 +154,14 @@ function OverviewSection({ user, wishCount, orderCount, onSection, onNavigate }:
             </div>
           ) : (
             <div style={{ fontSize: '13px', color: C.textDim, lineHeight: 1.7, marginBottom: '28px' }}>
-              Noch keine Adresse hinterlegt.<br />Füge eine hinzu für schnelleres Checkout.
+              —
             </div>
           )}
           <button
             onClick={() => onSection('settings')}
             style={{ background: 'none', border: 'none', padding: 0, color: C.accent, fontSize: '11px', letterSpacing: '0.1em', cursor: 'pointer', fontFamily: 'inherit' }}
           >
-            {hasAddress ? 'ADRESSE BEARBEITEN →' : 'ADRESSE HINZUFÜGEN →'}
+            {hasAddress ? t.profile.editAddress : t.profile.addAddress}
           </button>
         </div>
 
@@ -184,14 +186,6 @@ function OverviewSection({ user, wishCount, orderCount, onSection, onNavigate }:
 
 // ── Orders ────────────────────────────────────────────────────────────────────
 
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending:   'Ausstehend',
-  paid:      'Bezahlt',
-  shipped:   'Versendet',
-  delivered: 'Geliefert',
-  cancelled: 'Storniert',
-}
-
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending:   C.textDim,
   paid:      '#7cc97c',
@@ -200,13 +194,20 @@ const STATUS_COLORS: Record<OrderStatus, string> = {
   cancelled: C.accentDim,
 }
 
-function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
+function OrdersSection({ onNavigate, t, dateLocale }: { onNavigate: (p: Page) => void; t: Translations; dateLocale: string }) {
   const { orders, loading, error } = useOrders()
+  const STATUS_LABELS: Record<OrderStatus, string> = {
+    pending:   t.profile.status.pending,
+    paid:      t.profile.status.paid,
+    shipped:   t.profile.status.shipped,
+    delivered: t.profile.status.delivered,
+    cancelled: t.profile.status.cancelled,
+  }
 
   if (loading) {
     return (
       <div style={{ padding: '80px 56px', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ fontSize: '11px', letterSpacing: '0.08em', color: C.textDim }}>BESTELLUNGEN LADEN…</div>
+        <div style={{ fontSize: '11px', letterSpacing: '0.08em', color: C.textDim }}>{t.general.loading.toUpperCase()}</div>
       </div>
     )
   }
@@ -228,12 +229,12 @@ function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
           fontSize: '22px', opacity: 0.35,
         }}>📦</div>
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ fontSize: '14px', color: C.text }}>Noch keine Bestellungen</div>
+          <div style={{ fontSize: '14px', color: C.text }}>{t.profile.noOrders}</div>
           <div style={{ fontSize: '12px', color: C.textDim, lineHeight: 1.7, maxWidth: '320px' }}>
-            Sobald du eine Bestellung aufgibst, erscheint sie hier.
+            {t.profile.noOrdersHint}
           </div>
         </div>
-        <Btn variant="outline" onClick={() => onNavigate('shop')}>JETZT SHOPPEN</Btn>
+        <Btn variant="outline" onClick={() => onNavigate('shop')}>{t.profile.shopNow}</Btn>
       </div>
     )
   }
@@ -247,10 +248,10 @@ function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.08em' }}>
-                  BESTELLUNG #{order.id.slice(0, 8).toUpperCase()}
+                  {t.profile.orderNumber}{order.id.slice(0, 8).toUpperCase()}
                 </div>
                 <div style={{ fontSize: '11px', color: C.textDim }}>
-                  {new Date(order.created_at).toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  {new Date(order.created_at).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -287,7 +288,7 @@ function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
               return (
                 <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <div style={{ fontSize: '10px', letterSpacing: '0.1em', color: C.textDim }}>
-                    SENDUNGSNUMMER{carrier ? ` · ${carrier}` : ''}
+                    {t.profile.trackingNumber}{carrier ? ` · ${carrier}` : ''}
                   </div>
                   {url ? (
                     <a
@@ -304,7 +305,7 @@ function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
                     </div>
                   )}
                   <div style={{ fontSize: '11px', color: C.textDim }}>
-                    {url ? 'Klicke zum Verfolgen deines Pakets.' : 'Tracke dein Paket beim entsprechenden Versanddienstleister.'}
+                    {t.profile.trackHint}
                   </div>
                 </div>
               )
@@ -313,7 +314,7 @@ function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
             {/* Delivery address if available */}
             {order.shipping_address && (
               <div style={{ fontSize: '11px', color: C.textDim, borderTop: `1px solid ${C.border}`, paddingTop: '12px' }}>
-                <span style={{ letterSpacing: '0.08em', marginRight: '8px' }}>LIEFERUNG AN</span>
+                <span style={{ letterSpacing: '0.08em', marginRight: '8px' }}>{t.profile.deliveryTo}</span>
                 {[
                   [order.shipping_address.firstName, order.shipping_address.lastName].filter(Boolean).join(' '),
                   order.shipping_address.street,
@@ -330,10 +331,11 @@ function OrdersSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
 
 // ── Wishlist ──────────────────────────────────────────────────────────────────
 
-function WishlistSection({ wishlist, onNavigate, wished, onWish, onAdd, onProduct }: {
+function WishlistSection({ wishlist, onNavigate, wished, onWish, onAdd, onProduct, t }: {
   wishlist: Product[]; onNavigate: (p: Page) => void
   wished: (id: string) => boolean; onWish: (p: Product) => void
   onAdd: (p: Product) => void; onProduct: (p: Product) => void
+  t: Translations
 }) {
   if (wishlist.length === 0) {
     return (
@@ -344,10 +346,10 @@ function WishlistSection({ wishlist, onNavigate, wished, onWish, onAdd, onProduc
           fontSize: '22px', opacity: 0.35,
         }}>♡</div>
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ fontSize: '14px', color: C.text }}>Wunschliste ist leer</div>
-          <div style={{ fontSize: '12px', color: C.textDim }}>Speichere Produkte, die du im Auge behalten möchtest.</div>
+          <div style={{ fontSize: '14px', color: C.text }}>{t.profile.emptyWishlist}</div>
+          <div style={{ fontSize: '12px', color: C.textDim }}>{t.profile.emptyWishlistHint}</div>
         </div>
-        <Btn variant="outline" onClick={() => onNavigate('shop')}>SORTIMENT ENTDECKEN</Btn>
+        <Btn variant="outline" onClick={() => onNavigate('shop')}>{t.profile.discover}</Btn>
       </div>
     )
   }
@@ -377,7 +379,7 @@ function WishlistSection({ wishlist, onNavigate, wished, onWish, onAdd, onProduc
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 
-function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
+function SettingsSection({ onNavigate, t }: { onNavigate: (p: Page) => void; t: Translations }) {
   const { user, updateProfile, logout } = useAuth()
 
   const [firstName,   setFirstName]   = useState(user?.firstName ?? '')
@@ -421,7 +423,7 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
       await logout()
       onNavigate('home')
     } catch {
-      setDeleteError('Fehler beim Löschen. Bitte schreibe uns an hallo@toys4joys.de.')
+      setDeleteError(t.general.error + ' — hallo@toys4joys.de')
       setDeletePhase('confirm')
     }
   }
@@ -429,9 +431,9 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const handleInfoSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const errs: Record<string, string> = {}
-    if (!firstName.trim()) errs.firstName = 'Pflichtfeld'
-    if (!lastName.trim())  errs.lastName  = 'Pflichtfeld'
-    if (!phone.trim())     errs.phone     = 'Pflichtfeld'
+    if (!firstName.trim()) errs.firstName = t.auth.errRequired
+    if (!lastName.trim())  errs.lastName  = t.auth.errRequired
+    if (!phone.trim())     errs.phone     = t.auth.errRequired
     if (Object.keys(errs).length) { setInfoErrors(errs); return }
     setInfoErrors({}); setInfoLoading(true)
     await updateProfile({ firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim() })
@@ -442,9 +444,9 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
   const handleAddrSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const errs: Record<string, string> = {}
-    if (!addr.street.trim()) errs.street = 'Pflichtfeld'
-    if (!addr.zip.trim())    errs.zip    = 'Pflichtfeld'
-    if (!addr.city.trim())   errs.city   = 'Pflichtfeld'
+    if (!addr.street.trim()) errs.street = t.auth.errRequired
+    if (!addr.zip.trim())    errs.zip    = t.auth.errRequired
+    if (!addr.city.trim())   errs.city   = t.auth.errRequired
     if (Object.keys(errs).length) { setAddrErrors(errs); return }
     setAddrErrors({}); setAddrLoading(true)
     await updateProfile({ address: { ...addr } })
@@ -460,21 +462,21 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
       <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ padding: '48px 40px 48px 56px', borderRight: `1px solid ${C.border}` }}>
           <div style={{ fontSize: '10px', letterSpacing: '0.16em', color: C.textDim, textTransform: 'uppercase', lineHeight: 1.6 }}>
-            PERSÖNLICHE DATEN
+            {t.profile.personalData}
           </div>
         </div>
         <div style={{ padding: '48px 56px' }}>
           <form onSubmit={handleInfoSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <Field label="Vorname" value={firstName} onChange={setFirstName} placeholder="Max"        error={infoErrors.firstName} />
-              <Field label="Nachname" value={lastName}  onChange={setLastName}  placeholder="Mustermann" error={infoErrors.lastName} />
+              <Field label={t.checkout.firstName} value={firstName} onChange={setFirstName} placeholder={t.auth.firstNamePlaceholder} error={infoErrors.firstName} />
+              <Field label={t.checkout.lastName}  value={lastName}  onChange={setLastName}  placeholder={t.auth.lastNamePlaceholder}  error={infoErrors.lastName} />
             </div>
             <Field
-              label="E-Mail" value={user.email} disabled
-              hint="E-Mail-Änderung via Support: hallo@toys4joys.de"
+              label={t.checkout.email} value={user.email} disabled
+              hint={t.profile.emailHint}
             />
-            <Field label="Telefon" value={phone} onChange={setPhone} placeholder="+49 30 123456" error={infoErrors.phone} />
-            <SaveBar saved={infoSaved} loading={infoLoading} onReset={() => { setFirstName(user.firstName); setLastName(user.lastName); setPhone(user.phone); setInfoErrors({}) }} />
+            <Field label={t.checkout.phone} value={phone} onChange={setPhone} placeholder="+49 30 123456" error={infoErrors.phone} />
+            <SaveBar t={t} saved={infoSaved} loading={infoLoading} onReset={() => { setFirstName(user.firstName); setLastName(user.lastName); setPhone(user.phone); setInfoErrors({}) }} />
           </form>
         </div>
       </div>
@@ -483,26 +485,25 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
       <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ padding: '48px 40px 48px 56px', borderRight: `1px solid ${C.border}` }}>
           <div style={{ fontSize: '10px', letterSpacing: '0.16em', color: C.textDim, textTransform: 'uppercase', lineHeight: 1.6 }}>
-            LIEFERADRESSE
+            {t.profile.deliveryAddress}
           </div>
         </div>
         <div style={{ padding: '48px 56px' }}>
           <form onSubmit={handleAddrSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <AddressAutocomplete
-              label="Straße und Hausnummer"
+              label={t.checkout.street}
               value={addr.street}
               onChange={v => setAddrField('street', v)}
               onSelect={s => setAddr(a => ({ ...a, street: s.street, zip: s.zip, city: s.city, country: s.country }))}
-              placeholder="Musterstraße 42"
               required
               error={addrErrors.street}
             />
             <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '12px' }}>
-              <Field label="PLZ"   value={addr.zip}  onChange={v => setAddrField('zip', v)}  placeholder="10115"  error={addrErrors.zip} />
-              <Field label="Stadt" value={addr.city} onChange={v => setAddrField('city', v)} placeholder="Berlin" error={addrErrors.city} />
+              <Field label={t.checkout.zip}  value={addr.zip}  onChange={v => setAddrField('zip', v)}  error={addrErrors.zip} />
+              <Field label={t.checkout.city} value={addr.city} onChange={v => setAddrField('city', v)} error={addrErrors.city} />
             </div>
-            <SelectField label="Land" value={addr.country} onChange={v => setAddrField('country', v)} options={COUNTRIES} />
-            <SaveBar saved={addrSaved} loading={addrLoading} onReset={() => { setAddr(user.address); setAddrErrors({}) }} />
+            <SelectField label={t.checkout.country} value={addr.country} onChange={v => setAddrField('country', v)} options={COUNTRIES} />
+            <SaveBar t={t} saved={addrSaved} loading={addrLoading} onReset={() => { setAddr(user.address); setAddrErrors({}) }} />
           </form>
         </div>
       </div>
@@ -511,19 +512,18 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
       <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', borderBottom: `1px solid ${C.border}` }}>
         <div style={{ padding: '48px 40px 48px 56px', borderRight: `1px solid ${C.border}` }}>
           <div style={{ fontSize: '10px', letterSpacing: '0.16em', color: C.accentDim, textTransform: 'uppercase', lineHeight: 1.6 }}>
-            KONTO LÖSCHEN
+            {t.profile.deleteAccount}
           </div>
         </div>
         <div style={{ padding: '48px 56px' }}>
           {deletePhase === 'idle' && (
             <p style={{ fontSize: '13px', color: C.textMid, lineHeight: 1.75, marginBottom: '20px', maxWidth: '400px' }}>
-              Alle deine persönlichen Daten werden gelöscht (DSGVO Art. 17). Bestellhistorie bleibt
-              aus steuerrechtlichen Gründen anonymisiert erhalten. Diese Aktion kann nicht rückgängig gemacht werden.
+              {t.profile.deleteWarning}
             </p>
           )}
           {deletePhase === 'confirm' && (
             <p style={{ fontSize: '13px', color: C.accent, lineHeight: 1.75, marginBottom: '20px', maxWidth: '400px', border: `1px solid ${C.accentDim}`, padding: '14px' }}>
-              Wirklich löschen? Klicke erneut zur Bestätigung. Deine Daten werden unwiderruflich entfernt.
+              {t.profile.deleteConfirm}
             </p>
           )}
           {deleteError && (
@@ -541,14 +541,14 @@ function SettingsSection({ onNavigate }: { onNavigate: (p: Page) => void }) {
               opacity: deletePhase === 'deleting' ? 0.5 : 1,
             }}
           >
-            {deletePhase === 'deleting' ? 'WIRD GELÖSCHT…' : deletePhase === 'confirm' ? 'JA, KONTO LÖSCHEN' : 'KONTO LÖSCHEN'}
+            {deletePhase === 'deleting' ? t.profile.deleting : t.profile.deleteAccount}
           </button>
           {deletePhase === 'confirm' && (
             <button
               onClick={() => setDeletePhase('idle')}
               style={{ background: 'none', border: 'none', color: C.textDim, fontSize: '11px', letterSpacing: '0.08em', cursor: 'pointer', fontFamily: 'inherit', marginLeft: '12px' }}
             >
-              ABBRECHEN
+              ✕
             </button>
           )}
         </div>
@@ -569,23 +569,25 @@ interface Props {
   wished:     (id: string) => boolean
 }
 
-const TAB_LABELS: { id: Section; label: string }[] = [
-  { id: 'overview',  label: 'ÜBERSICHT' },
-  { id: 'orders',    label: 'MEINE BESTELLUNGEN' },
-  { id: 'wishlist',  label: 'WUNSCHLISTE' },
-  { id: 'settings',  label: 'EINSTELLUNGEN' },
-]
-
 export default function ProfilePage({ onNavigate, wishlist, wishCount, onProduct, onAdd, onWish, wished }: Props) {
   const { user, logout } = useAuth()
+  const { t, locale }    = useLocale()
   const { orders }       = useOrders()
   const [section, setSection] = useState<Section>('overview')
+  const dateLocale = locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : 'en-GB'
+
+  const TAB_LABELS: { id: Section; label: string }[] = [
+    { id: 'overview',  label: t.profile.overview.toUpperCase() },
+    { id: 'orders',    label: t.profile.ordersTab.toUpperCase() },
+    { id: 'wishlist',  label: t.profile.wishlistTab.toUpperCase() },
+    { id: 'settings',  label: t.profile.settingsTab.toUpperCase() },
+  ]
 
   if (!user) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', gap: '20px', borderTop: `1px solid ${C.border}` }}>
-        <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.1em' }}>DU BIST NICHT ANGEMELDET</div>
-        <Btn variant="outline" onClick={() => onNavigate('home')}>ZUR STARTSEITE</Btn>
+        <div style={{ fontSize: '12px', color: C.textDim, letterSpacing: '0.1em' }}>{t.nav.login.toUpperCase()}</div>
+        <Btn variant="outline" onClick={() => onNavigate('home')}>{t.general.backToHome}</Btn>
       </div>
     )
   }
@@ -600,9 +602,9 @@ export default function ProfilePage({ onNavigate, wishlist, wishCount, onProduct
         display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <Tag>Mein Konto</Tag>
+          <Tag>{t.profile.title}</Tag>
           <h1 style={{ fontSize: 'clamp(24px, 3.5vw, 44px)', fontWeight: 700, letterSpacing: '-0.02em', color: C.text, margin: 0, lineHeight: 1.05 }}>
-            Willkommen, {user.firstName || user.email.split('@')[0]}.
+            {user.firstName || user.email.split('@')[0]}
           </h1>
         </div>
         <button
@@ -615,7 +617,7 @@ export default function ProfilePage({ onNavigate, wishlist, wishCount, onProduct
           onMouseEnter={e => (e.currentTarget.style.color = C.accent)}
           onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}
         >
-          ABMELDEN
+          {t.nav.logout.toUpperCase()}
         </button>
       </div>
 
@@ -649,19 +651,19 @@ export default function ProfilePage({ onNavigate, wishlist, wishCount, onProduct
 
       {/* ── Section content ──────────────────────────────────────────────────── */}
       {section === 'overview' && (
-        <OverviewSection user={user} wishCount={wishCount} orderCount={orders.length} onSection={setSection} onNavigate={onNavigate} />
+        <OverviewSection user={user} wishCount={wishCount} orderCount={orders.length} onSection={setSection} t={t} />
       )}
       {section === 'orders' && (
-        <OrdersSection onNavigate={onNavigate} />
+        <OrdersSection onNavigate={onNavigate} t={t} dateLocale={dateLocale} />
       )}
       {section === 'wishlist' && (
         <WishlistSection
           wishlist={wishlist} onNavigate={onNavigate}
-          wished={wished} onWish={onWish} onAdd={onAdd} onProduct={onProduct}
+          wished={wished} onWish={onWish} onAdd={onAdd} onProduct={onProduct} t={t}
         />
       )}
       {section === 'settings' && (
-        <SettingsSection onNavigate={onNavigate} />
+        <SettingsSection onNavigate={onNavigate} t={t} />
       )}
     </div>
   )

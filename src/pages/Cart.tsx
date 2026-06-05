@@ -1,6 +1,7 @@
 import React from 'react'
 import { C } from '@/tokens'
-import type { CartItem, Product } from '@/types'
+import { useLocale, useLocalProduct } from '@/contexts/LocaleContext'
+import type { CartItem } from '@/types'
 import Icon from '@/components/ui/Icon'
 import Btn from '@/components/ui/Btn'
 import PhotoBox from '@/components/ui/PhotoBox'
@@ -21,6 +22,8 @@ interface Props {
 }
 
 export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: Props) {
+  const { t } = useLocale()
+  const localProduct = useLocalProduct()
   const shipping = total >= CART_ZONE_THRESHOLD ? 0 : CART_ZONE_RATE
   const missing  = CART_ZONE_THRESHOLD - total
   const pct      = Math.min(100, (total / CART_ZONE_THRESHOLD) * 100)
@@ -41,13 +44,13 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
         </div>
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ fontSize: '13px', letterSpacing: '0.1em', color: C.text }}>
-            Dein Warenkorb ist leer
+            {t.cart.empty}
           </div>
           <div style={{ fontSize: '12px', color: C.textDim }}>
-            Entdecke unsere Produkte und füge sie hinzu.
+            {t.cart.emptyHint}
           </div>
         </div>
-        <Btn variant="outline" onClick={() => onNavigate('shop')}>SORTIMENT ENTDECKEN</Btn>
+        <Btn variant="outline" onClick={() => onNavigate('shop')}>{t.cart.continueShopping}</Btn>
       </div>
     )
   }
@@ -64,9 +67,9 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
         display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <Tag>Warenkorb</Tag>
+          <Tag>{t.cart.title}</Tag>
           <h1 style={{ fontSize: 'clamp(26px, 3.5vw, 44px)', fontWeight: 700, letterSpacing: '-0.02em', color: C.text, margin: 0 }}>
-            {itemCount} {itemCount === 1 ? 'Artikel' : 'Artikel'}
+            {itemCount}
           </h1>
         </div>
         <button
@@ -76,7 +79,7 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
             fontSize: '11px', letterSpacing: '0.1em', display: 'flex', alignItems: 'center', gap: '6px',
           }}
         >
-          ← WEITER EINKAUFEN
+          ← {t.cart.continueShopping}
         </button>
       </div>
 
@@ -85,7 +88,9 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
 
         {/* Items list */}
         <div style={{ flex: 1, borderRight: `1px solid ${C.border}` }}>
-          {items.map((item, idx) => (
+          {items.map(item => {
+            const p = localProduct(item.product)
+            return (
             <div
               key={item.product.id}
               style={{
@@ -114,7 +119,7 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
                   {item.product.brand}
                 </div>
                 <div style={{ fontSize: '14px', color: C.text, lineHeight: 1.3 }}>
-                  {item.product.name}
+                  {p.name}
                 </div>
                 <div style={{ fontSize: '11px', color: C.textDim, marginTop: '2px' }}>
                   {item.product.mat}{item.product.lvl !== 'All levels' ? ` · ${item.product.lvl}` : ''}
@@ -149,7 +154,7 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
                     onMouseEnter={e => (e.currentTarget.style.color = C.accent)}
                     onMouseLeave={e => (e.currentTarget.style.color = C.textDim)}
                   >
-                    ENTFERNEN
+                    ×
                   </button>
                 </div>
               </div>
@@ -166,12 +171,13 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
                 </div>
                 {item.qty > 1 && (
                   <div style={{ fontSize: '11px', color: C.textDim }}>
-                    €{item.product.price.toFixed(2)} / Stk.
+                    €{item.product.price.toFixed(2)}
                   </div>
                 )}
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* ── Order summary sidebar ────────────────────────────────────────── */}
@@ -182,7 +188,7 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
             {missing > 0 ? (
               <>
                 <div style={{ fontSize: '11px', color: C.textMid, marginBottom: '14px', lineHeight: 1.6 }}>
-                  Noch <span style={{ color: C.accent, fontWeight: 500 }}>€{missing.toFixed(2)}</span> bis zum kostenlosen Versand (DE)
+                  <span style={{ color: C.accent, fontWeight: 500 }}>€{missing.toFixed(2)}</span> {t.cart.toFreeShipping} ({t.cart.germany})
                 </div>
                 <div style={{ height: '2px', background: C.border, overflow: 'hidden' }}>
                   <div style={{ height: '100%', background: C.accent, width: `${pct}%`, transition: 'width 0.4s ease' }} />
@@ -194,19 +200,19 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
               </>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: C.accent, letterSpacing: '0.08em' }}>
-                <span>✓</span> KOSTENLOSER VERSAND INKLUSIVE
+                <span>✓</span> {t.cart.freeShipping}
               </div>
             )}
             {/* Zone overview */}
             <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {[
-                { label: 'Deutschland',   free: FREE_THRESHOLD.germany,       rate: SHIPPING_RATE.germany },
-                { label: 'Europa',        free: FREE_THRESHOLD.europe,        rate: SHIPPING_RATE.europe },
-                { label: 'International', free: FREE_THRESHOLD.international, rate: SHIPPING_RATE.international },
+                { label: t.cart.germany,       free: FREE_THRESHOLD.germany,       rate: SHIPPING_RATE.germany },
+                { label: t.cart.europe,        free: FREE_THRESHOLD.europe,        rate: SHIPPING_RATE.europe },
+                { label: t.cart.international, free: FREE_THRESHOLD.international, rate: SHIPPING_RATE.international },
               ].map(z => (
                 <div key={z.label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: C.textDim }}>
                   <span>{z.label}</span>
-                  <span>ab €{z.free} kostenlos · sonst €{z.rate.toFixed(2)}</span>
+                  <span>≥ €{z.free} · €{z.rate.toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -215,16 +221,16 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
           {/* Totals */}
           <div style={{ padding: '32px', borderBottom: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ fontSize: '10px', letterSpacing: '0.14em', color: C.textDim, marginBottom: '4px' }}>
-              BESTELLÜBERSICHT
+              {t.checkout.orderSummary.toUpperCase()}
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: C.textMid }}>
-              <span>Zwischensumme</span>
+              <span>{t.cart.subtotal}</span>
               <span>€{total.toFixed(2)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: C.textMid }}>
-              <span>Versand <span style={{ fontSize: '10px', color: C.textDim }}>(DE)</span></span>
+              <span>{t.cart.shipping} <span style={{ fontSize: '10px', color: C.textDim }}>({t.cart.germany})</span></span>
               <span style={{ color: shipping === 0 ? C.accent : C.textMid }}>
-                {shipping === 0 ? 'Kostenlos' : `€${shipping.toFixed(2)}`}
+                {shipping === 0 ? '✓' : `€${shipping.toFixed(2)}`}
               </span>
             </div>
             <div style={{
@@ -232,11 +238,11 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
               fontSize: '16px', color: C.text,
               borderTop: `1px solid ${C.border}`, paddingTop: '16px',
             }}>
-              <span>Gesamt</span>
+              <span>{t.cart.total}</span>
               <span style={{ fontWeight: 500 }}>€{(total + shipping).toFixed(2)}</span>
             </div>
             <div style={{ fontSize: '10px', color: C.textDim, letterSpacing: '0.04em' }}>
-              inkl. 19% MwSt. (€{((total + shipping) * 19 / 119).toFixed(2)})
+              {t.cart.tax} (€{((total + shipping) * 19 / 119).toFixed(2)})
             </div>
           </div>
 
@@ -246,18 +252,8 @@ export default function Cart({ items, total, onRemove, onSetQty, onNavigate }: P
               style={{ width: '100%', padding: '15px', letterSpacing: '0.14em', fontSize: '11px' }}
               onClick={() => onNavigate('checkout')}
             >
-              ZUR KASSE
+              {t.cart.checkout}
             </Btn>
-            <div style={{
-              display: 'flex', justifyContent: 'center', gap: '16px',
-              fontSize: '9px', color: C.textDim, letterSpacing: '0.1em', textTransform: 'uppercase',
-            }}>
-              <span>Diskret</span>
-              <span style={{ color: C.border }}>·</span>
-              <span>SSL-gesichert</span>
-              <span style={{ color: C.border }}>·</span>
-              <span>30 Tage Rückgabe</span>
-            </div>
           </div>
         </div>
       </div>

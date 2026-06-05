@@ -1,5 +1,6 @@
 import React from 'react'
 import { C } from '@/tokens'
+import { useLocale } from '@/contexts/LocaleContext'
 import Tag from '@/components/ui/Tag'
 import Btn from '@/components/ui/Btn'
 import PhotoBox from '@/components/ui/PhotoBox'
@@ -15,32 +16,15 @@ interface Props {
   onProduct: (p: Product) => void
 }
 
-const STORY_SECTIONS = [
-  {
-    tag: 'Manifesto',
-    heading: 'Keine Entschuldigungen.',
-    body: 'Wir verkaufen keine Fantasien. Wir verkaufen Werkzeuge für Menschen, die genau wissen, was sie wollen. Jedes Produkt in unserem Sortiment ist mit Absicht hier — ausgewählt, getestet, respektiert.',
-    cat: 'BDSM & Kontrolle' as const,
-    image: '/images/manifesto.jpg',
-  },
-  {
-    tag: 'Handwerk',
-    heading: 'Berlin macht es anders.',
-    body: 'Wir wählen jedes Produkt persönlich aus — in Berlin. Vollleder. Edelstahl. Medizinisches Silikon. Kein Hersteller kommt ins Sortiment, der unsere Standards nicht erfüllt. Das ist kein Algorithmus — das ist Absicht.',
-    cat: 'Latex & Fetischwear' as const,
-    image: '/images/product-hero.jpg',
-  },
-  {
-    tag: 'Community',
-    heading: 'Für alle. Ohne Ausnahme.',
-    body: 'Queer. Het. Non-binary. Dom. Sub. Switch. Neugierig. Wir bauen keine Schubladen. Wir bauen einen Raum. Diskret verpackt. Keine Moralisierung. Keine Limits außer deinen eigenen.',
-    cat: 'Vibratoren & Elektro' as const,
-    image: '/images/community.jpg',
-  },
-]
-
 export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }: Props) {
+  const { t } = useLocale()
   const { products: featured } = useFeaturedProducts()
+
+  const STORY_SECTIONS = [
+    { tag: t.landing.story1Tag, heading: t.landing.story1Heading, body: t.landing.story1Body, cat: 'BDSM & Kontrolle' as const, image: '/images/manifesto.jpg' },
+    { tag: t.landing.story2Tag, heading: t.landing.story2Heading, body: t.landing.story2Body, cat: 'Latex & Fetischwear' as const, image: '/images/product-hero.jpg' },
+    { tag: t.landing.story3Tag, heading: t.landing.story3Heading, body: t.landing.story3Body, cat: 'Vibratoren & Elektro' as const, image: '/images/community.jpg' },
+  ]
 
   return (
     <div>
@@ -71,7 +55,7 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
           }} />
 
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <Tag style={{ marginBottom: '28px' }}>Berlin · Premium Kink</Tag>
+            <Tag style={{ marginBottom: '28px' }}>{t.landing.heroTag}</Tag>
             <h1 style={{
               fontSize: 'clamp(42px, 5.5vw, 88px)',
               fontWeight: 700,
@@ -80,9 +64,9 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
               color: C.text,
               marginBottom: '32px',
             }}>
-              Alles.<br />
-              <span style={{ color: C.accent }}>Ohne</span><br />
-              Kompromisse.
+              {t.landing.heroLine1}<br />
+              <span style={{ color: C.accent }}>{t.landing.heroLine2}</span><br />
+              {t.landing.heroLine3}
             </h1>
             <p style={{
               fontSize: '15px',
@@ -92,12 +76,11 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
               maxWidth: '420px',
               marginBottom: '40px',
             }}>
-              BDSM. Vibratoren. Latex. Elektrostimulation. Wir führen das Beste —
-              kuratiert von Menschen, die leben was sie verkaufen. Premium Kink aus Berlin.
+              {t.landing.heroBody}
             </p>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <Btn onClick={() => onNavigate('shop')}>SORTIMENT ENTDECKEN</Btn>
-              <Btn variant="outline" onClick={() => onNavigate('shop', 'BDSM & Kontrolle')}>BDSM KOLLEKTION</Btn>
+              <Btn onClick={() => onNavigate('shop')}>{t.landing.heroCta}</Btn>
+              <Btn variant="outline" onClick={() => onNavigate('shop', 'BDSM & Kontrolle')}>{t.landing.heroCtaSecondary}</Btn>
             </div>
           </div>
 
@@ -117,7 +100,7 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
         }}>
           <img
             src="/images/hero-banner.jpg"
-            alt="TOYS4JOYS — Premium Kink aus Berlin"
+            alt="TOYS4JOYS — Premium Kink"
             style={{
               width: '100%',
               height: '100%',
@@ -126,13 +109,11 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
               display: 'block',
             }}
           />
-          {/* Subtle left-edge fade so image blends into the dark bg */}
           <div style={{
             position: 'absolute', inset: 0,
             background: `linear-gradient(90deg, ${C.bg} 0%, transparent 18%)`,
             pointerEvents: 'none',
           }} />
-          {/* Bottom fade */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: '120px',
             background: `linear-gradient(transparent, ${C.bg})`,
@@ -207,9 +188,9 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
         borderBottom: `1px solid ${C.border}`,
       }}>
         {[
-          { n: '5', label: 'Kategorien' },
-          { n: '100%', label: 'Diskrete Lieferung' },
-          { n: 'Berlin', label: 'Kuratiert & Gelebt' },
+          { n: '5', label: t.landing.stat1Label },
+          { n: '100%', label: t.landing.stat2Label },
+          { n: 'Berlin', label: t.landing.stat3Label },
         ].map((s, i) => (
           <div key={s.label} style={{
             padding: '48px 32px',
@@ -230,13 +211,13 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
       <section style={{ padding: '64px 32px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }}>
           <div>
-            <Tag style={{ marginBottom: '12px' }}>Sortiment</Tag>
+            <Tag style={{ marginBottom: '12px' }}>{t.landing.sortimentTag}</Tag>
             <h2 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.01em', color: C.text }}>
-              Ausgewählte Produkte
+              {t.landing.featuredTag}
             </h2>
           </div>
           <Btn variant="ghost" onClick={() => onNavigate('shop')} style={{ color: C.accent, fontSize: '11px', letterSpacing: '0.1em' }}>
-            ALLE PRODUKTE →
+            {t.landing.allProducts} →
           </Btn>
         </div>
 
@@ -270,15 +251,14 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
         textAlign: 'center',
         gap: '24px',
       }}>
-        <Tag>Versand</Tag>
+        <Tag>{t.landing.shippingTag}</Tag>
         <h2 style={{ fontSize: 'clamp(22px, 3vw, 38px)', fontWeight: 700, color: C.text, letterSpacing: '-0.01em' }}>
-          Versand innerhalb von 24h. Kostenlos ab €49.
+          {t.landing.shippingHeading}
         </h2>
         <p style={{ fontSize: '13px', color: C.textMid, maxWidth: '400px', lineHeight: 1.7 }}>
-          Diskret verpackt. Kein Absender auf der Box. Schnelle Lieferung europaweit.
-          30 Tage Rückgabe ohne Fragen.
+          {t.landing.shippingBody}
         </p>
-        <Btn onClick={() => onNavigate('shop')} style={{ marginTop: '8px' }}>JETZT SHOPPEN</Btn>
+        <Btn onClick={() => onNavigate('shop')} style={{ marginTop: '8px' }}>{t.landing.shippingCta}</Btn>
       </section>
     </div>
   )

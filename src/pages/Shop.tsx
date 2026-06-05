@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { C } from '@/tokens'
+import { useLocale } from '@/contexts/LocaleContext'
 import { useProducts, useSubcategories } from '@/hooks/useProducts'
 import { CATEGORIES } from '@/data/navigation'
 import ProductCard from '@/components/ProductCard'
 import Tag from '@/components/ui/Tag'
-import type { Product, Category } from '@/types'
+import type { Product } from '@/types'
 
 type SortKey = 'newest' | 'price-asc' | 'price-desc' | 'rating'
 
@@ -19,8 +20,9 @@ interface Props {
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert', 'All levels']
 
 export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: Props) {
+  const { t } = useLocale()
   const { products, loading } = useProducts()
-  const [activeCat, setActiveCat] = useState<string>(initialCat ?? 'Alle')
+  const [activeCat, setActiveCat] = useState<string>(initialCat ?? t.shop.all)
   const [activeSubs, setActiveSubs] = useState<Set<string>>(new Set())
   const [priceMax, setPriceMax] = useState(500)
   const [activeLevels, setActiveLevels] = useState<Set<string>>(new Set())
@@ -59,7 +61,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
 
   const filtered = useMemo(() => {
     let list = [...products]
-    if (activeCat !== 'Alle') list = list.filter(p => p.cat === activeCat || p.cat === activeCat)
+    if (activeCat !== t.shop.all) list = list.filter(p => p.cat === activeCat)
     if (activeSubs.size > 0) list = list.filter(p => activeSubs.has(p.sub))
     list = list.filter(p => p.price <= priceMax)
     if (activeLevels.size > 0) list = list.filter(p => activeLevels.has(p.lvl))
@@ -70,7 +72,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
       default:           list.sort((a, b) => a.name.localeCompare(b.name))
     }
     return list
-  }, [products, activeCat, activeSubs, priceMax, activeLevels, sort])
+  }, [products, activeCat, activeSubs, priceMax, activeLevels, sort, t.shop.all])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
   const pageItems = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
@@ -94,7 +96,22 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
         {/* Categories */}
         <div>
           <div style={{ fontSize: '9px', letterSpacing: '0.14em', color: C.textDim, textTransform: 'uppercase', marginBottom: '12px' }}>
-            Kategorien
+            {t.landing.categoryTitle}
+          </div>
+          <div
+            onClick={() => { setActiveCat(t.shop.all); setActiveSubs(new Set()); setPage(1) }}
+            style={{
+              fontSize: '12px',
+              fontWeight: activeCat === t.shop.all ? 400 : 300,
+              color: activeCat === t.shop.all ? C.accent : C.textMid,
+              cursor: 'pointer',
+              padding: '6px 0',
+              borderLeft: activeCat === t.shop.all ? `2px solid ${C.accent}` : '2px solid transparent',
+              paddingLeft: '10px',
+              transition: 'color 0.12s',
+            }}
+          >
+            {t.shop.all}
           </div>
           {CATEGORIES.map(cat => (
             <div
@@ -120,7 +137,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
         {availableSubs.length > 0 && (
           <div>
             <div style={{ fontSize: '9px', letterSpacing: '0.14em', color: C.textDim, textTransform: 'uppercase', marginBottom: '12px' }}>
-              Unterkategorien
+              {t.shop.subcategories}
             </div>
             {availableSubs.map(s => (
               <label key={s} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px' }}>
@@ -139,7 +156,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
         {/* Price range */}
         <div>
           <div style={{ fontSize: '9px', letterSpacing: '0.14em', color: C.textDim, textTransform: 'uppercase', marginBottom: '12px' }}>
-            Preis bis €{priceMax}
+            {t.shop.priceRange} ≤ €{priceMax}
           </div>
           <input
             type="range" min={10} max={500} step={10}
@@ -155,7 +172,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
         {/* Level */}
         <div>
           <div style={{ fontSize: '9px', letterSpacing: '0.14em', color: C.textDim, textTransform: 'uppercase', marginBottom: '12px' }}>
-            Erfahrung
+            {t.shop.levels}
           </div>
           {LEVELS.map(l => (
             <label key={l} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px' }}>
@@ -177,7 +194,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
           <div>
             <Tag style={{ marginBottom: '8px' }}>{activeCat}</Tag>
-            <div style={{ fontSize: '12px', color: C.textDim }}>{filtered.length} Produkte</div>
+            <div style={{ fontSize: '12px', color: C.textDim }}>{filtered.length}</div>
           </div>
           <select
             value={sort}
@@ -192,17 +209,22 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
               letterSpacing: '0.05em',
             }}
           >
-            <option value="newest">Neueste</option>
-            <option value="price-asc">Preis aufsteigend</option>
-            <option value="price-desc">Preis absteigend</option>
-            <option value="rating">Bewertung</option>
+            <option value="newest">{t.shop.sortNewest}</option>
+            <option value="price-asc">{t.shop.sortPriceAsc}</option>
+            <option value="price-desc">{t.shop.sortPriceDesc}</option>
+            <option value="rating">{t.shop.sortRating}</option>
           </select>
         </div>
 
         {/* Grid */}
         {loading && (
           <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.1em', padding: '40px 0' }}>
-            PRODUKTE WERDEN GELADEN…
+            {t.general.loading.toUpperCase()}
+          </div>
+        )}
+        {!loading && filtered.length === 0 && (
+          <div style={{ fontSize: '13px', color: C.textDim, padding: '40px 0' }}>
+            {t.shop.noResults}
           </div>
         )}
         <div style={{

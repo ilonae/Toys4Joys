@@ -1,5 +1,6 @@
 import React from 'react'
 import { C } from '@/tokens'
+import { useLocale, useLocalProduct } from '@/contexts/LocaleContext'
 import type { Product } from '@/types'
 import Badge from './ui/Badge'
 import PhotoBox from './ui/PhotoBox'
@@ -15,6 +16,9 @@ interface Props {
 }
 
 export default function ProductCard({ product, wished, onWish, onAdd, onClick }: Props) {
+  const { t } = useLocale()
+  const localProduct = useLocalProduct()
+  const p = localProduct(product)
   return (
     <div
       style={{
@@ -44,7 +48,7 @@ export default function ProductCard({ product, wished, onWish, onAdd, onClick }:
           background: 'none', border: 'none', cursor: 'pointer', padding: '4px',
         }}
         onClick={e => { e.stopPropagation(); onWish(product) }}
-        aria-label="Wishlist"
+        aria-label={t.product.wishlist}
       >
         <Icon
           name={wished ? 'heart-filled' : 'heart'}
@@ -58,7 +62,7 @@ export default function ProductCard({ product, wished, onWish, onAdd, onClick }:
         {product.image ? (
           <img
             src={product.image}
-            alt={product.name}
+            alt={p.name}
             loading="lazy"
             decoding="async"
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
@@ -74,7 +78,7 @@ export default function ProductCard({ product, wished, onWish, onAdd, onClick }:
           {product.brand}
         </div>
         <div style={{ fontSize: '13px', fontWeight: 300, color: C.text, lineHeight: 1.35 }}>
-          {product.name}
+          {p.name}
         </div>
 
         {/* Rating */}
@@ -109,7 +113,7 @@ export default function ProductCard({ product, wished, onWish, onAdd, onClick }:
             color: C.textDim, textAlign: 'center',
             boxSizing: 'border-box' as const,
           }}>
-            AUSVERKAUFT
+            {t.product.soldOut}
           </div>
         ) : (
           <Btn
@@ -117,7 +121,7 @@ export default function ProductCard({ product, wished, onWish, onAdd, onClick }:
             onClick={e => { e.stopPropagation(); onAdd(product) }}
             style={{ width: '100%', marginTop: '10px', letterSpacing: '0.1em' }}
           >
-            IN DEN WARENKORB
+            {t.product.addToCart}
           </Btn>
         )}
       </div>

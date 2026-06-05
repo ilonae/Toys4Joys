@@ -1,21 +1,24 @@
 import React from 'react'
 import { C } from '@/tokens'
+import { useLocale } from '@/contexts/LocaleContext'
 import type { Page } from '@/types'
 
 interface Props {
   onNavigate: (page: Page) => void
 }
 
-const FOOTER_LINKS: { label: string; page: Page }[] = [
-  { label: 'Über Uns',           page: 'about'      },
-  { label: 'Versand & Rückgabe', page: 'shipping'   },
-  { label: 'Widerruf',           page: 'withdrawal' },
-  { label: 'Datenschutz',        page: 'privacy'    },
-  { label: 'AGB',                page: 'terms'      },
-  { label: 'Impressum',          page: 'imprint'    },
-]
-
 export default function Footer({ onNavigate }: Props) {
+  const { t } = useLocale()
+
+  const FOOTER_LINKS: { label: string; page: Page }[] = [
+    { label: t.footer.about,      page: 'about'      },
+    { label: t.footer.shipping,   page: 'shipping'   },
+    { label: t.footer.withdrawal, page: 'withdrawal' },
+    { label: t.footer.privacy,    page: 'privacy'    },
+    { label: t.footer.terms,      page: 'terms'      },
+    { label: t.footer.imprint,    page: 'imprint'    },
+  ]
+
   return (
     <footer style={{ borderTop: `1px solid ${C.border}` }}>
 
@@ -65,7 +68,7 @@ export default function Footer({ onNavigate }: Props) {
             TOYS4JOYS
           </span>
           <div style={{ fontSize: '11px', letterSpacing: '0.18em', color: C.textDim, textTransform: 'uppercase' }}>
-            Premium Kink · Berlin
+            {t.footer.tagline}
           </div>
         </div>
       </div>
@@ -91,7 +94,7 @@ export default function Footer({ onNavigate }: Props) {
         </div>
         <div style={{ display: 'flex', gap: '24px', fontSize: '10px', color: C.textGhost, letterSpacing: '0.08em' }}>
           <span>© 2026 Toys4Joys · Viet Anh Nguyen · Berlin</span>
-          <span>18+ · Nur für Erwachsene</span>
+          <span>{t.footer.adult}</span>
         </div>
       </div>
     </footer>

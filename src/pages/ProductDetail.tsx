@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { C } from '@/tokens'
+import { useLocale, useLocalProduct } from '@/contexts/LocaleContext'
 import type { Product } from '@/types'
 import { useRelatedProducts, useReviews } from '@/hooks/useProducts'
 import Badge from '@/components/ui/Badge'
@@ -21,10 +22,14 @@ interface Props {
 type Tab = 'desc' | 'details' | 'reviews'
 
 export default function ProductDetail({ product, onAdd, onWish, wished, onNavigate, onProduct }: Props) {
+  const { t, locale } = useLocale()
+  const localProduct = useLocalProduct()
+  const p = localProduct(product)
   const [qty, setQty] = useState(1)
   const [tab, setTab] = useState<Tab>('desc')
   const [activeImg, setActiveImg] = useState(0)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const dateLocale = locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : 'en-GB'
 
   // Reset to first image whenever the product changes
   useEffect(() => { setActiveImg(0) }, [product.id])
@@ -43,9 +48,9 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
   const { reviews, loading: revLoading } = useReviews(product.id)
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'desc', label: 'Beschreibung' },
-    { key: 'details', label: 'Details' },
-    { key: 'reviews', label: `Bewertungen (${product.rev})` },
+    { key: 'desc',    label: t.product.descTab },
+    { key: 'details', label: t.product.detailsTab },
+    { key: 'reviews', label: `${t.product.reviewsTab} (${product.rev})` },
   ]
 
   return (
@@ -56,7 +61,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
         <span style={{ fontSize: '11px', color: C.textDim }}>›</span>
         <span style={{ fontSize: '11px', color: C.textDim, cursor: 'pointer' }} onClick={() => onNavigate('shop')}>{product.cat}</span>
         <span style={{ fontSize: '11px', color: C.textDim }}>›</span>
-        <span style={{ fontSize: '11px', color: C.textMid }}>{product.name}</span>
+        <span style={{ fontSize: '11px', color: C.textMid }}>{p.name}</span>
       </div>
 
       <div style={{ display: 'flex', gap: '0', borderBottom: `1px solid ${C.border}` }}>
@@ -83,7 +88,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
             {currentUrl ? (
               <img
                 src={currentUrl}
-                alt={product.name}
+                alt={p.name}
                 style={{
                   width: '100%', height: '100%',
                   objectFit: 'cover',
@@ -136,7 +141,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                 >
                   <img
                     src={url}
-                    alt={`${product.name} Ansicht ${i + 1}`}
+                    alt={`${p.name} ${i + 1}`}
                     style={{
                       width: '100%', height: '100%',
                       objectFit: 'contain',
@@ -158,13 +163,13 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
           </div>
 
           <h1 style={{ fontSize: 'clamp(20px, 2.5vw, 30px)', fontWeight: 700, letterSpacing: '-0.01em', color: C.text, lineHeight: 1.2 }}>
-            {product.name}
+            {p.name}
           </h1>
 
           {/* Rating */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ color: C.accent, fontSize: '14px' }}>{'★'.repeat(Math.round(product.rating))}</span>
-            <span style={{ fontSize: '12px', color: C.textDim }}>{product.rating} · {product.rev} Bewertungen</span>
+            <span style={{ fontSize: '12px', color: C.textDim }}>{product.rating} · {product.rev} {t.product.reviews.toLowerCase()}</span>
           </div>
 
           {/* Price */}
@@ -182,13 +187,13 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
 
           {/* Tags */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {[product.mat, product.lvl, product.sub].map(t => (
-              <span key={t} style={{
+            {[product.mat, product.lvl, product.sub].map(tg => (
+              <span key={tg} style={{
                 fontSize: '10px', letterSpacing: '0.08em',
                 border: `1px solid ${C.border}`,
                 color: C.textMid,
                 padding: '4px 10px',
-              }}>{t}</span>
+              }}>{tg}</span>
             ))}
           </div>
 
@@ -196,7 +201,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
           {/* Stock badge */}
           {product.stock > 0 && product.stock <= 5 && (
             <div style={{ fontSize: '11px', color: '#c97c30', letterSpacing: '0.06em' }}>
-              Nur noch {product.stock} auf Lager
+              {t.product.onlyLeft} {product.stock}
             </div>
           )}
 
@@ -209,7 +214,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                   fontSize: '12px', letterSpacing: '0.12em',
                   color: C.textDim,
                 }}>
-                  AUSVERKAUFT
+                  {t.product.soldOut}
                 </div>
                 {/* Wishlist still available */}
                 <button
@@ -222,7 +227,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                     transition: 'border-color 0.15s',
                     flexShrink: 0,
                   }}
-                  title="Zur Wunschliste"
+                  title={t.product.wishlist}
                 >
                   <Icon name={wished(product.id) ? 'heart-filled' : 'heart'} size={18} color={wished(product.id) ? C.accent : C.textMid} />
                 </button>
@@ -252,7 +257,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                   style={{ letterSpacing: '0.1em', padding: '11px 28px', gap: '9px', boxShadow: `0 0 18px rgba(229,15,56,0.25)` }}
                 >
                   <Icon name="cart" size={14} color={C.white} />
-                  IN DEN WARENKORB
+                  {t.product.addToCart}
                 </Btn>
 
                 {/* Wishlist */}
@@ -274,7 +279,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
 
           {/* Shipping note */}
           <div style={{ fontSize: '11px', color: C.textDim, borderTop: `1px solid ${C.border}`, paddingTop: '16px' }}>
-            Versand innerhalb 24h · Kostenlos ab €49 · Diskrete Verpackung · 30 Tage Rückgabe
+            {t.product.shipping}
           </div>
         </div>
       </div>
@@ -282,21 +287,21 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
       {/* Tabs */}
       <div style={{ borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: 'flex', padding: '0 32px' }}>
-          {tabs.map(t => (
+          {tabs.map(tb => (
             <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
+              key={tb.key}
+              onClick={() => setTab(tb.key)}
               style={{
                 background: 'none', border: 'none',
-                borderBottom: tab === t.key ? `2px solid ${C.accent}` : '2px solid transparent',
-                color: tab === t.key ? C.text : C.textDim,
+                borderBottom: tab === tb.key ? `2px solid ${C.accent}` : '2px solid transparent',
+                color: tab === tb.key ? C.text : C.textDim,
                 fontSize: '11px', letterSpacing: '0.1em',
                 padding: '18px 20px',
                 cursor: 'pointer',
                 transition: 'color 0.12s',
               }}
             >
-              {t.label.toUpperCase()}
+              {tb.label.toUpperCase()}
             </button>
           ))}
         </div>
@@ -304,24 +309,24 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
 
       <div style={{ padding: '40px 32px', borderBottom: `1px solid ${C.border}`, maxWidth: '720px' }}>
         {tab === 'desc' && (
-          product.desc?.trim() ? (
+          p.desc?.trim() ? (
             <p style={{ fontSize: '14px', fontWeight: 300, color: C.textMid, lineHeight: 1.8, whiteSpace: 'pre-line' }}>
-              {product.desc}
+              {p.desc}
             </p>
           ) : (
             <p style={{ fontSize: '13px', color: C.textDim, fontStyle: 'italic' }}>
-              Keine Beschreibung vorhanden.
+              {t.product.noDescription}
             </p>
           )
         )}
         {tab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
-              ['Material', product.mat],
-              ['Erfahrungslevel', product.lvl],
-              ['Kategorie', product.cat],
-              ['Unterkategorie', product.sub],
-              ['Marke', product.brand],
+              [t.product.material, product.mat],
+              [t.product.level,    product.lvl],
+              [t.product.category, product.cat],
+              [t.product.sub,      product.sub],
+              [t.product.brand,    product.brand],
             ].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', gap: '24px', fontSize: '12px' }}>
                 <span style={{ color: C.textDim, width: '140px', flexShrink: 0, letterSpacing: '0.06em' }}>{k}</span>
@@ -341,16 +346,16 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                   {'★'.repeat(Math.round(product.rating))}{'☆'.repeat(5 - Math.round(product.rating))}
                 </div>
                 <div style={{ fontSize: '11px', color: C.textDim, marginTop: '4px', letterSpacing: '0.06em' }}>
-                  {product.rev} {product.rev === 1 ? 'Bewertung' : 'Bewertungen'}
+                  {product.rev} {t.product.reviews.toLowerCase()}
                 </div>
               </div>
             </div>
 
             {/* Individual reviews */}
             {revLoading ? (
-              <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>LADE BEWERTUNGEN…</div>
+              <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>{t.general.loading.toUpperCase()}</div>
             ) : reviews.length === 0 ? (
-              <div style={{ fontSize: '13px', color: C.textDim }}>Noch keine Bewertungen.</div>
+              <div style={{ fontSize: '13px', color: C.textDim }}>{t.product.noReviews}</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: C.border }}>
                 {reviews.map(r => (
@@ -364,7 +369,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                         </div>
                       </div>
                       <div style={{ fontSize: '11px', color: C.textDim, flexShrink: 0 }}>
-                        {new Date(r.created_at).toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {new Date(r.created_at).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' })}
                       </div>
                     </div>
                     <div style={{ fontSize: '13px', color: C.textMid, lineHeight: 1.75 }}>{r.body}</div>
@@ -390,7 +395,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
           {/* Full-res image */}
           <img
             src={currentUrl}
-            alt={product.name}
+            alt={p.name}
             onClick={(e) => e.stopPropagation()}
             style={{
               maxWidth: '88vw', maxHeight: '88vh',
@@ -444,7 +449,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
       {/* Related */}
       {related.length > 0 && (
         <section style={{ padding: '48px 32px' }}>
-          <Tag style={{ marginBottom: '24px' }}>Ähnliche Produkte</Tag>
+          <Tag style={{ marginBottom: '24px' }}>{t.product.relatedTitle}</Tag>
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',

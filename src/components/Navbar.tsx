@@ -39,6 +39,7 @@ function MenuRow({ label, onClick, accent }: { label: string; onClick: () => voi
 
 export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Props) {
   const { user, logout } = useAuth()
+  const { t } = useLocale()
   const [activeDrop, setActiveDrop] = useState<string | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -130,7 +131,7 @@ export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Prop
               display: 'flex', alignItems: 'center',
             }}
             onClick={() => { if (!user) { setShowUserMenu(false); onOpenAuth('login') } }}
-            aria-label={user ? 'Mein Konto' : 'Anmelden'}
+            aria-label={user ? t.nav.profile : t.nav.login}
           >
             <Icon name={user ? 'user-check' : 'user'} size={18} color={user ? C.accent : C.textMid} />
           </button>
@@ -148,35 +149,35 @@ export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Prop
                     <div style={{ fontSize: '12px', color: C.text, marginBottom: '2px' }}>{fullName(user)}</div>
                     <div style={{ fontSize: '10px', color: C.textDim }}>{user.email}</div>
                   </div>
-                  <MenuRow label="MEIN KONTO"           onClick={() => { onNavigate('profile'); setShowUserMenu(false) }} />
-                  <MenuRow label="MEINE BESTELLUNGEN"   onClick={() => { onNavigate('profile'); setShowUserMenu(false) }} />
+                  <MenuRow label={t.nav.profile.toUpperCase()} onClick={() => { onNavigate('profile'); setShowUserMenu(false) }} />
+                  <MenuRow label={t.nav.orders.toUpperCase()}  onClick={() => { onNavigate('profile'); setShowUserMenu(false) }} />
                   {user.isAdmin && (
                     <>
                       <div style={{ borderTop: `1px solid ${C.border}` }} />
-                      <MenuRow label="ADMIN / CMS" accent onClick={() => { onNavigate('admin'); setShowUserMenu(false) }} />
+                      <MenuRow label={t.nav.admin.toUpperCase()} accent onClick={() => { onNavigate('admin'); setShowUserMenu(false) }} />
                     </>
                   )}
                   <div style={{ borderTop: `1px solid ${C.border}` }} />
-                  <MenuRow label="ABMELDEN" accent onClick={() => { logout().then(() => setShowUserMenu(false)) }} />
+                  <MenuRow label={t.nav.logout.toUpperCase()} accent onClick={() => { logout().then(() => setShowUserMenu(false)) }} />
                 </>
               ) : (
                 <>
                   <div style={{ padding: '16px 16px 12px', borderBottom: `1px solid ${C.border}` }}>
-                    <div style={{ fontSize: '11px', letterSpacing: '0.08em', color: C.textDim, marginBottom: '12px' }}>KONTO</div>
+                    <div style={{ fontSize: '11px', letterSpacing: '0.08em', color: C.textDim, marginBottom: '12px' }}>{t.nav.profile.toUpperCase()}</div>
                     <button
                       onClick={() => { setShowUserMenu(false); onOpenAuth('login') }}
                       style={{ width: '100%', padding: '9px', background: C.accent, border: 'none', color: C.white, fontSize: '11px', letterSpacing: '0.1em', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '8px' }}
                     >
-                      ANMELDEN
+                      {t.nav.login.toUpperCase()}
                     </button>
                     <button
                       onClick={() => { setShowUserMenu(false); onOpenAuth('register') }}
                       style={{ width: '100%', padding: '9px', background: 'none', border: `1px solid ${C.border}`, color: C.textMid, fontSize: '11px', letterSpacing: '0.1em', cursor: 'pointer', fontFamily: 'inherit' }}
                     >
-                      REGISTRIEREN
+                      {t.nav.register.toUpperCase()}
                     </button>
                   </div>
-                  <MenuRow label="BESTELLUNG VERFOLGEN" onClick={() => { setShowUserMenu(false); onOpenAuth('track') }} />
+                  <MenuRow label={t.profile.trackingNumber} onClick={() => { setShowUserMenu(false); onOpenAuth('track') }} />
                 </>
               )}
             </div>
@@ -187,7 +188,7 @@ export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Prop
         <button
           style={{ background: 'none', border: 'none', color: C.textMid, cursor: 'pointer', padding: '4px', position: 'relative' }}
           onClick={() => onNavigate('cart')}
-          aria-label="Warenkorb"
+          aria-label={t.nav.cart}
         >
           <Icon name="cart" size={18} color={C.textMid} />
           {cartCount > 0 && (

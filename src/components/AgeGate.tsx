@@ -20,6 +20,8 @@ export default function AgeGate({
   onConfirm: () => void
   onNavigate: (page: Page) => void
 }) {
+  const { t } = useLocale()
+
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
@@ -30,6 +32,12 @@ export default function AgeGate({
     color: C.textMid, cursor: 'pointer', fontFamily: 'inherit',
     fontSize: 'inherit', textDecoration: 'underline', textUnderlineOffset: '2px',
   }
+
+  // Split the heading at the first "?" (or use full heading) — show first half in white, second in accent
+  const headingParts = t.ageGate.heading.split(/\s+/)
+  const headingHalf  = Math.ceil(headingParts.length / 2)
+  const headingLine1 = headingParts.slice(0, headingHalf).join(' ')
+  const headingLine2 = headingParts.slice(headingHalf).join(' ')
 
   return (
     <div style={{
@@ -76,15 +84,14 @@ export default function AgeGate({
         {/* Copy */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ fontSize: '10px', letterSpacing: '0.24em', color: C.textDim, textTransform: 'uppercase' }}>
-            Altersprüfung
+            18+
           </div>
           <h1 style={{ fontSize: 'clamp(22px, 5vw, 34px)', fontWeight: 700, letterSpacing: '-0.01em', color: C.text, margin: 0, lineHeight: 1.1 }}>
-            Bist du<br />
-            <span style={{ color: C.accent }}>18 Jahre oder älter?</span>
+            {headingLine1}<br />
+            <span style={{ color: C.accent }}>{headingLine2}</span>
           </h1>
           <p style={{ fontSize: '12px', color: C.textDim, lineHeight: 1.7, margin: 0 }}>
-            Dieser Shop richtet sich ausschließlich an Erwachsene ab 18 Jahren.
-            Bitte bestätige dein Alter, um fortzufahren.
+            {t.ageGate.sub}
           </p>
         </div>
 
@@ -102,7 +109,7 @@ export default function AgeGate({
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accentDim }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accent }}
           >
-            JA, ICH BIN 18+
+            {t.ageGate.confirm}
           </button>
           <a
             href="https://www.google.com"
@@ -120,17 +127,16 @@ export default function AgeGate({
             onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.borderColor = C.borderMid; el.style.color = C.textMid }}
             onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.borderColor = C.border; el.style.color = C.textDim }}
           >
-            NEIN, VERLASSEN
+            {t.ageGate.deny}
           </a>
         </div>
 
         {/* Legal links — users must be able to read before confirming */}
         <div style={{ fontSize: '10px', color: C.textDim, letterSpacing: '0.06em', lineHeight: 1.8 }}>
-          Mit dem Fortfahren bestätigst du, dass du die{' '}
-          <button style={linkStyle} onClick={() => onNavigate('terms')}>AGB</button>
-          {' '}und die{' '}
-          <button style={linkStyle} onClick={() => onNavigate('privacy')}>Datenschutzerklärung</button>
-          {' '}akzeptierst.
+          {t.ageGate.legal}{' '}
+          <button style={linkStyle} onClick={() => onNavigate('terms')}>{t.ageGate.termsLink}</button>
+          {' & '}
+          <button style={linkStyle} onClick={() => onNavigate('privacy')}>{t.ageGate.privacyLink}</button>.
         </div>
       </div>
     </div>

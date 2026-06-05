@@ -75,6 +75,14 @@ export interface Translations {
   // Landing
   landing: {
     heroCta: string; featuredTitle: string; categoryTitle: string; allProducts: string
+    heroTag: string; heroLine1: string; heroLine2: string; heroLine3: string
+    heroBody: string; heroCtaSecondary: string
+    story1Tag: string; story1Heading: string; story1Body: string
+    story2Tag: string; story2Heading: string; story2Body: string
+    story3Tag: string; story3Heading: string; story3Body: string
+    stat1Label: string; stat2Label: string; stat3Label: string
+    sortimentTag: string; featuredTag: string
+    shippingTag: string; shippingHeading: string; shippingBody: string; shippingCta: string
   }
   // Shop
   shop: {
@@ -86,6 +94,24 @@ export interface Translations {
   general: {
     loading: string; error: string; backToHome: string; reload: string
     unexpectedError: string; contactUs: string
+  }
+  // Auth modal
+  auth: {
+    accountHeader: string; loginTab: string; registerTab: string; trackTab: string
+    emailPlaceholder: string; passwordPlaceholder: string; passwordMin: string
+    confirmPasswordLabel: string; firstNamePlaceholder: string; lastNamePlaceholder: string
+    rememberMe: string; forgotPassword: string
+    ageConfirm: string; termsAcceptPre: string; termsAcceptMid: string
+    createAccountBtn: string; signInBtn: string
+    confirmationSent: string; confirmationText1: string; confirmationText2: string; checkSpam: string
+    trackHint: string; trackOrderIdLabel: string; trackOrderIdPlaceholder: string
+    trackEmailLabel: string; trackBtn: string; orderStatusLabel: string; orderAmountLabel: string
+    orderIdLabel: string; newSearch: string
+    statusSucceeded: string; statusProcessing: string; statusPaymentPending: string
+    statusConfirmationPending: string; statusCancelled: string
+    errRequired: string; errInvalidEmail: string; errPasswordShort: string
+    errPasswordMismatch: string; errAgeRequired: string; errTermsRequired: string
+    errAllFields: string; errOrderIdRequired: string; errServerUnreachable: string
   }
 }
 
@@ -173,6 +199,28 @@ const de: Translations = {
   landing: {
     heroCta: 'SORTIMENT ENTDECKEN', featuredTitle: 'AUSGEWÄHLTE PRODUKTE',
     categoryTitle: 'KATEGORIEN', allProducts: 'ALLE PRODUKTE',
+    heroTag: 'Berlin · Premium Kink',
+    heroLine1: 'Alles.', heroLine2: 'Ohne', heroLine3: 'Kompromisse.',
+    heroBody: 'BDSM. Vibratoren. Latex. Elektrostimulation. Wir führen das Beste — kuratiert von Menschen, die leben was sie verkaufen. Premium Kink aus Berlin.',
+    heroCtaSecondary: 'BDSM KOLLEKTION',
+    story1Tag: 'Manifesto',
+    story1Heading: 'Keine Entschuldigungen.',
+    story1Body: 'Wir verkaufen keine Fantasien. Wir verkaufen Werkzeuge für Menschen, die genau wissen, was sie wollen. Jedes Produkt in unserem Sortiment ist mit Absicht hier — ausgewählt, getestet, respektiert.',
+    story2Tag: 'Handwerk',
+    story2Heading: 'Berlin macht es anders.',
+    story2Body: 'Wir wählen jedes Produkt persönlich aus — in Berlin. Vollleder. Edelstahl. Medizinisches Silikon. Kein Hersteller kommt ins Sortiment, der unsere Standards nicht erfüllt. Das ist kein Algorithmus — das ist Absicht.',
+    story3Tag: 'Community',
+    story3Heading: 'Für alle. Ohne Ausnahme.',
+    story3Body: 'Queer. Het. Non-binary. Dom. Sub. Switch. Neugierig. Wir bauen keine Schubladen. Wir bauen einen Raum. Diskret verpackt. Keine Moralisierung. Keine Limits außer deinen eigenen.',
+    stat1Label: 'Kategorien',
+    stat2Label: 'Diskrete Lieferung',
+    stat3Label: 'Kuratiert & Gelebt',
+    sortimentTag: 'Sortiment',
+    featuredTag: 'Ausgewählte Produkte',
+    shippingTag: 'Versand',
+    shippingHeading: 'Versand innerhalb von 24h. Kostenlos ab €49.',
+    shippingBody: 'Diskret verpackt. Kein Absender auf der Box. Schnelle Lieferung europaweit. 30 Tage Rückgabe ohne Fragen.',
+    shippingCta: 'JETZT SHOPPEN',
   },
   shop: {
     title: 'Shop', filters: 'Filter', sort: 'Sortierung', noResults: 'Keine Produkte gefunden.',
@@ -184,6 +232,34 @@ const de: Translations = {
     loading: 'Laden…', error: 'Fehler', backToHome: 'ZUR STARTSEITE', reload: 'SEITE NEU LADEN',
     unexpectedError: 'UNERWARTETER FEHLER',
     contactUs: 'Etwas ist schiefgelaufen. Bitte lade die Seite neu oder kontaktiere uns unter',
+  },
+  auth: {
+    accountHeader: 'KONTO', loginTab: 'ANMELDEN', registerTab: 'REGISTRIEREN', trackTab: 'BESTELLUNG',
+    emailPlaceholder: 'deine@email.de', passwordPlaceholder: '••••••••', passwordMin: 'Mindestens 8 Zeichen',
+    confirmPasswordLabel: 'Passwort wiederholen',
+    firstNamePlaceholder: 'Max', lastNamePlaceholder: 'Mustermann',
+    rememberMe: 'Angemeldet bleiben', forgotPassword: 'Passwort vergessen?',
+    ageConfirm: 'Ich bin 18 Jahre oder älter',
+    termsAcceptPre: 'Ich akzeptiere die', termsAcceptMid: 'und',
+    createAccountBtn: 'KONTO ERSTELLEN', signInBtn: 'ANMELDEN',
+    confirmationSent: 'BESTÄTIGUNGSMAIL GESENDET',
+    confirmationText1: 'Wir haben eine Bestätigungs-E-Mail an',
+    confirmationText2: 'gesendet. Bitte klick auf den Link darin, um dein Konto zu aktivieren.',
+    checkSpam: 'Keine E-Mail erhalten? Schau in deinen Spam-Ordner oder wende dich an unseren Support.',
+    trackHint: 'Gib deine Bestell-ID ein — sie steht in deiner Bestätigungs-E-Mail.',
+    trackOrderIdLabel: 'Bestell-ID', trackOrderIdPlaceholder: 'pi_3Nxxx...',
+    trackEmailLabel: 'E-Mail (optional)', trackBtn: 'BESTELLUNG VERFOLGEN',
+    orderStatusLabel: 'BESTELLSTATUS', orderAmountLabel: 'Betrag',
+    orderIdLabel: 'Bestell-ID', newSearch: '← Neue Suche',
+    statusSucceeded: 'Bezahlt ✓', statusProcessing: 'In Bearbeitung',
+    statusPaymentPending: 'Zahlung ausstehend', statusConfirmationPending: 'Bestätigung ausstehend',
+    statusCancelled: 'Storniert',
+    errRequired: 'Pflichtfeld', errInvalidEmail: 'Ungültige E-Mail',
+    errPasswordShort: 'Mindestens 8 Zeichen', errPasswordMismatch: 'Passwörter stimmen nicht überein',
+    errAgeRequired: 'Du musst 18+ sein', errTermsRequired: 'Bitte AGB akzeptieren',
+    errAllFields: 'Bitte alle Felder ausfüllen.',
+    errOrderIdRequired: 'Bitte Bestellnummer eingeben.',
+    errServerUnreachable: 'Server nicht erreichbar. Bitte später erneut versuchen.',
   },
 }
 
@@ -271,6 +347,28 @@ const en: Translations = {
   landing: {
     heroCta: 'DISCOVER COLLECTION', featuredTitle: 'FEATURED PRODUCTS',
     categoryTitle: 'CATEGORIES', allProducts: 'ALL PRODUCTS',
+    heroTag: 'Berlin · Premium Kink',
+    heroLine1: 'Everything.', heroLine2: 'No', heroLine3: 'Compromises.',
+    heroBody: 'BDSM. Vibrators. Latex. Electrostimulation. We carry the best — curated by people who live what they sell. Premium kink from Berlin.',
+    heroCtaSecondary: 'BDSM COLLECTION',
+    story1Tag: 'Manifesto',
+    story1Heading: 'No apologies.',
+    story1Body: 'We don\'t sell fantasies. We sell tools for people who know exactly what they want. Every product in our range is here on purpose — selected, tested, respected.',
+    story2Tag: 'Craftsmanship',
+    story2Heading: 'Berlin does it differently.',
+    story2Body: 'We hand-pick every product — in Berlin. Full-grain leather. Stainless steel. Medical-grade silicone. No manufacturer makes our range unless they meet our standards. It\'s not an algorithm — it\'s intention.',
+    story3Tag: 'Community',
+    story3Heading: 'For everyone. No exceptions.',
+    story3Body: 'Queer. Hetero. Non-binary. Dom. Sub. Switch. Curious. We don\'t build boxes. We build a space. Discreet packaging. No moralising. No limits except your own.',
+    stat1Label: 'Categories',
+    stat2Label: 'Discreet Delivery',
+    stat3Label: 'Curated & Lived',
+    sortimentTag: 'Collection',
+    featuredTag: 'Featured Products',
+    shippingTag: 'Shipping',
+    shippingHeading: 'Ships within 24h. Free from €49.',
+    shippingBody: 'Discreetly packaged. No sender on the box. Fast delivery across Europe. 30-day returns, no questions asked.',
+    shippingCta: 'SHOP NOW',
   },
   shop: {
     title: 'Shop', filters: 'Filters', sort: 'Sort', noResults: 'No products found.',
@@ -282,6 +380,34 @@ const en: Translations = {
     loading: 'Loading…', error: 'Error', backToHome: 'BACK TO HOME', reload: 'RELOAD PAGE',
     unexpectedError: 'UNEXPECTED ERROR',
     contactUs: 'Something went wrong. Please reload the page or contact us at',
+  },
+  auth: {
+    accountHeader: 'ACCOUNT', loginTab: 'SIGN IN', registerTab: 'REGISTER', trackTab: 'TRACK ORDER',
+    emailPlaceholder: 'your@email.com', passwordPlaceholder: '••••••••', passwordMin: 'At least 8 characters',
+    confirmPasswordLabel: 'Confirm password',
+    firstNamePlaceholder: 'Anna', lastNamePlaceholder: 'Smith',
+    rememberMe: 'Stay signed in', forgotPassword: 'Forgot password?',
+    ageConfirm: 'I am 18 years or older',
+    termsAcceptPre: 'I accept the', termsAcceptMid: 'and',
+    createAccountBtn: 'CREATE ACCOUNT', signInBtn: 'SIGN IN',
+    confirmationSent: 'CONFIRMATION EMAIL SENT',
+    confirmationText1: 'We sent a confirmation email to',
+    confirmationText2: 'Please click the link inside to activate your account.',
+    checkSpam: 'No email received? Check your spam folder or contact our support.',
+    trackHint: 'Enter your order ID — it\'s in your confirmation email.',
+    trackOrderIdLabel: 'Order ID', trackOrderIdPlaceholder: 'pi_3Nxxx...',
+    trackEmailLabel: 'Email (optional)', trackBtn: 'TRACK ORDER',
+    orderStatusLabel: 'ORDER STATUS', orderAmountLabel: 'Amount',
+    orderIdLabel: 'Order ID', newSearch: '← New search',
+    statusSucceeded: 'Paid ✓', statusProcessing: 'Processing',
+    statusPaymentPending: 'Payment pending', statusConfirmationPending: 'Awaiting confirmation',
+    statusCancelled: 'Cancelled',
+    errRequired: 'Required', errInvalidEmail: 'Invalid email',
+    errPasswordShort: 'At least 8 characters', errPasswordMismatch: 'Passwords don\'t match',
+    errAgeRequired: 'You must be 18+', errTermsRequired: 'Please accept the Terms',
+    errAllFields: 'Please fill in all fields.',
+    errOrderIdRequired: 'Please enter an order ID.',
+    errServerUnreachable: 'Server unreachable. Please try again later.',
   },
 }
 
@@ -369,6 +495,28 @@ const es: Translations = {
   landing: {
     heroCta: 'DESCUBRIR COLECCIÓN', featuredTitle: 'PRODUCTOS DESTACADOS',
     categoryTitle: 'CATEGORÍAS', allProducts: 'TODOS LOS PRODUCTOS',
+    heroTag: 'Berlín · Premium Kink',
+    heroLine1: 'Todo.', heroLine2: 'Sin', heroLine3: 'Compromisos.',
+    heroBody: 'BDSM. Vibradores. Látex. Electroestimulación. Llevamos lo mejor — curado por personas que viven lo que venden. Premium Kink desde Berlín.',
+    heroCtaSecondary: 'COLECCIÓN BDSM',
+    story1Tag: 'Manifiesto',
+    story1Heading: 'Sin excusas.',
+    story1Body: 'No vendemos fantasías. Vendemos herramientas para personas que saben exactamente lo que quieren. Cada producto está aquí con intención — seleccionado, probado, respetado.',
+    story2Tag: 'Artesanía',
+    story2Heading: 'Berlín lo hace diferente.',
+    story2Body: 'Elegimos cada producto personalmente — en Berlín. Cuero genuino. Acero inoxidable. Silicona de grado médico. Ningún fabricante entra en el catálogo sin cumplir nuestros estándares. No es un algoritmo — es intención.',
+    story3Tag: 'Comunidad',
+    story3Heading: 'Para todos. Sin excepciones.',
+    story3Body: 'Queer. Hetero. No binario. Dom. Sub. Switch. Curioso. No creamos cajas. Creamos un espacio. Embalaje discreto. Sin moralinas. Sin límites más allá de los tuyos.',
+    stat1Label: 'Categorías',
+    stat2Label: 'Entrega Discreta',
+    stat3Label: 'Curado y Vivido',
+    sortimentTag: 'Colección',
+    featuredTag: 'Productos Destacados',
+    shippingTag: 'Envío',
+    shippingHeading: 'Envío en 24h. Gratis desde €49.',
+    shippingBody: 'Embalaje discreto. Sin remitente en la caja. Entrega rápida en toda Europa. Devolución en 30 días sin preguntas.',
+    shippingCta: 'COMPRAR AHORA',
   },
   shop: {
     title: 'Tienda', filters: 'Filtros', sort: 'Ordenar', noResults: 'No se encontraron productos.',
@@ -380,6 +528,34 @@ const es: Translations = {
     loading: 'Cargando…', error: 'Error', backToHome: 'VOLVER AL INICIO', reload: 'RECARGAR PÁGINA',
     unexpectedError: 'ERROR INESPERADO',
     contactUs: 'Algo salió mal. Por favor recarga la página o contáctanos en',
+  },
+  auth: {
+    accountHeader: 'CUENTA', loginTab: 'INICIAR SESIÓN', registerTab: 'REGISTRARSE', trackTab: 'PEDIDO',
+    emailPlaceholder: 'tu@email.com', passwordPlaceholder: '••••••••', passwordMin: 'Al menos 8 caracteres',
+    confirmPasswordLabel: 'Confirmar contraseña',
+    firstNamePlaceholder: 'Ana', lastNamePlaceholder: 'García',
+    rememberMe: 'Mantener sesión iniciada', forgotPassword: '¿Olvidaste tu contraseña?',
+    ageConfirm: 'Tengo 18 años o más',
+    termsAcceptPre: 'Acepto los', termsAcceptMid: 'y la',
+    createAccountBtn: 'CREAR CUENTA', signInBtn: 'INICIAR SESIÓN',
+    confirmationSent: 'EMAIL DE CONFIRMACIÓN ENVIADO',
+    confirmationText1: 'Enviamos un email de confirmación a',
+    confirmationText2: 'Por favor haz clic en el enlace para activar tu cuenta.',
+    checkSpam: '¿No recibiste el email? Revisa la carpeta de spam o contacta a soporte.',
+    trackHint: 'Ingresa tu ID de pedido — está en tu email de confirmación.',
+    trackOrderIdLabel: 'ID de Pedido', trackOrderIdPlaceholder: 'pi_3Nxxx...',
+    trackEmailLabel: 'Email (opcional)', trackBtn: 'RASTREAR PEDIDO',
+    orderStatusLabel: 'ESTADO DEL PEDIDO', orderAmountLabel: 'Importe',
+    orderIdLabel: 'ID de Pedido', newSearch: '← Nueva búsqueda',
+    statusSucceeded: 'Pagado ✓', statusProcessing: 'Procesando',
+    statusPaymentPending: 'Pago pendiente', statusConfirmationPending: 'Confirmación pendiente',
+    statusCancelled: 'Cancelado',
+    errRequired: 'Obligatorio', errInvalidEmail: 'Email inválido',
+    errPasswordShort: 'Al menos 8 caracteres', errPasswordMismatch: 'Las contraseñas no coinciden',
+    errAgeRequired: 'Debes tener 18+', errTermsRequired: 'Por favor acepta los términos',
+    errAllFields: 'Por favor completa todos los campos.',
+    errOrderIdRequired: 'Por favor ingresa un ID de pedido.',
+    errServerUnreachable: 'Servidor no disponible. Inténtalo más tarde.',
   },
 }
 

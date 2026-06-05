@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { C } from '@/tokens'
+import { useLocale } from '@/contexts/LocaleContext'
 import type { Page } from '@/types'
 
 const KEY = 't4j_cookie_ok'
@@ -22,6 +23,7 @@ export default function CookieBanner({
   onDecline: () => void
   onNavigate: (page: Page) => void
 }) {
+  const { t } = useLocale()
   return (
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 8000,
@@ -32,8 +34,7 @@ export default function CookieBanner({
       gap: '24px', flexWrap: 'wrap',
     }}>
       <p style={{ fontSize: '12px', color: C.textMid, lineHeight: 1.7, margin: 0, flex: 1, minWidth: '240px' }}>
-        Wir verwenden Cookies und ähnliche Technologien für sichere Zahlungen und eine bessere Nutzererfahrung.
-        Weitere Informationen in unserer{' '}
+        {t.cookie.text}{' '}
         <button
           onClick={() => onNavigate('privacy')}
           style={{
@@ -42,7 +43,7 @@ export default function CookieBanner({
             fontSize: 'inherit', textDecoration: 'underline', textUnderlineOffset: '3px',
           }}
         >
-          Datenschutzerklärung
+          {t.cookie.privacyLink}
         </button>.
       </p>
       <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
@@ -57,7 +58,7 @@ export default function CookieBanner({
           onMouseEnter={e => { const el = e.currentTarget as HTMLButtonElement; el.style.borderColor = C.borderMid; el.style.color = C.textMid }}
           onMouseLeave={e => { const el = e.currentTarget as HTMLButtonElement; el.style.borderColor = C.border; el.style.color = C.textDim }}
         >
-          NUR NOTWENDIGE
+          {t.cookie.necessary}
         </button>
         <button
           onClick={onAccept}
@@ -70,7 +71,7 @@ export default function CookieBanner({
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accentDim }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accent }}
         >
-          ALLE AKZEPTIEREN
+          {t.cookie.accept}
         </button>
       </div>
     </div>
