@@ -13,10 +13,11 @@ export function productImageUrl(imagePath: string | null | undefined): string | 
 }
 
 // ── Column list (matches schema.sql) ─────────────────────────────────────
-const COLS = 'id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock, name_translations, desc_translations'
+export const PRODUCT_COLS = 'id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock, name_translations, desc_translations'
+const COLS = PRODUCT_COLS
 
 // ── Row → Product ─────────────────────────────────────────────────────────
-function mapProduct(row: Record<string, unknown>): Product {
+export function mapProduct(row: Record<string, unknown>): Product {
   // image_paths is a Postgres text[] — Supabase returns it as string[]
   const paths = Array.isArray(row.image_paths) && (row.image_paths as string[]).length > 0
     ? row.image_paths as string[]
