@@ -34,6 +34,7 @@ export function useOrders() {
 
 // Admin version — fetches ALL orders (requires is_admin = true in profiles)
 export function useAllOrders() {
+  const { user, loading: authLoading } = useAuth()
   const [orders, setOrders]   = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState<string | null>(null)
@@ -50,14 +51,20 @@ export function useAllOrders() {
           console.error('[useAllOrders] fetch failed:', err.message)
           setError(err.message)
         } else {
-          if (data?.length === 0) console.warn('[useAllOrders] 0 orders returned — check is_admin = true in profiles')
+          if (data?.length === 0) console.warn('[useAllOrders] 0 orders — check is_admin = true in profiles')
           setOrders((data as Order[]) ?? [])
         }
         setLoading(false)
       })
   }, [])
 
-  useEffect(() => { refetch() }, [refetch])
+  // Wait for auth to fully resolve before fetching — prevents race condition
+  // where query fires before Supabase client has the session token attached.
+  useEffect(() => {
+    if (authLoading) return
+    if (!user?.isAdmin) return
+    refetch()
+  }, [authLoading, user?.id, refetch])
 
   const updateStatus = async (orderId: string, status: string, trackingNumber?: string): Promise<string | null> => {
     const { data: { session } } = await supabase.auth.getSession()
