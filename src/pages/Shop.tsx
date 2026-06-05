@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { C } from '@/tokens'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale, useLocalCategory } from '@/contexts/LocaleContext'
 import { useProducts, useSubcategories } from '@/hooks/useProducts'
 import { CATEGORIES } from '@/data/navigation'
 import ProductCard from '@/components/ProductCard'
@@ -11,6 +11,7 @@ type SortKey = 'newest' | 'price-asc' | 'price-desc' | 'rating'
 
 interface Props {
   initialCat?: string
+  initialSub?: string
   onProduct: (p: Product) => void
   onAdd: (p: Product) => void
   onWish: (product: Product) => void
@@ -19,25 +20,32 @@ interface Props {
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced', 'Expert', 'All levels']
 
-export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: Props) {
+export default function Shop({ initialCat, initialSub, onProduct, onAdd, onWish, wished }: Props) {
   const { t } = useLocale()
+  const localCategory = useLocalCategory()
   const { products, loading } = useProducts()
   const [activeCat, setActiveCat] = useState<string>(initialCat ?? t.shop.all)
-  const [activeSubs, setActiveSubs] = useState<Set<string>>(new Set())
+  const [activeSubs, setActiveSubs] = useState<Set<string>>(
+    initialSub ? new Set([initialSub]) : new Set()
+  )
   const [priceMax, setPriceMax] = useState(500)
   const [activeLevels, setActiveLevels] = useState<Set<string>>(new Set())
   const [sort, setSort] = useState<SortKey>('newest')
   const [page, setPage] = useState(1)
   const PER_PAGE = 12
 
-  // Sync when the user navigates to a different category from the navbar
+  // Sync when the user navigates to a different category or sub from the navbar
   useEffect(() => {
     if (initialCat && initialCat !== activeCat) {
       setActiveCat(initialCat)
-      setActiveSubs(new Set())
+      setActiveSubs(initialSub ? new Set([initialSub]) : new Set())
+      setPage(1)
+    } else if (initialSub) {
+      // Same category but a new sub was selected — apply it
+      setActiveSubs(new Set([initialSub]))
       setPage(1)
     }
-  }, [initialCat])
+  }, [initialCat, initialSub])
 
   const { subs: availableSubs } = useSubcategories(activeCat)
 
@@ -113,7 +121,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
           >
             {t.shop.all}
           </div>
-          {CATEGORIES.map(cat => (
+          {CATEGORIES.filter(c => c.name !== 'Alle').map(cat => (
             <div
               key={cat.name}
               onClick={() => { setActiveCat(cat.name); setActiveSubs(new Set()); setPage(1) }}
@@ -128,7 +136,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
                 transition: 'color 0.12s',
               }}
             >
-              {cat.name}
+              {localCategory(cat.name)}
             </div>
           ))}
         </div>
@@ -193,7 +201,7 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '28px' }}>
           <div>
-            <Tag style={{ marginBottom: '8px' }}>{activeCat}</Tag>
+            <Tag style={{ marginBottom: '8px' }}>{activeCat === t.shop.all ? t.shop.all : localCategory(activeCat)}</Tag>
             <div style={{ fontSize: '12px', color: C.textDim }}>{filtered.length}</div>
           </div>
           <select
@@ -230,20 +238,18 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-          gap: '1px',
-          background: filtered.length > 0 ? C.border : 'transparent',
+          gap: '16px',
           marginBottom: '32px',
         }}>
           {pageItems.map(p => (
-            <div key={p.id} style={{ background: C.bg }}>
-              <ProductCard
-                product={p}
-                wished={wished(p.id)}
-                onWish={onWish}
-                onAdd={onAdd}
-                onClick={onProduct}
-              />
-            </div>
+            <ProductCard
+              key={p.id}
+              product={p}
+              wished={wished(p.id)}
+              onWish={onWish}
+              onAdd={onAdd}
+              onClick={onProduct}
+            />
           ))}
         </div>
 

@@ -126,6 +126,7 @@ function AppInner() {
         {nav.page === 'shop' && (
           <Shop
             initialCat={nav.cat}
+            initialSub={nav.sub}
             onProduct={openProduct}
             onAdd={addToCart}
             onWish={toggleWish}

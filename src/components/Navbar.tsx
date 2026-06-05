@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import { C } from '@/tokens'
 import { NAV_CATS } from '@/data/navigation'
 import { useAuth, fullName } from '@/contexts/AuthContext'
-import { useLocale } from '@/contexts/LocaleContext'
+import { useLocale, useLocalCategory } from '@/contexts/LocaleContext'
 import MegaDrop from './MegaDrop'
 import Icon from './ui/Icon'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -40,6 +40,7 @@ function MenuRow({ label, onClick, accent }: { label: string; onClick: () => voi
 export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Props) {
   const { user, logout } = useAuth()
   const { t } = useLocale()
+  const localCategory = useLocalCategory()
   const [activeDrop, setActiveDrop] = useState<string | null>(null)
   const [showUserMenu, setShowUserMenu] = useState(false)
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -64,13 +65,13 @@ export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Prop
     <nav style={{
       position: 'sticky', top: 0, zIndex: 100,
       background: C.bg, borderBottom: `1px solid ${C.border}`,
-      height: '96px', display: 'flex', alignItems: 'center',
-      justifyContent: 'space-between', padding: '0 64px',
+      height: '112px', display: 'flex', alignItems: 'center',
+      justifyContent: 'space-between', padding: '12px 80px',
     }}>
       {/* Logo */}
       <div
         onClick={() => onNavigate('home')}
-        style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', height: '72px' }}
+        style={{ cursor: 'pointer', userSelect: 'none', display: 'flex', alignItems: 'center', height: '80px', padding: '0 16px' }}
       >
         <img
           src="/images/logo.svg"
@@ -103,7 +104,7 @@ export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Prop
                 display: 'flex', alignItems: 'center', gap: '4px',
               }}
             >
-              {cat}
+              {localCategory(cat)}
               <Icon name="chevron-down" size={12} color={activeDrop === cat ? C.accent : C.textDim} />
             </button>
             {activeDrop === cat && (

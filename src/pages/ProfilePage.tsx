@@ -359,18 +359,17 @@ function WishlistSection({ wishlist, onNavigate, wished, onWish, onAdd, onProduc
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-        gap: '1px', background: C.border,
+        gap: '16px',
       }}>
         {wishlist.map(product => (
-          <div key={product.id} style={{ background: C.bg }}>
-            <ProductCard
-              product={product}
-              wished={wished(product.id)}
-              onWish={onWish}
-              onAdd={onAdd}
-              onClick={onProduct}
-            />
-          </div>
+          <ProductCard
+            key={product.id}
+            product={product}
+            wished={wished(product.id)}
+            onWish={onWish}
+            onAdd={onAdd}
+            onClick={onProduct}
+          />
         ))}
       </div>
     </div>

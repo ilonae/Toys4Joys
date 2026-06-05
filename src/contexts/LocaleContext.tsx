@@ -41,6 +41,17 @@ export function useLocale() {
   return ctx
 }
 
+// Helper: return the localized display name for a canonical (German) category.
+// Falls back to the raw value if no translation exists.
+export function useLocalCategory() {
+  const { t } = useLocale()
+  return function localCategory(cat: string | undefined): string {
+    if (!cat) return ''
+    const map = t.categories as Record<string, string>
+    return map[cat] ?? cat
+  }
+}
+
 // Helper: return the product name/description in the current locale
 // Falls back to German (canonical) if translation is missing
 export function useLocalProduct() {

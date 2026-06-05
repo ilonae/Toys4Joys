@@ -22,13 +22,14 @@ export default function ProductCard({ product, wished, onWish, onAdd, onClick }:
   return (
     <div
       style={{
-        background: C.bgCard,
+        background: C.bg,
         border: `1px solid ${C.border}`,
         display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
         transition: 'border-color 0.15s',
         position: 'relative',
+        height: '100%',
       }}
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = C.borderMid }}
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = C.border }}
@@ -74,21 +75,36 @@ export default function ProductCard({ product, wished, onWish, onAdd, onClick }:
 
       {/* Info */}
       <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-        <div style={{ fontSize: '9px', letterSpacing: '0.12em', color: C.textDim, textTransform: 'uppercase' }}>
+        <div style={{
+          fontSize: '9px', letterSpacing: '0.12em', color: C.textDim, textTransform: 'uppercase',
+          minHeight: '12px',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
           {product.brand}
         </div>
-        <div style={{ fontSize: '13px', fontWeight: 300, color: C.text, lineHeight: 1.35 }}>
+        <div style={{
+          fontSize: '13px', fontWeight: 300, color: C.text, lineHeight: 1.35,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical' as const,
+          overflow: 'hidden',
+          minHeight: 'calc(13px * 1.35 * 2)',
+        }}>
           {p.name}
         </div>
 
         {/* Rating */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minHeight: '14px' }}>
           <span style={{ color: C.accent, fontSize: '11px' }}>{'★'.repeat(Math.round(product.rating))}</span>
           <span style={{ fontSize: '10px', color: C.textDim }}>({product.rev})</span>
         </div>
 
         {/* Level */}
-        <div style={{ fontSize: '10px', color: C.textDim, letterSpacing: '0.08em' }}>
+        <div style={{
+          fontSize: '10px', color: C.textDim, letterSpacing: '0.08em',
+          minHeight: '14px',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
           {product.lvl} · {product.mat}
         </div>
 

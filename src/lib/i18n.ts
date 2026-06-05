@@ -95,6 +95,14 @@ export interface Translations {
     loading: string; error: string; backToHome: string; reload: string
     unexpectedError: string; contactUs: string
   }
+  // Categories (display labels — DB still uses German as canonical)
+  categories: {
+    'Latex & Fetischwear':  string
+    'BDSM & Kontrolle':     string
+    'Vibratoren & Elektro': string
+    'Dildos':               string
+    'Anal':                 string
+  }
   // Auth modal
   auth: {
     accountHeader: string; loginTab: string; registerTab: string; trackTab: string
@@ -232,6 +240,13 @@ const de: Translations = {
     loading: 'Laden…', error: 'Fehler', backToHome: 'ZUR STARTSEITE', reload: 'SEITE NEU LADEN',
     unexpectedError: 'UNERWARTETER FEHLER',
     contactUs: 'Etwas ist schiefgelaufen. Bitte lade die Seite neu oder kontaktiere uns unter',
+  },
+  categories: {
+    'Latex & Fetischwear':  'Latex & Fetischwear',
+    'BDSM & Kontrolle':     'BDSM & Kontrolle',
+    'Vibratoren & Elektro': 'Vibratoren & Elektro',
+    'Dildos':               'Dildos',
+    'Anal':                 'Anal',
   },
   auth: {
     accountHeader: 'KONTO', loginTab: 'ANMELDEN', registerTab: 'REGISTRIEREN', trackTab: 'BESTELLUNG',
@@ -381,6 +396,13 @@ const en: Translations = {
     unexpectedError: 'UNEXPECTED ERROR',
     contactUs: 'Something went wrong. Please reload the page or contact us at',
   },
+  categories: {
+    'Latex & Fetischwear':  'Latex & Fetishwear',
+    'BDSM & Kontrolle':     'BDSM & Control',
+    'Vibratoren & Elektro': 'Vibrators & E-Stim',
+    'Dildos':               'Dildos',
+    'Anal':                 'Anal',
+  },
   auth: {
     accountHeader: 'ACCOUNT', loginTab: 'SIGN IN', registerTab: 'REGISTER', trackTab: 'TRACK ORDER',
     emailPlaceholder: 'your@email.com', passwordPlaceholder: '••••••••', passwordMin: 'At least 8 characters',
@@ -528,6 +550,13 @@ const es: Translations = {
     loading: 'Cargando…', error: 'Error', backToHome: 'VOLVER AL INICIO', reload: 'RECARGAR PÁGINA',
     unexpectedError: 'ERROR INESPERADO',
     contactUs: 'Algo salió mal. Por favor recarga la página o contáctanos en',
+  },
+  categories: {
+    'Latex & Fetischwear':  'Látex y Fetiche',
+    'BDSM & Kontrolle':     'BDSM y Control',
+    'Vibratoren & Elektro': 'Vibradores y Electro',
+    'Dildos':               'Consoladores',
+    'Anal':                 'Anal',
   },
   auth: {
     accountHeader: 'CUENTA', loginTab: 'INICIAR SESIÓN', registerTab: 'REGISTRARSE', trackTab: 'PEDIDO',

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { C } from '@/tokens'
-import { useLocale, useLocalProduct } from '@/contexts/LocaleContext'
+import { useLocale, useLocalProduct, useLocalCategory } from '@/contexts/LocaleContext'
 import type { Product } from '@/types'
 import { useRelatedProducts, useReviews } from '@/hooks/useProducts'
 import Badge from '@/components/ui/Badge'
@@ -24,6 +24,7 @@ type Tab = 'desc' | 'details' | 'reviews'
 export default function ProductDetail({ product, onAdd, onWish, wished, onNavigate, onProduct }: Props) {
   const { t, locale } = useLocale()
   const localProduct = useLocalProduct()
+  const localCategory = useLocalCategory()
   const p = localProduct(product)
   const [qty, setQty] = useState(1)
   const [tab, setTab] = useState<Tab>('desc')
@@ -59,7 +60,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
       <div style={{ padding: '16px 32px', borderBottom: `1px solid ${C.border}`, display: 'flex', gap: '8px', alignItems: 'center' }}>
         <span style={{ fontSize: '11px', color: C.textDim, cursor: 'pointer' }} onClick={() => onNavigate('shop')}>Shop</span>
         <span style={{ fontSize: '11px', color: C.textDim }}>›</span>
-        <span style={{ fontSize: '11px', color: C.textDim, cursor: 'pointer' }} onClick={() => onNavigate('shop')}>{product.cat}</span>
+        <span style={{ fontSize: '11px', color: C.textDim, cursor: 'pointer' }} onClick={() => onNavigate('shop')}>{localCategory(product.cat)}</span>
         <span style={{ fontSize: '11px', color: C.textDim }}>›</span>
         <span style={{ fontSize: '11px', color: C.textMid }}>{p.name}</span>
       </div>
@@ -324,7 +325,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
             {[
               [t.product.material, product.mat],
               [t.product.level,    product.lvl],
-              [t.product.category, product.cat],
+              [t.product.category, localCategory(product.cat)],
               [t.product.sub,      product.sub],
               [t.product.brand,    product.brand],
             ].map(([k, v]) => (
@@ -453,19 +454,17 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            gap: '1px',
-            background: C.border,
+            gap: '16px',
           }}>
             {related.map(p => (
-              <div key={p.id} style={{ background: C.bg }}>
-                <ProductCard
-                  product={p}
-                  wished={wished(p.id)}
-                  onWish={onWish}
-                  onAdd={onAdd}
-                  onClick={onProduct}
-                />
-              </div>
+              <ProductCard
+                key={p.id}
+                product={p}
+                wished={wished(p.id)}
+                onWish={onWish}
+                onAdd={onAdd}
+                onClick={onProduct}
+              />
             ))}
           </div>
         </section>

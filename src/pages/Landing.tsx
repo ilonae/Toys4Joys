@@ -224,19 +224,17 @@ export default function Landing({ onNavigate, onAdd, onWish, wished, onProduct }
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: '1px',
-          background: C.border,
+          gap: '16px',
         }}>
           {featured.map(p => (
-            <div key={p.id} style={{ background: C.bg }}>
-              <ProductCard
-                product={p}
-                wished={wished(p.id)}
-                onWish={onWish}
-                onAdd={onAdd}
-                onClick={onProduct}
-              />
-            </div>
+            <ProductCard
+              key={p.id}
+              product={p}
+              wished={wished(p.id)}
+              onWish={onWish}
+              onAdd={onAdd}
+              onClick={onProduct}
+            />
           ))}
         </div>
       </section>
