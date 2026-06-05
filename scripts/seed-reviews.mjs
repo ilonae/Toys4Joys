@@ -271,10 +271,8 @@ async function main() {
 
   // ── Step 1: Reset ALL products to rating 0 / no reviews ───────────────────
   console.log('🔄  Resetting all product ratings to 0…')
-  for (let i = 0; i < products.length; i += BATCH) {
-    const ids = products.slice(i, i + BATCH).map(p => `id.eq.${p.id}`).join(',')
-    await rest('PATCH', `/products?or=(${ids})`, { rating: 0, rev: 0 })
-  }
+  // Single PATCH with no filter updates every row — safe here
+  await rest('PATCH', '/products?id=neq.00000000-0000-0000-0000-000000000000', { rating: 0, rev: 0 })
   console.log(`  ✓ ${products.length} products reset`)
 
   // ── Step 2: Select 30% of products to receive ratings + reviews ────────────
@@ -289,12 +287,15 @@ async function main() {
     rev:    0,
   }))
 
-  for (let i = 0; i < ratingUpdates.length; i += BATCH) {
-    const batch = ratingUpdates.slice(i, i + BATCH)
-    await rest('POST', '/products?on_conflict=id', batch, {
-      Prefer: 'resolution=merge-duplicates,return=minimal',
-    })
-    process.stdout.write(`  ${Math.min(i + BATCH, ratingUpdates.length)}/${ratingUpdates.length} updated\r`)
+  // PATCH each product individually — upsert would try INSERT and fail on NOT NULL columns
+  const CONCURRENT = 10
+  for (let i = 0; i < ratingUpdates.length; i += CONCURRENT) {
+    await Promise.all(
+      ratingUpdates.slice(i, i + CONCURRENT).map(u =>
+        rest('PATCH', `/products?id=eq.${u.id}`, { rating: u.rating, rev: u.rev })
+      )
+    )
+    process.stdout.write(`  ${Math.min(i + CONCURRENT, ratingUpdates.length)}/${ratingUpdates.length} updated\r`)
   }
   console.log(`\n  ✓ Done — 70% of products have no rating`)
 
