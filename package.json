@@ -12,7 +12,8 @@
     "test:run": "vitest run --reporter=verbose",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "export:prod": "node scripts/export-prod-to-dev.mjs"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.3.0",

@@ -22,6 +22,9 @@ studio/
 coverage/
 .vitest-cache/
 
+# Generated exports — contain prod data, never commit
+supabase/seed-products-from-prod.sql
+
 # Misc
 .DS_Store
 *.log
