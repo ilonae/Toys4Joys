@@ -40,13 +40,19 @@ export function useAllOrders() {
 
   const refetch = useCallback(() => {
     setLoading(true)
+    setError(null)
     supabase
       .from('orders')
       .select('*, order_items(*)')
       .order('created_at', { ascending: false })
       .then(({ data, error: err }) => {
-        if (err) setError(err.message)
-        else setOrders((data as Order[]) ?? [])
+        if (err) {
+          console.error('[useAllOrders] fetch failed:', err.message)
+          setError(err.message)
+        } else {
+          if (data?.length === 0) console.warn('[useAllOrders] 0 orders returned — check is_admin = true in profiles')
+          setOrders((data as Order[]) ?? [])
+        }
         setLoading(false)
       })
   }, [])
