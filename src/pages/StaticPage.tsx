@@ -335,7 +335,7 @@ function ImprintContent() {
     <ProseBlock sections={[
       {
         heading: 'Angaben gemäß § 5 DDG',
-        items: ['Toys4Joys', 'Inhaber: Viet Anh Nguyen', 'Karl-Kunger-Straße 14', '12435 Berlin', 'Deutschland'],
+        items: ['Toys4Joys', 'Karl-Kunger-Straße 14', '12435 Berlin', 'Deutschland', 'Einzelunternehmen'],
       },
       {
         heading: 'Kontakt',

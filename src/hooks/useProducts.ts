@@ -8,12 +8,21 @@ interface State {
   error: string | null
 }
 
+// Module-level cache — survives navigation/remounts within the same session.
+// Products rarely change; no need to re-fetch every time the Shop mounts.
+let _cache: Product[] | null = null
+
 export function useProducts(): State {
-  const [state, setState] = useState<State>({ products: [], loading: true, error: null })
+  const [state, setState] = useState<State>({
+    products: _cache ?? [],
+    loading:  _cache === null,
+    error:    null,
+  })
 
   useEffect(() => {
+    if (_cache !== null) return // already fetched this session
     fetchProducts()
-      .then(products => setState({ products, loading: false, error: null }))
+      .then(products => { _cache = products; setState({ products, loading: false, error: null }) })
       .catch(e => setState({ products: [], loading: false, error: e.message }))
   }, [])
 

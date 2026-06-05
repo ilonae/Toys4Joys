@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { C } from '@/tokens'
 import { useProducts, useSubcategories } from '@/hooks/useProducts'
 import { CATEGORIES } from '@/data/navigation'
@@ -27,6 +27,15 @@ export default function Shop({ initialCat, onProduct, onAdd, onWish, wished }: P
   const [sort, setSort] = useState<SortKey>('newest')
   const [page, setPage] = useState(1)
   const PER_PAGE = 12
+
+  // Sync when the user navigates to a different category from the navbar
+  useEffect(() => {
+    if (initialCat && initialCat !== activeCat) {
+      setActiveCat(initialCat)
+      setActiveSubs(new Set())
+      setPage(1)
+    }
+  }, [initialCat])
 
   const { subs: availableSubs } = useSubcategories(activeCat)
 
