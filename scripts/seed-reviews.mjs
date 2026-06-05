@@ -55,12 +55,36 @@ async function rest(method, path, body, extra = {}) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const FIRST = [
+  // German
   'Lena','Sophie','Emma','Anna','Marie','Laura','Julia','Lea','Hannah','Mia',
-  'Nina','Sara','Katrin','Tanja','Sandra','Vanessa','Nadine','Jessica','Petra','Claudia',
-  'Max','Tim','Felix','Jonas','Lukas','Paul','Leon','Tobias','Jan','Stefan',
-  'Moritz','Markus','Andreas','Nico','Patrick','Philipp','David','Florian','Christian','Thomas',
+  'Nina','Katrin','Tanja','Sandra','Vanessa','Nadine','Petra',
+  'Max','Tim','Felix','Jonas','Lukas','Paul','Leon','Tobias','Jan','Stefan','Moritz','Florian',
+  // Turkish (large community in Germany)
+  'Ayşe','Fatma','Zeynep','Elif','Büşra','Selin','Derya',
+  'Mehmet','Emre','Burak','Kemal','Serkan','Ozan','Cem',
+  // Arabic / MENA
+  'Leila','Yasmin','Nadia','Amira','Rania','Sara','Hana',
+  'Omar','Karim','Tariq','Youssef','Hassan','Amir',
+  // Eastern European (Polish, Czech, Romanian)
+  'Katarzyna','Monika','Agnieszka','Natalia','Irina','Olga','Vera',
+  'Tomasz','Marek','Jakub','Dmitri','Pavel',
+  // Southern European
+  'Isabella','Chiara','Sofia','Elena','Lucia','Valentina',
+  'Marco','Luca','Matteo','Carlos','Diego',
+  // French
+  'Camille','Chloé','Manon','Inès','Océane',
+  'Antoine','Théo','Hugo',
+  // Asian
+  'Lin','Mei','Yuki','Aiko','Ji-yeon','Minhee',
+  'Kenji','Wei','Jin','Ryo',
+  // Gender-neutral / short
+  'Alex','Sam','Charlie','Kim','Jamie','Robin','Taylor','Riley',
 ]
-const LAST = ['M.','S.','K.','B.','H.','W.','F.','R.','L.','N.','T.','G.','D.','P.','J.','C.','E.','A.']
+const LAST = [
+  'M.','S.','K.','B.','H.','W.','F.','R.','L.','N.',
+  'T.','G.','D.','P.','J.','C.','E.','A.','O.','Y.',
+  'Z.','V.','I.','X.','Q.',
+]
 
 function pick(arr)  { return arr[Math.floor(Math.random() * arr.length)] }
 function author()   { return `${pick(FIRST)} ${pick(LAST)}` }
