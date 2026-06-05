@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { C } from '@/tokens'
+import { useLocale } from '@/contexts/LocaleContext'
 import type { Page } from '@/types'
 
 const KEY = 't4j_age_ok'

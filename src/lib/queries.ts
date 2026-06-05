@@ -13,7 +13,7 @@ export function productImageUrl(imagePath: string | null | undefined): string | 
 }
 
 // ── Column list (matches schema.sql) ─────────────────────────────────────
-const COLS = 'id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock'
+const COLS = 'id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock, name_translations, desc_translations'
 
 // ── Row → Product ─────────────────────────────────────────────────────────
 function mapProduct(row: Record<string, unknown>): Product {
@@ -37,10 +37,12 @@ function mapProduct(row: Record<string, unknown>): Product {
     rev:    Number(row.rev         ?? 0),
     mat:    String(row.mat         ?? ''),
     lvl:    (row.lvl ?? 'All levels') as Level,
-    desc:   String(row.description ?? ''),
-    image:  images[0],
+    desc:              String(row.description ?? ''),
+    image:             images[0],
     images,
-    stock:  Number(row.stock ?? 0),
+    stock:             Number(row.stock ?? 0),
+    name_translations: (row.name_translations as Record<string, string>) ?? {},
+    desc_translations: (row.desc_translations as Record<string, string>) ?? {},
   }
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, Component } from 'react'
 import { C } from '@/tokens'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { LocaleProvider } from '@/contexts/LocaleContext'
 import ComingSoon from '@/pages/ComingSoon'
 import Navbar from '@/components/Navbar'
 import AgeGate, { useAgeGate } from '@/components/AgeGate'
@@ -207,9 +208,11 @@ export default function App() {
   if (COMING_SOON) return <ComingSoon />
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <AppInner />
-      </AuthProvider>
+      <LocaleProvider>
+        <AuthProvider>
+          <AppInner />
+        </AuthProvider>
+      </LocaleProvider>
     </ErrorBoundary>
   )
 }

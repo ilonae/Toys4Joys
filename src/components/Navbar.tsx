@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react'
 import { C } from '@/tokens'
 import { NAV_CATS } from '@/data/navigation'
 import { useAuth, fullName } from '@/contexts/AuthContext'
+import { useLocale } from '@/contexts/LocaleContext'
 import MegaDrop from './MegaDrop'
 import Icon from './ui/Icon'
+import LanguageSwitcher from './LanguageSwitcher'
 import type { Page } from '@/types'
 
 interface Props {
@@ -112,6 +114,7 @@ export default function Navbar({ page, cartCount, onNavigate, onOpenAuth }: Prop
 
       {/* Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '18px' }}>
+        <LanguageSwitcher />
         <button
           style={{ background: 'none', border: 'none', color: C.textMid, cursor: 'pointer', padding: '4px' }}
           aria-label="Suche"

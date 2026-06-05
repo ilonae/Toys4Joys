@@ -19,9 +19,11 @@ export interface Product {
   lvl: Level
   desc: string
   stock: number
-  supplier_sku?: string | null   // SKU from the supplier/wholesaler
-  image?: string                 // primary image URL (resolved)
-  images: string[]               // all image URLs in display order
+  supplier_sku?: string | null
+  name_translations?: Record<string, string>   // { en: '...', es: '...' }
+  desc_translations?: Record<string, string>   // { en: '...', es: '...' }
+  image?: string
+  images: string[]
 }
 
 export type Category =

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { C } from '@/tokens'
 
-// ── Launch target: 05 June 2026, 23:00 Berlin time ───────────────────────────
-const LAUNCH = new Date('2026-06-05T23:00:00+02:00').getTime()
+// ── Launch target: 06 June 2026, 18:00 Berlin time ───────────────────────────
+const LAUNCH = new Date('2026-06-06T18:00:00+02:00').getTime()
 
 function pad(n: number) {
   return String(n).padStart(2, '0')
@@ -135,7 +135,7 @@ export default function ComingSoon() {
         {/* Headline */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ fontSize: '10px', letterSpacing: '0.28em', color: C.accent, textTransform: 'uppercase' }}>
-            Berlin · 05. Juni 2026
+            Berlin · 06. Juni 2026
           </div>
           <h1 style={{
             fontSize: 'clamp(28px, 5vw, 56px)',
@@ -146,10 +146,10 @@ export default function ComingSoon() {
             margin: 0,
           }}>
             Wir kommen.<br />
-            <span style={{ color: C.accent }}>05. Juni 2026.</span>
+            <span style={{ color: C.accent }}>06. Juni 2026.</span>
           </h1>
           <div style={{ fontSize: '13px', color: C.textDim, letterSpacing: '0.06em' }}>
-            23:00 Uhr
+            18:00 Uhr
           </div>
         </div>
 
