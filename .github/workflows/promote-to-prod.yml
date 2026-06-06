@@ -45,6 +45,13 @@ jobs:
           node-version: 22
           cache: npm
 
+      # Vercel build auto-detects requirements.txt in the repo (legacy
+      # background-removal scripts, not used by the live site) and tries
+      # to install Python deps with `uv`. Pre-install uv so the spawn
+      # doesn't ENOENT.
+      - name: Install uv (Python package manager)
+        uses: astral-sh/setup-uv@v3
+
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
