@@ -13,13 +13,14 @@
  * for their own refetch logic.
  */
 
-type EventName = 'products' | 'orders' | 'reviews' | 'wishlist'
+type EventName = 'products' | 'orders' | 'reviews' | 'wishlist' | 'auth'
 
 const listeners: Record<EventName, Set<() => void>> = {
   products: new Set(),
   orders:   new Set(),
   reviews:  new Set(),
   wishlist: new Set(),
+  auth:     new Set(),
 }
 
 /** Notify every listener of a given event. */

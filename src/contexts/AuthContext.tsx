@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { emit, subscribe } from '@/lib/cacheBus'
+import { useFocusRefetch } from '@/hooks/useFocusRefetch'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Domain types
@@ -115,14 +117,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser]       = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Re-pull the current session's profile from the DB. Used when:
+  //   - the page is mounted (initial sync)
+  //   - Supabase emits an auth state change (login / logout / token refresh)
+  //   - the tab regains focus (another tab may have updated the profile)
+  //   - someone explicitly emit('auth') — typically right after updateProfile()
+  const refetchUser = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) setUser(await buildUser(session.user))
+    else setUser(null)
+  }, [])
+
   useEffect(() => {
     // Restore existing session on mount
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) setUser(await buildUser(session.user))
-      setLoading(false)
-    })
+    refetchUser().finally(() => setLoading(false))
 
-    // Keep state in sync with Supabase auth events
+    // Keep state in sync with Supabase auth events (login, logout, token
+    // refresh — also fires cross-tab via Supabase's storage listener)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) setUser(await buildUser(session.user))
@@ -130,8 +141,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     )
 
-    return () => subscription.unsubscribe()
-  }, [])
+    // Subscribe to manual 'auth' invalidation signals from anywhere in the app
+    const unsub = subscribe('auth', refetchUser)
+
+    return () => { subscription.unsubscribe(); unsub() }
+  }, [refetchUser])
+
+  // Cross-tab profile sync: if the user edits their address in tab A, tab B
+  // refetches the profile when it regains focus. Only active when signed in.
+  useFocusRefetch(refetchUser, !!user)
 
   // ── Login ──────────────────────────────────────────────────────────────────
 
@@ -217,6 +235,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     setUser(nextUser)
+    // Notify other subscribers (e.g. the admin orders list shows the
+    // customer name, so it should refresh after a profile edit).
+    emit('auth')
   }
 
   return (
