@@ -26,8 +26,11 @@ const C = {
   white:     '#ffffff',
 }
 
-const LOGO_URL = 'https://www.toys4joys.com/images/logo.svg'
-const SUPPORT  = 'hallo@toys4joys.de'
+// PNG, not SVG — most email clients (Gmail, Outlook, iCloud) refuse SVG for
+// security reasons. PNG works everywhere. Hosted on the production storefront
+// so we don't need attachments.
+const LOGO_URL = 'https://www.toys4joys.com/images/logo.png'
+const SUPPORT  = 'info@toys4joys.com'
 
 // ── Localised strings ───────────────────────────────────────────────────
 const STRINGS = {
@@ -137,7 +140,14 @@ function wrap(body: string, locale: Locale): string {
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;width:100%">
       <!-- Brand bar -->
       <tr><td style="padding:0 0 28px;border-bottom:1px solid ${C.border}">
-        <img src="${LOGO_URL}" alt="TOYS4JOYS" height="36" style="display:block;height:36px;width:auto" />
+        <!--
+          Styles on the <img> are inherited by the alt text when the image
+          fails to load (Gmail/Outlook default). So if the user has "show
+          images" disabled, they still see a styled "TOYS4JOYS" wordmark
+          instead of a broken-image icon.
+        -->
+        <img src="${LOGO_URL}" alt="TOYS4JOYS" height="40" border="0"
+             style="display:block;height:40px;width:auto;border:0;outline:none;text-decoration:none;font-size:24px;font-weight:700;letter-spacing:0.18em;color:${C.text};line-height:1" />
         <div style="font-size:10px;letter-spacing:0.16em;color:${C.textDim};margin-top:10px">${s.brandLine}</div>
       </td></tr>
 

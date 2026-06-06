@@ -91,14 +91,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // 2. Insert a profiles row eagerly (admin client bypasses RLS).
     //    Tolerate "row already exists" if a trigger created one.
+    //    Fall back gracefully if `email` column doesn't exist yet (prod Supabase
+    //    is still missing the column until sync-prod-with-dev.sql is run).
     {
-      const { error: profileErr } = await supabase.from('profiles').upsert({
+      const profileRow = {
         id:         created.user.id,
         first_name: firstName.trim(),
         last_name:  lastName.trim(),
         email,
-      })
-      if (profileErr) console.error('[register] profile upsert warn:', profileErr.message)
+      }
+      const { error: profileErr } = await supabase.from('profiles').upsert(profileRow)
+      if (profileErr) {
+        const isMissingCol = profileErr.message.includes('column') && profileErr.message.includes('does not exist')
+        if (isMissingCol) {
+          // Retry without the email column — works on schemas predating the email column.
+          const { email: _drop, ...rowWithoutEmail } = profileRow
+          const { error: retryErr } = await supabase.from('profiles').upsert(rowWithoutEmail)
+          if (retryErr) console.error('[register] profile upsert retry failed:', retryErr.message)
+          else         console.warn('[register] prod profiles schema is missing email — upserted name-only. Run sync-prod-with-dev.sql to fix.')
+        } else {
+          console.error('[register] profile upsert warn:', profileErr.message)
+        }
+      }
     }
 
     // 3. Generate a one-shot confirmation link tied to this account.
