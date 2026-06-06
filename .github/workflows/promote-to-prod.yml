@@ -7,17 +7,16 @@ name: Promote staging → www.toys4joys.com
 #
 # Triggers:
 #   - Manual button (workflow_dispatch) — go to Actions → this workflow → Run
-#   - Auto-fire at 18:00 CEST on 2026-06-06 (= 16:00 UTC)
+#
+# (The one-shot launch-day cron at 16:00 UTC on 2026-06-06 was removed
+# after the initial promotion fired. To schedule a future deploy, either
+# re-add a `schedule:` block here or trigger workflow_dispatch.)
 #
 # Required GitHub repo secret:
 #   - VERCEL_TOKEN       (Vercel Account Settings → Tokens → create)
 
 on:
   workflow_dispatch:
-  schedule:
-    # 18:00 CEST = 16:00 UTC. Cron recurs annually — REMOVE this schedule
-    # block after 2026-06-06 to stop the yearly re-fire.
-    - cron: '0 16 6 6 *'
 
 env:
   VERCEL_ORG_ID:     team_YH2wfKWgcgvdiDq36n5lZGSr
