@@ -73,3 +73,23 @@ a {
     transform: none;
   }
 }
+
+.slide-up {
+  animation: slideUp 0.22s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Hide scrollbar on horizontal scroll containers */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
