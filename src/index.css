@@ -6,6 +6,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Prevent horizontal overflow at every zoom level */
+  overflow-x: clip;
 }
 
 body {
@@ -15,6 +17,9 @@ body {
   font-weight: 300;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Ensure content never exceeds viewport width */
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 ::-webkit-scrollbar {

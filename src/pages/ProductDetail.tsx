@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { C } from '@/tokens'
 import { useLocale, useLocalProduct, useLocalCategory } from '@/contexts/LocaleContext'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { Product } from '@/types'
 import { useRelatedProducts, useReviews } from '@/hooks/useProducts'
 import Badge from '@/components/ui/Badge'
@@ -25,6 +26,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
   const { t, locale } = useLocale()
   const localProduct = useLocalProduct()
   const localCategory = useLocalCategory()
+  const isMobile = useIsMobile()
   const p = localProduct(product)
   const [qty, setQty] = useState(1)
   const [tab, setTab] = useState<Tab>('desc')
@@ -32,10 +34,8 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const dateLocale = locale === 'de' ? 'de-DE' : locale === 'es' ? 'es-ES' : 'en-GB'
 
-  // Reset to first image whenever the product changes
   useEffect(() => { setActiveImg(0) }, [product.id])
 
-  // Close lightbox on Escape
   useEffect(() => {
     if (!lightboxOpen) return
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxOpen(false) }
@@ -54,10 +54,13 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
     { key: 'reviews', label: `${t.product.reviewsTab} (${product.rev})` },
   ]
 
+  const pad = isMobile ? '12px 16px' : '16px 32px'
+  const sidePad = isMobile ? '20px 16px' : '40px 32px'
+
   return (
     <div>
       {/* Breadcrumb */}
-      <div style={{ padding: '16px 32px', borderBottom: `1px solid ${C.border}`, display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ padding: pad, borderBottom: `1px solid ${C.border}`, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
         <span style={{ fontSize: '11px', color: C.textDim, cursor: 'pointer' }} onClick={() => onNavigate('shop')}>Shop</span>
         <span style={{ fontSize: '11px', color: C.textDim }}>›</span>
         <span style={{ fontSize: '11px', color: C.textDim, cursor: 'pointer' }} onClick={() => onNavigate('shop')}>{localCategory(product.cat)}</span>
@@ -65,22 +68,30 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
         <span style={{ fontSize: '11px', color: C.textMid }}>{p.name}</span>
       </div>
 
-      <div style={{ display: 'flex', gap: '0', borderBottom: `1px solid ${C.border}` }}>
+      {/* Image + info — stacked on mobile, side-by-side on desktop */}
+      <div style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        borderBottom: `1px solid ${C.border}`,
+      }}>
         {/* Image panel */}
         <div style={{
-          width: '480px', flexShrink: 0,
-          borderRight: `1px solid ${C.border}`,
-          display: 'flex', flexDirection: 'column',
+          width: isMobile ? '100%' : '480px',
+          flexShrink: 0,
+          borderRight: isMobile ? 'none' : `1px solid ${C.border}`,
+          borderBottom: isMobile ? `1px solid ${C.border}` : 'none',
+          display: 'flex',
+          flexDirection: 'column',
           background: C.bgCard,
-          minHeight: '500px',
+          minHeight: isMobile ? '260px' : '500px',
         }}>
-          {/* Main image — click to open lightbox */}
+          {/* Main image */}
           <div
             onClick={() => currentUrl && setLightboxOpen(true)}
             style={{
               flex: 1,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              minHeight: '400px',
+              minHeight: isMobile ? '260px' : '400px',
               cursor: currentUrl ? 'zoom-in' : 'default',
               position: 'relative',
               overflow: 'hidden',
@@ -98,10 +109,8 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                 }}
               />
             ) : (
-              <PhotoBox cat={product.cat} size={320} style={{ border: 'none', background: 'transparent' }} />
+              <PhotoBox cat={product.cat} size={isMobile ? 200 : 320} style={{ border: 'none', background: 'transparent' }} />
             )}
-
-            {/* Zoom hint */}
             {currentUrl && (
               <div style={{
                 position: 'absolute', bottom: '14px', right: '16px',
@@ -118,7 +127,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
             )}
           </div>
 
-          {/* Thumbnail strip — only when multiple images */}
+          {/* Thumbnail strip */}
           {product.images.length > 1 && (
             <div style={{ display: 'flex', borderTop: `1px solid ${C.border}` }}>
               {product.images.map((url, i) => (
@@ -157,13 +166,18 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
         </div>
 
         {/* Info panel */}
-        <div style={{ flex: 1, padding: '48px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{
+          flex: 1,
+          padding: isMobile ? '24px 16px' : '48px',
+          display: 'flex', flexDirection: 'column', gap: '20px',
+          minWidth: 0,
+        }}>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <Badge type={product.badge} />
             <span style={{ fontSize: '10px', letterSpacing: '0.12em', color: C.textDim }}>{product.brand}</span>
           </div>
 
-          <h1 style={{ fontSize: 'clamp(20px, 2.5vw, 30px)', fontWeight: 700, letterSpacing: '-0.01em', color: C.text, lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: 'clamp(20px, 5vw, 30px)', fontWeight: 700, letterSpacing: '-0.01em', color: C.text, lineHeight: 1.2, margin: 0 }}>
             {p.name}
           </h1>
 
@@ -174,7 +188,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
           </div>
 
           {/* Price */}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '28px', fontWeight: 400, color: C.text }}>€{product.price}</span>
             {product.old && (
               <span style={{ fontSize: '16px', color: C.textDim, textDecoration: 'line-through' }}>€{product.old}</span>
@@ -198,7 +212,6 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
             ))}
           </div>
 
-          {/* Qty + Add */}
           {/* Stock badge */}
           {product.stock > 0 && product.stock <= 5 && (
             <div style={{ fontSize: '11px', color: '#c97c30', letterSpacing: '0.06em' }}>
@@ -206,6 +219,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
             </div>
           )}
 
+          {/* Qty + Add */}
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px', flexWrap: 'wrap' }}>
             {product.stock === 0 ? (
               <>
@@ -217,7 +231,6 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                 }}>
                   {t.product.soldOut}
                 </div>
-                {/* Wishlist still available */}
                 <button
                   onClick={() => onWish(product)}
                   style={{
@@ -235,7 +248,6 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
               </>
             ) : (
               <>
-                {/* Qty stepper */}
                 <div style={{ display: 'flex', alignItems: 'center', border: `1px solid ${C.border}`, flexShrink: 0 }}>
                   <button
                     onClick={() => setQty(q => Math.max(1, q - 1))}
@@ -252,16 +264,14 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                   </button>
                 </div>
 
-                {/* Add to cart */}
                 <Btn
                   onClick={() => { for (let i = 0; i < qty; i++) onAdd(product) }}
-                  style={{ letterSpacing: '0.1em', padding: '11px 28px', gap: '9px', boxShadow: `0 0 18px rgba(229,15,56,0.25)` }}
+                  style={{ letterSpacing: '0.1em', padding: '11px 24px', gap: '9px', boxShadow: `0 0 18px rgba(229,15,56,0.25)`, flex: isMobile ? '1' : 'none' }}
                 >
                   <Icon name="cart" size={14} color={C.white} />
                   {t.product.addToCart}
                 </Btn>
 
-                {/* Wishlist */}
                 <button
                   onClick={() => onWish(product)}
                   style={{
@@ -286,8 +296,8 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
       </div>
 
       {/* Tabs */}
-      <div style={{ borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: 'flex', padding: '0 32px' }}>
+      <div style={{ borderBottom: `1px solid ${C.border}`, overflowX: 'auto' }}>
+        <div style={{ display: 'flex', padding: isMobile ? '0 8px' : '0 32px', minWidth: 'fit-content' }}>
           {tabs.map(tb => (
             <button
               key={tb.key}
@@ -297,9 +307,10 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                 borderBottom: tab === tb.key ? `2px solid ${C.accent}` : '2px solid transparent',
                 color: tab === tb.key ? C.text : C.textDim,
                 fontSize: '11px', letterSpacing: '0.1em',
-                padding: '18px 20px',
+                padding: isMobile ? '14px 14px' : '18px 20px',
                 cursor: 'pointer',
                 transition: 'color 0.12s',
+                whiteSpace: 'nowrap',
               }}
             >
               {tb.label.toUpperCase()}
@@ -308,14 +319,14 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
         </div>
       </div>
 
-      <div style={{ padding: '40px 32px', borderBottom: `1px solid ${C.border}`, maxWidth: '720px' }}>
+      <div style={{ padding: sidePad, borderBottom: `1px solid ${C.border}`, maxWidth: '720px' }}>
         {tab === 'desc' && (
           p.desc?.trim() ? (
-            <p style={{ fontSize: '14px', fontWeight: 300, color: C.textMid, lineHeight: 1.8, whiteSpace: 'pre-line' }}>
+            <p style={{ fontSize: '14px', fontWeight: 300, color: C.textMid, lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0 }}>
               {p.desc}
             </p>
           ) : (
-            <p style={{ fontSize: '13px', color: C.textDim, fontStyle: 'italic' }}>
+            <p style={{ fontSize: '13px', color: C.textDim, fontStyle: 'italic', margin: 0 }}>
               {t.product.noDescription}
             </p>
           )
@@ -329,8 +340,8 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
               [t.product.sub,      product.sub],
               [t.product.brand,    product.brand],
             ].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', gap: '24px', fontSize: '12px' }}>
-                <span style={{ color: C.textDim, width: '140px', flexShrink: 0, letterSpacing: '0.06em' }}>{k}</span>
+              <div key={k} style={{ display: 'flex', gap: '16px', fontSize: '12px', flexWrap: 'wrap' }}>
+                <span style={{ color: C.textDim, width: isMobile ? '100px' : '140px', flexShrink: 0, letterSpacing: '0.06em' }}>{k}</span>
                 <span style={{ color: C.text }}>{v}</span>
               </div>
             ))}
@@ -338,8 +349,6 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
         )}
         {tab === 'reviews' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
-
-            {/* Aggregate header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px', paddingBottom: '24px', borderBottom: `1px solid ${C.border}` }}>
               <div>
                 <div style={{ fontSize: '48px', fontWeight: 700, color: C.text, lineHeight: 1 }}>{product.rating.toFixed(1)}</div>
@@ -351,8 +360,6 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                 </div>
               </div>
             </div>
-
-            {/* Individual reviews */}
             {revLoading ? (
               <div style={{ fontSize: '11px', color: C.textDim, letterSpacing: '0.08em' }}>{t.general.loading.toUpperCase()}</div>
             ) : reviews.length === 0 ? (
@@ -361,7 +368,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: C.border }}>
                 {reviews.map(r => (
                   <div key={r.id} style={{ background: C.bg, padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: C.text }}>{r.author}</div>
                         <div style={{ color: C.accent, fontSize: '13px', letterSpacing: '0.06em' }}>
@@ -393,23 +400,20 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
             zIndex: 9999, cursor: 'zoom-out',
           }}
         >
-          {/* Full-res image */}
           <img
             src={currentUrl}
             alt={p.name}
             onClick={(e) => e.stopPropagation()}
             style={{
-              maxWidth: '88vw', maxHeight: '88vh',
+              maxWidth: '92vw', maxHeight: '88vh',
               objectFit: 'contain',
               cursor: 'default',
             }}
           />
-
-          {/* Close button */}
           <button
             onClick={() => setLightboxOpen(false)}
             style={{
-              position: 'absolute', top: '24px', right: '28px',
+              position: 'absolute', top: '20px', right: '20px',
               background: 'none', border: `1px solid ${C.border}`,
               color: C.textMid, cursor: 'pointer',
               padding: '7px 14px', fontSize: '10px', letterSpacing: '0.12em',
@@ -421,11 +425,9 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
             </svg>
             ESC
           </button>
-
-          {/* Multi-image dots (navigate without leaving lightbox) */}
           {product.images.length > 1 && (
             <div style={{
-              position: 'absolute', bottom: '28px',
+              position: 'absolute', bottom: '24px',
               display: 'flex', gap: '10px', alignItems: 'center',
             }}>
               {product.images.map((_, i) => (
@@ -434,8 +436,7 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
                   onClick={(e) => { e.stopPropagation(); setActiveImg(i) }}
                   style={{
                     width: i === activeImg ? '24px' : '8px',
-                    height: '3px',
-                    borderRadius: '2px',
+                    height: '3px', borderRadius: '2px',
                     background: i === activeImg ? C.accent : C.borderMid,
                     border: 'none', cursor: 'pointer', padding: 0,
                     transition: 'width 0.18s, background 0.18s',
@@ -449,12 +450,12 @@ export default function ProductDetail({ product, onAdd, onWish, wished, onNaviga
 
       {/* Related */}
       {related.length > 0 && (
-        <section style={{ padding: '48px 32px' }}>
+        <section style={{ padding: isMobile ? '28px 16px' : '48px 32px' }}>
           <Tag style={{ marginBottom: '24px' }}>{t.product.relatedTitle}</Tag>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            gap: '16px',
+            gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: isMobile ? '10px' : '16px',
           }}>
             {related.map(p => (
               <ProductCard

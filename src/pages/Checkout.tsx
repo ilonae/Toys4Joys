@@ -4,6 +4,7 @@ import { stripePromise, API_BASE } from '@/lib/stripe'
 import { C } from '@/tokens'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLocale, useLocalProduct } from '@/contexts/LocaleContext'
+import { useIsMobile } from '@/hooks/useIsMobile'
 import type { Translations } from '@/lib/i18n'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
 import { calcShipping, FREE_THRESHOLD, getShippingZone } from '@/lib/shipping'
@@ -70,6 +71,7 @@ function AddressStep({
   const [city,      setCity]      = useState(initial.city      ?? '')
   const [country,   setCountry]   = useState(initial.country   ?? 'Deutschland')
   const [errs,      setErrs]      = useState<Record<string, string>>({})
+  const isMobile = useIsMobile()
 
   const required = '✱'
   const emailReq = '@'
@@ -92,7 +94,7 @@ function AddressStep({
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
         <Field label={t.checkout.firstName} value={firstName} onChange={setFirstName} required error={errs.firstName} />
         <Field label={t.checkout.lastName}  value={lastName}  onChange={setLastName}  required error={errs.lastName} />
       </div>
@@ -106,7 +108,7 @@ function AddressStep({
         required
         error={errs.street}
       />
-      <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '12px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '120px 1fr', gap: '12px' }}>
         <Field label={t.checkout.zip}  value={zip}  onChange={setZip}  required error={errs.zip} />
         <Field label={t.checkout.city} value={city} onChange={setCity} required error={errs.city} />
       </div>
@@ -231,6 +233,7 @@ interface Props {
 export default function Checkout({ items, total, onNavigate, onClearCart }: Props) {
   const { user } = useAuth()
   const { t, locale } = useLocale()
+  const isMobile = useIsMobile()
   const localProduct = useLocalProduct()
 
   // Determine initial step — skip address if user already has a saved address
@@ -330,9 +333,9 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
   }
 
   return (
-    <div style={{ display: 'flex', gap: '0', minHeight: '100vh', borderTop: `1px solid ${C.border}` }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', minHeight: '100vh', borderTop: `1px solid ${C.border}` }}>
       {/* Main form area */}
-      <div style={{ flex: 1, padding: '40px 48px', borderRight: `1px solid ${C.border}` }}>
+      <div style={{ flex: 1, padding: isMobile ? '24px 16px' : '40px 48px', borderRight: isMobile ? 'none' : `1px solid ${C.border}` }}>
         <Tag style={{ marginBottom: '20px' }}>{t.checkout.title}</Tag>
 
         <StepIndicator step={step} t={t} />
@@ -415,7 +418,7 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
       </div>
 
       {/* Order summary sidebar */}
-      <div style={{ width: '320px', flexShrink: 0, padding: '40px 32px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ width: isMobile ? '100%' : '320px', flexShrink: 0, padding: isMobile ? '0 16px 24px' : '40px 32px', display: 'flex', flexDirection: 'column', gap: '16px', borderTop: isMobile ? `1px solid ${C.border}` : 'none' }}>
         <h2 style={{ fontSize: '12px', fontWeight: 400, letterSpacing: '0.12em', color: C.textMid, textTransform: 'uppercase', marginBottom: '8px' }}>
           {t.checkout.orderSummary}
         </h2>
