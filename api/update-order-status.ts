@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
-import { getVerifiedAdmin } from './_auth'
-import { sendEmail } from './_brevo'
+import { getVerifiedAdmin } from './_auth.js'
+import { sendEmail } from './_brevo.js'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL!,

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { sendEmail } from './_brevo'
+import { sendEmail } from './_brevo.js'
 
 const stripe   = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const supabase = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)

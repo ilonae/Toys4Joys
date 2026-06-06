@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { calcShipping } from './_shipping'
+import { calcShipping } from './_shipping.js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
