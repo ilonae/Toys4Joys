@@ -55,6 +55,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      # `npm ci` from a macOS-generated package-lock fails on Linux because
+      # the rollup native binary @rollup/rollup-linux-x64-gnu isn't pinned.
+      # Reinstall without the lock to let npm pick the right platform binary.
+      - name: Install Node deps (Linux-correct)
+        run: npm install --no-package-lock
+
       - name: Capture LIVE bundle BEFORE deploy
         id: before
         run: |
