@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
 import { mapProduct, PRODUCT_COLS } from '@/lib/queries'
+import { subscribe } from '@/lib/cacheBus'
+import { useFocusRefetch } from './useFocusRefetch'
 import type { Product } from '@/types'
 
 /**
@@ -178,6 +180,26 @@ export function useWishlist() {
       })
     })
   }, [user?.id])
+
+  // Refetch the server snapshot — used by focus + bus.
+  // Skips localStorage merge (already done on initial hydration) and
+  // just resyncs items from the DB for the current user.
+  const refreshFromServer = useCallback(async () => {
+    if (!user) return
+    const server = await fetchServer(user.id)
+    setItems(server)
+  }, [user?.id])
+
+  // Cross-device + cross-tab sync: when the user toggles a wish on their
+  // phone and then opens this tab, the focus event triggers a resync.
+  useFocusRefetch(refreshFromServer, !!user)
+
+  // Bus signal so other code (e.g. a future server-side mutation API)
+  // can poke the hook.
+  useEffect(() => {
+    if (!user) return
+    return subscribe('wishlist', refreshFromServer)
+  }, [user?.id, refreshFromServer])
 
   const has  = useCallback((id: string) => items.has(id), [items])
   const list = Array.from(items.values())
