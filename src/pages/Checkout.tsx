@@ -7,6 +7,7 @@ import { useLocale, useLocalProduct } from '@/contexts/LocaleContext'
 import type { Translations } from '@/lib/i18n'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
 import { calcShipping, FREE_THRESHOLD, getShippingZone } from '@/lib/shipping'
+import { emit } from '@/lib/cacheBus'
 import type { CartItem, Page, ShippingAddress } from '@/types'
 import Btn from '@/components/ui/Btn'
 import Tag from '@/components/ui/Tag'
@@ -308,6 +309,10 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
   const handleSuccess = () => {
     setSuccess(true)
     onClearCart()
+    // Customer's own orders list ("Meine Bestellungen") refetches so the
+    // new order shows up without needing the user to alt-tab. Admin orders
+    // list (in another tab/window) gets the same signal.
+    emit('orders')
   }
 
   if (success) {
