@@ -5,6 +5,7 @@ export function useIsMobile(breakpoint = 768): boolean {
     typeof window !== 'undefined' ? window.innerWidth < breakpoint : false
   )
   useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
     const mq = window.matchMedia(`(max-width: ${breakpoint - 1}px)`)
     setIsMobile(mq.matches)
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
