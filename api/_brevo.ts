@@ -12,6 +12,7 @@ export interface SendEmailParams {
   html:      string
   fromName?: string
   fromEmail?: string
+  replyTo?:  string
 }
 
 export async function sendEmail({
@@ -19,7 +20,8 @@ export async function sendEmail({
   subject,
   html,
   fromName  = 'TOYS4JOYS',
-  fromEmail = 'bestellungen@toys4joys.de',
+  fromEmail = 'info@toys4joys.com',
+  replyTo,
 }: SendEmailParams): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.BREVO_API_KEY
   if (!apiKey) {
@@ -27,18 +29,21 @@ export async function sendEmail({
     return { ok: false, error: 'BREVO_API_KEY not configured' }
   }
 
+  const body: Record<string, unknown> = {
+    sender:      { name: fromName, email: fromEmail },
+    to:          [{ email: to }],
+    subject,
+    htmlContent: html,
+  }
+  if (replyTo) body.replyTo = { email: replyTo }
+
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'api-key': apiKey,
     },
-    body: JSON.stringify({
-      sender:      { name: fromName, email: fromEmail },
-      to:          [{ email: to }],
-      subject,
-      htmlContent: html,
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!res.ok) {

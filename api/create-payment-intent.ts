@@ -25,6 +25,7 @@ interface RequestBody {
   user_id?:         string | null
   email?:           string | null
   shipping_address?: Record<string, string> | null
+  locale?:          string | null   // de | en | es — used by the webhook to localize the order confirmation email
 }
 
 const ALLOWED_ORIGIN = process.env.VERCEL_ENV === 'production'
@@ -39,10 +40,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   try {
-    const { amount, items, user_id, email, shipping_address } = req.body as RequestBody
+    const { amount, items, user_id, email, shipping_address, locale } = req.body as RequestBody
 
     if (!amount || amount <= 0)  return res.status(400).json({ error: 'Invalid amount' })
     if (!items?.length)          return res.status(400).json({ error: 'No items provided' })
+
+    // Whitelist the locale so a bad client value doesn't leak into metadata
+    const safeLocale = (locale === 'en' || locale === 'es' || locale === 'de') ? locale : 'de'
 
     const country  = shipping_address?.country
     const shipping = calcShipping(amount, country)
@@ -88,7 +92,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         amount:   Math.round(total * 100), // EUR cents
         currency: 'eur',
         automatic_payment_methods: { enabled: true },
-        metadata: { order_id: order.id },
+        // Webhook reads `locale` to localize the order-confirmation email
+        metadata: { order_id: order.id, locale: safeLocale },
       },
       { idempotencyKey: `pi-${order.id}` }
     )

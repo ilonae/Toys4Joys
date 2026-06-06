@@ -229,7 +229,7 @@ interface Props {
 
 export default function Checkout({ items, total, onNavigate, onClearCart }: Props) {
   const { user } = useAuth()
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const localProduct = useLocalProduct()
 
   // Determine initial step — skip address if user already has a saved address
@@ -283,6 +283,8 @@ export default function Checkout({ items, total, onNavigate, onClearCart }: Prop
         user_id:          user?.id ?? null,
         email:            shippingAddr.email,
         shipping_address: shippingAddr,
+        // Webhook uses this to localize the order-confirmation email
+        locale,
       }),
       signal: controller.signal,
     })

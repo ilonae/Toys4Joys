@@ -147,29 +147,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (
     firstName: string, lastName: string, email: string, password: string
   ): Promise<RegisterResult> => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { firstName, lastName } },
-    })
-    if (error) return { error: deError(error.message), needsConfirmation: false }
+    // We use a server-side endpoint so Supabase's default confirmation
+    // email is bypassed entirely (admin.createUser with email_confirm:false)
+    // and a branded Brevo email is sent instead. See api/register.ts.
+    let locale: string | undefined
+    try { locale = localStorage.getItem('t4j_locale') ?? undefined } catch { /* */ }
 
-    // If Supabase returned a user but no session, email confirmation is required.
-    // In that case we must NOT try to upsert profiles — no session means RLS blocks it.
-    // The DB trigger (handle_new_user / security definer) already inserts the row.
-    const needsConfirmation = !!data.user && !data.session
-
-    if (data.user && data.session) {
-      // Auto-confirm is on (dev) — safe to upsert as a trigger safety net
-      await supabase.from('profiles').upsert({
-        id:         data.user.id,
-        first_name: firstName.trim(),
-        last_name:  lastName.trim(),
+    let resp: Response
+    try {
+      resp = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, email, password, locale }),
       })
+    } catch (e) {
+      console.error('[register] network error:', e)
+      return { error: deError('network'), needsConfirmation: false }
     }
 
-    return { error: null, needsConfirmation }
-    // setUser is handled by onAuthStateChange (fires only when session exists)
+    let json: { ok?: boolean; error?: string; emailSent?: boolean; warning?: string } | null = null
+    try { json = await resp.json() } catch { /* non-JSON response */ }
+
+    if (!resp.ok || !json?.ok) {
+      return { error: deError(json?.error ?? 'Registration failed'), needsConfirmation: false }
+    }
+
+    // Always treat as needsConfirmation — user must click the link before sign-in.
+    return { error: null, needsConfirmation: true }
   }
 
   // ── Logout ─────────────────────────────────────────────────────────────────
