@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useAllOrders } from '@/hooks/useOrders'
 import { supabase } from '@/lib/supabase'
 import { productImageUrl } from '@/lib/queries'
+import { invalidateProductsCache } from '@/hooks/useProducts'
 import Tag from '@/components/ui/Tag'
 import Btn from '@/components/ui/Btn'
 import { trackingUrl, detectCarrier } from '@/lib/tracking'
@@ -191,6 +192,9 @@ function ProductFormModal({
 
     setSaving(false)
     if (dbErr) { setError('Speichern fehlgeschlagen: ' + dbErr.message); return }
+    // Tell every active useProducts() to refetch so the shop sees the
+    // new/updated product without a hard refresh.
+    invalidateProductsCache()
     onSave()
   }
 
@@ -326,6 +330,7 @@ function ProductsTab() {
     if (!confirm('Produkt wirklich löschen?')) return
     setDeleting(id)
     await supabase.from('products').delete().eq('id', id)
+    invalidateProductsCache()
     await loadProducts()
     setDeleting(null)
   }
@@ -344,6 +349,9 @@ function ProductsTab() {
       // Roll back the optimistic flip
       setProducts(prev => prev.map(x => x.id === p.id ? { ...x, is_visible: !next } as any : x))
       alert('Sichtbarkeit konnte nicht geändert werden: ' + error.message)
+    } else {
+      // Customer-facing pages should refetch so they reflect the hide/show
+      invalidateProductsCache()
     }
     setToggling(null)
   }
