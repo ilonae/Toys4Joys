@@ -1,0 +1,91 @@
+name: Promote staging → www.toys4joys.com
+
+# Actually deploys main → the `toys4joys` (no-hyphen) Vercel project that's
+# aliased to www.toys4joys.com. Vercel's Git integration handles the
+# `toys4-joys` (staging) project — but the real customer-facing project
+# has no Git connection, so we drive `vercel --prod` from CLI here.
+#
+# Triggers:
+#   - Manual button (workflow_dispatch) — go to Actions → this workflow → Run
+#   - Auto-fire at 18:00 CEST on 2026-06-06 (= 16:00 UTC)
+#
+# Required GitHub repo secret:
+#   - VERCEL_TOKEN       (Vercel Account Settings → Tokens → create)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 18:00 CEST = 16:00 UTC. Cron recurs annually — REMOVE this schedule
+    # block after 2026-06-06 to stop the yearly re-fire.
+    - cron: '0 16 6 6 *'
+
+env:
+  VERCEL_ORG_ID:     team_YH2wfKWgcgvdiDq36n5lZGSr
+  VERCEL_PROJECT_ID: prj_SjUGAKSYhkyTLJELfpZ35MwZTHbG  # toys4joys (no hyphen)
+
+jobs:
+  deploy:
+    name: vercel --prod
+    runs-on: ubuntu-latest
+    # Only fire from main so we don't accidentally ship a feature branch.
+    # workflow_dispatch defaults to the branch you trigger from, so
+    # picking develop in the dispatch UI would also be blocked here.
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout main at latest commit
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Capture LIVE bundle BEFORE deploy
+        id: before
+        run: |
+          BEFORE=$(curl -s "https://www.toys4joys.com/?cb=$(date +%s)" | grep -oE '/assets/index-[^"]+\.js' | head -1)
+          echo "bundle=$BEFORE" >> "$GITHUB_OUTPUT"
+          echo "BEFORE bundle: $BEFORE"
+
+      - name: Pull Vercel project config
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build with prod env baked in
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy prebuilt to production
+        id: deploy
+        run: |
+          URL=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $URL"
+
+      - name: Wait for alias swap + verify new bundle
+        run: |
+          # Vercel's GitHub integration takes a few seconds to swap aliases
+          sleep 10
+          AFTER=$(curl -s "https://www.toys4joys.com/?cb=$(date +%s)" | grep -oE '/assets/index-[^"]+\.js' | head -1)
+          BEFORE="${{ steps.before.outputs.bundle }}"
+          echo "BEFORE: $BEFORE"
+          echo "AFTER:  $AFTER"
+          if [ "$AFTER" = "$BEFORE" ]; then
+            echo "::warning::Bundle path unchanged — alias may not have swapped yet"
+            exit 0
+          fi
+          echo "✅ www.toys4joys.com now serves $AFTER"
+
+      - name: Summary
+        run: |
+          echo "## ✅ Promoted to production" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Source**: \`main\` @ \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Deployment**: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Live at**: https://www.toys4joys.com" >> "$GITHUB_STEP_SUMMARY"

@@ -49,10 +49,15 @@ export function mapProduct(row: Record<string, unknown>): Product {
 
 // ── Public query functions ────────────────────────────────────────────────
 
+// Customer-facing queries all hide products with is_visible=false so
+// admins can pull a product from the catalog without deleting it.
+// The Admin page intentionally bypasses this filter.
+
 export async function fetchProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
     .select(COLS)
+    .eq('is_visible', true)
     .order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
   return (data ?? []).map(mapProduct)
@@ -62,6 +67,7 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from('products')
     .select(COLS)
+    .eq('is_visible', true)
     .eq('featured', true)
     .limit(8)
   if (error) throw new Error(error.message)
@@ -72,6 +78,7 @@ export async function fetchRelatedProducts(cat: string, excludeId: string): Prom
   const { data, error } = await supabase
     .from('products')
     .select(COLS)
+    .eq('is_visible', true)
     .eq('cat', cat)
     .neq('id', excludeId)
     .limit(4)
@@ -83,6 +90,7 @@ export async function fetchSubcategories(cat: string): Promise<string[]> {
   const { data, error } = await supabase
     .from('products')
     .select('sub')
+    .eq('is_visible', true)
     .eq('cat', cat)
     .not('sub', 'is', null)
     .neq('sub', '')

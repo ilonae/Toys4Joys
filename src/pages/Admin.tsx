@@ -291,6 +291,7 @@ function ProductsTab() {
   const [modalOpen, setModalOpen] = useState(false)
   const [search,    setSearch]    = useState('')
   const [deleting,  setDeleting]  = useState<string | null>(null)
+  const [toggling,  setToggling]  = useState<string | null>(null)
 
   useEffect(() => { loadProducts() }, [])
 
@@ -298,7 +299,7 @@ function ProductsTab() {
     setLoading(true)
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock, supplier_sku')
+      .select('id, name, brand, cat, sub, price, old_price, badge, rating, rev, mat, lvl, description, image_path, image_paths, featured, stock, supplier_sku, is_visible')
       .order('created_at', { ascending: false })
     if (!error && data) {
       setProducts(data.map((row: any) => ({
@@ -313,6 +314,7 @@ function ProductsTab() {
         image_path: row.image_path,
         featured: row.featured ?? false,
         supplier_sku: row.supplier_sku ?? null,
+        is_visible: row.is_visible ?? true,
       } as any)))
     } else if (error) {
       console.error('[Admin] loadProducts failed:', error.message)
@@ -326,6 +328,24 @@ function ProductsTab() {
     await supabase.from('products').delete().eq('id', id)
     await loadProducts()
     setDeleting(null)
+  }
+
+  const handleToggleVisibility = async (p: Product & { is_visible?: boolean }) => {
+    const next = !(p.is_visible ?? true)
+    setToggling(p.id)
+    // Optimistic update — flip in memory so the UI reacts instantly
+    setProducts(prev => prev.map(x => x.id === p.id ? { ...x, is_visible: next } as any : x))
+    const { error } = await supabase
+      .from('products')
+      .update({ is_visible: next, updated_at: new Date().toISOString() })
+      .eq('id', p.id)
+    if (error) {
+      console.error('[Admin] toggle visibility failed:', error.message)
+      // Roll back the optimistic flip
+      setProducts(prev => prev.map(x => x.id === p.id ? { ...x, is_visible: !next } as any : x))
+      alert('Sichtbarkeit konnte nicht geändert werden: ' + error.message)
+    }
+    setToggling(null)
   }
 
   const filtered = products.filter(p =>
@@ -357,14 +377,20 @@ function ProductsTab() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${C.border}` }}>
-                {['Bild', 'Name', 'Marke', 'Lief.-SKU', 'Preis', 'Bestand', 'Badge', ''].map(h => (
+                {['Bild', 'Name', 'Marke', 'Lief.-SKU', 'Preis', 'Bestand', 'Badge', 'Sichtbar', ''].map(h => (
                   <th key={h} style={{ padding: '10px 16px', fontSize: '10px', letterSpacing: '0.08em', color: C.textDim, textAlign: 'left', fontWeight: 400, textTransform: 'uppercase' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {filtered.map(p => (
-                <tr key={p.id} style={{ borderBottom: `1px solid ${C.border}` }}
+              {filtered.map(p => {
+                const isVisible = ((p as any).is_visible ?? true) as boolean
+                return (
+                <tr key={p.id} style={{
+                  borderBottom: `1px solid ${C.border}`,
+                  opacity: isVisible ? 1 : 0.45,
+                  transition: 'opacity 0.15s',
+                }}
                   onMouseEnter={e => (e.currentTarget.style.background = C.bgCard)}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
@@ -393,6 +419,25 @@ function ProductsTab() {
                     )}
                   </td>
                   <td style={{ padding: '10px 16px' }}>
+                    <button
+                      onClick={() => handleToggleVisibility(p as any)}
+                      disabled={toggling === p.id}
+                      title={isVisible ? 'Im Shop sichtbar — Klick zum Verbergen' : 'Aus Shop verborgen — Klick zum Anzeigen'}
+                      style={{
+                        background: isVisible ? 'transparent' : C.bgCard,
+                        border: `1px solid ${isVisible ? '#7cc97c' : C.borderMid}`,
+                        color: isVisible ? '#7cc97c' : C.textDim,
+                        cursor: toggling === p.id ? 'wait' : 'pointer',
+                        fontSize: '10px', letterSpacing: '0.08em', padding: '5px 12px',
+                        fontFamily: 'inherit', minWidth: '90px',
+                        opacity: toggling === p.id ? 0.5 : 1,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {toggling === p.id ? '…' : (isVisible ? '✓ SICHTBAR' : '✗ VERBORGEN')}
+                    </button>
+                  </td>
+                  <td style={{ padding: '10px 16px' }}>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
                         onClick={() => { setEditProd(p); setModalOpen(true) }}
@@ -406,7 +451,8 @@ function ProductsTab() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
           {filtered.length === 0 && (
