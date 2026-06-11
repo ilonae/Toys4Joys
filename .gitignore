@@ -31,3 +31,4 @@ supabase/seed-products-from-prod.sql
 studio/
 .vercel
 .env*.local
+.email-previews
