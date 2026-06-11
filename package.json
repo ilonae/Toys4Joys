@@ -17,7 +17,8 @@
     "export:prod": "node scripts/export-prod-to-dev.mjs",
     "copy:images": "node scripts/copy-images-prod-to-dev.mjs",
     "seed:reviews": "node scripts/seed-reviews.mjs",
-    "translate:products": "node scripts/translate-products.mjs"
+    "translate:products": "node scripts/translate-products.mjs",
+    "preview:emails": "npx tsx scripts/preview-emails.ts"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.3.0",
@@ -40,6 +41,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "@vitest/coverage-v8": "^4.1.7",
     "concurrently": "^9.2.1",
+    "dotenv": "^17.4.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
