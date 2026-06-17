@@ -109,6 +109,11 @@ export interface Translations {
     emailPlaceholder: string; passwordPlaceholder: string; passwordMin: string
     confirmPasswordLabel: string; firstNamePlaceholder: string; lastNamePlaceholder: string
     rememberMe: string; forgotPassword: string
+    backToLogin: string
+    resetLinkHint: string; sendResetBtn: string
+    resetLinkSent: string; resetLinkSentText: string
+    setNewPasswordTitle: string; setPasswordBtn: string
+    passwordUpdated: string; passwordUpdatedText: string
     ageConfirm: string; termsAcceptPre: string; termsAcceptMid: string
     createAccountBtn: string; signInBtn: string
     confirmationSent: string; confirmationText1: string; confirmationText2: string; checkSpam: string
@@ -254,6 +259,15 @@ const de: Translations = {
     confirmPasswordLabel: 'Passwort wiederholen',
     firstNamePlaceholder: 'Max', lastNamePlaceholder: 'Mustermann',
     rememberMe: 'Angemeldet bleiben', forgotPassword: 'Passwort vergessen?',
+    backToLogin: '← Zurück zum Login',
+    resetLinkHint: 'Gib deine E-Mail ein — wir schicken dir einen Reset-Link.',
+    sendResetBtn: 'LINK SENDEN',
+    resetLinkSent: 'SCHAU INS POSTFACH',
+    resetLinkSentText: 'Wir haben einen Passwort-Reset-Link an',
+    setNewPasswordTitle: 'NEUES PASSWORT SETZEN',
+    setPasswordBtn: 'PASSWORT SETZEN',
+    passwordUpdated: 'PASSWORT AKTUALISIERT',
+    passwordUpdatedText: 'Dein Passwort wurde geändert. Du bist jetzt eingeloggt.',
     ageConfirm: 'Ich bin 18 Jahre oder älter',
     termsAcceptPre: 'Ich akzeptiere die', termsAcceptMid: 'und',
     createAccountBtn: 'KONTO ERSTELLEN', signInBtn: 'ANMELDEN',
@@ -409,6 +423,15 @@ const en: Translations = {
     confirmPasswordLabel: 'Confirm password',
     firstNamePlaceholder: 'Anna', lastNamePlaceholder: 'Smith',
     rememberMe: 'Stay signed in', forgotPassword: 'Forgot password?',
+    backToLogin: '← Back to sign in',
+    resetLinkHint: 'Enter your email and we\'ll send you a reset link.',
+    sendResetBtn: 'SEND RESET LINK',
+    resetLinkSent: 'CHECK YOUR EMAIL',
+    resetLinkSentText: 'We sent a password reset link to',
+    setNewPasswordTitle: 'SET NEW PASSWORD',
+    setPasswordBtn: 'SET PASSWORD',
+    passwordUpdated: 'PASSWORD UPDATED',
+    passwordUpdatedText: 'Your password has been changed. You\'re now signed in.',
     ageConfirm: 'I am 18 years or older',
     termsAcceptPre: 'I accept the', termsAcceptMid: 'and',
     createAccountBtn: 'CREATE ACCOUNT', signInBtn: 'SIGN IN',
@@ -564,6 +587,15 @@ const es: Translations = {
     confirmPasswordLabel: 'Confirmar contraseña',
     firstNamePlaceholder: 'Ana', lastNamePlaceholder: 'García',
     rememberMe: 'Mantener sesión iniciada', forgotPassword: '¿Olvidaste tu contraseña?',
+    backToLogin: '← Volver al inicio',
+    resetLinkHint: 'Ingresa tu email y te enviaremos un enlace de restablecimiento.',
+    sendResetBtn: 'ENVIAR ENLACE',
+    resetLinkSent: 'REVISA TU CORREO',
+    resetLinkSentText: 'Enviamos un enlace para restablecer la contraseña a',
+    setNewPasswordTitle: 'ESTABLECER NUEVA CONTRASEÑA',
+    setPasswordBtn: 'ESTABLECER CONTRASEÑA',
+    passwordUpdated: 'CONTRASEÑA ACTUALIZADA',
+    passwordUpdatedText: 'Tu contraseña ha sido cambiada. Ahora estás conectado/a.',
     ageConfirm: 'Tengo 18 años o más',
     termsAcceptPre: 'Acepto los', termsAcceptMid: 'y la',
     createAccountBtn: 'CREAR CUENTA', signInBtn: 'INICIAR SESIÓN',

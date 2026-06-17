@@ -41,12 +41,15 @@ export interface RegisterResult {
 }
 
 interface AuthContextType {
-  user:          User | null
-  loading:       boolean
-  login:         (email: string, password: string) => Promise<string | null>
-  register:      (firstName: string, lastName: string, email: string, password: string) => Promise<RegisterResult>
-  logout:        () => Promise<void>
-  updateProfile: (data: ProfileData) => Promise<void>
+  user:                User | null
+  loading:             boolean
+  isPasswordRecovery:  boolean
+  login:               (email: string, password: string) => Promise<string | null>
+  register:            (firstName: string, lastName: string, email: string, password: string) => Promise<RegisterResult>
+  logout:              () => Promise<void>
+  updateProfile:       (data: ProfileData) => Promise<void>
+  sendPasswordReset:   (email: string) => Promise<string | null>
+  setNewPassword:      (password: string) => Promise<string | null>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -114,8 +117,9 @@ async function buildUser(supaUser: SupabaseUser): Promise<User> {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser]       = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser]                     = useState<User | null>(null)
+  const [loading, setLoading]               = useState(true)
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
 
   // Re-pull the current session's profile from the DB. Used when:
   //   - the page is mounted (initial sync)
@@ -135,7 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Keep state in sync with Supabase auth events (login, logout, token
     // refresh — also fires cross-tab via Supabase's storage listener)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') setIsPasswordRecovery(true)
         if (session?.user) setUser(await buildUser(session.user))
         else setUser(null)
       }
@@ -201,6 +206,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // setUser(null) handled by onAuthStateChange
   }
 
+  // ── Password reset ─────────────────────────────────────────────────────────
+
+  const sendPasswordReset = async (email: string): Promise<string | null> => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    })
+    if (error) return deError(error.message)
+    return null
+  }
+
+  const setNewPassword = async (password: string): Promise<string | null> => {
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) return deError(error.message)
+    setIsPasswordRecovery(false)
+    window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    return null
+  }
+
   // ── Update profile ─────────────────────────────────────────────────────────
 
   const updateProfile = async (data: ProfileData): Promise<void> => {
@@ -241,7 +264,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, isPasswordRecovery, login, register, logout, updateProfile, sendPasswordReset, setNewPassword }}>
       {children}
     </AuthContext.Provider>
   )
