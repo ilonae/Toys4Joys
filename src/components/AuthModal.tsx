@@ -87,7 +87,7 @@ function Checkbox({ checked, onChange, children }: { checked: boolean; onChange:
 
 // ── Tab bar ────────────────────────────────────────────────────────────────
 
-type Tab = 'login' | 'register' | 'track'
+type Tab = 'login' | 'register' | 'track' | 'forgot' | 'set-password'
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -108,7 +108,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 
 // ── Login form ─────────────────────────────────────────────────────────────
 
-function LoginForm({ onSuccess, t }: { onSuccess: () => void; t: Translations }) {
+function LoginForm({ onSuccess, onForgot, t }: { onSuccess: () => void; onForgot: () => void; t: Translations }) {
   const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -142,6 +142,7 @@ function LoginForm({ onSuccess, t }: { onSuccess: () => void; t: Translations })
 
       <button
         type="button"
+        onClick={onForgot}
         style={{ background: 'none', border: 'none', color: C.textDim, fontSize: '11px', letterSpacing: '0.06em', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: 0 }}
       >
         {t.auth.forgotPassword}
@@ -245,6 +246,125 @@ function RegisterForm({ onSuccess, t }: { onSuccess: () => void; t: Translations
       )}
 
       <SubmitBtn loading={loading}>{t.auth.createAccountBtn}</SubmitBtn>
+    </form>
+  )
+}
+
+// ── Forgot password form ───────────────────────────────────────────────────
+
+function ForgotPasswordForm({ onBack, t }: { onBack: () => void; t: Translations }) {
+  const { sendPasswordReset } = useAuth()
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email.includes('@')) { setError(t.auth.errInvalidEmail); return }
+    setLoading(true); setError(null)
+    const err = await sendPasswordReset(email)
+    setLoading(false)
+    if (err) setError(err)
+    else setSent(true)
+  }
+
+  if (sent) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', textAlign: 'center', padding: '8px 0' }}>
+        <div style={{ fontSize: '32px', lineHeight: 1 }}>✉️</div>
+        <div>
+          <div style={{ fontSize: '13px', color: C.text, fontWeight: 500, letterSpacing: '0.06em', marginBottom: '8px' }}>
+            {t.auth.resetLinkSent}
+          </div>
+          <div style={{ fontSize: '12px', color: C.textMid, lineHeight: 1.7 }}>
+            {t.auth.resetLinkSentText}<br />
+            <span style={{ color: C.text }}>{email}</span>
+          </div>
+        </div>
+        <div style={{ fontSize: '11px', color: C.textDim, lineHeight: 1.6 }}>
+          {t.auth.checkSpam}
+        </div>
+        <button
+          type="button"
+          onClick={onBack}
+          style={{ background: 'none', border: 'none', color: C.textDim, fontSize: '11px', letterSpacing: '0.06em', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: 0 }}
+        >
+          {t.auth.backToLogin}
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ fontSize: '12px', color: C.textMid, lineHeight: 1.7 }}>{t.auth.resetLinkHint}</div>
+      <Field label={t.checkout.email} type="email" value={email} onChange={setEmail} placeholder={t.auth.emailPlaceholder} />
+      {error && (
+        <div style={{ fontSize: '11px', color: C.accent, padding: '10px', border: `1px solid ${C.accentDim}`, background: C.bgCard }}>
+          {error}
+        </div>
+      )}
+      <SubmitBtn loading={loading}>{t.auth.sendResetBtn}</SubmitBtn>
+      <button
+        type="button"
+        onClick={onBack}
+        style={{ background: 'none', border: 'none', color: C.textDim, fontSize: '11px', letterSpacing: '0.06em', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: 0 }}
+      >
+        {t.auth.backToLogin}
+      </button>
+    </form>
+  )
+}
+
+// ── Set new password form ──────────────────────────────────────────────────
+
+function SetPasswordForm({ onSuccess, t }: { onSuccess: () => void; t: Translations }) {
+  const { setNewPassword } = useAuth()
+  const [pwd, setPwd]         = useState('')
+  const [confirmPwd, setConfirmPwd] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState<string | null>(null)
+  const [done, setDone]       = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (pwd.length < 8) { setError(t.auth.errPasswordShort); return }
+    if (pwd !== confirmPwd) { setError(t.auth.errPasswordMismatch); return }
+    setLoading(true); setError(null)
+    const err = await setNewPassword(pwd)
+    setLoading(false)
+    if (err) { setError(err); return }
+    setDone(true)
+    setTimeout(onSuccess, 1500)
+  }
+
+  if (done) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center', textAlign: 'center', padding: '8px 0' }}>
+        <div style={{ fontSize: '32px', lineHeight: 1 }}>✓</div>
+        <div>
+          <div style={{ fontSize: '13px', color: C.text, fontWeight: 500, letterSpacing: '0.06em', marginBottom: '8px' }}>
+            {t.auth.passwordUpdated}
+          </div>
+          <div style={{ fontSize: '12px', color: C.textMid, lineHeight: 1.7 }}>
+            {t.auth.passwordUpdatedText}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <Field label={t.auth.setNewPasswordTitle} type="password" value={pwd}        onChange={setPwd}        placeholder={t.auth.passwordMin} />
+      <Field label={t.auth.confirmPasswordLabel} type="password" value={confirmPwd} onChange={setConfirmPwd} placeholder={t.auth.passwordPlaceholder} />
+      {error && (
+        <div style={{ fontSize: '11px', color: C.accent, padding: '10px', border: `1px solid ${C.accentDim}`, background: C.bgCard }}>
+          {error}
+        </div>
+      )}
+      <SubmitBtn loading={loading}>{t.auth.setPasswordBtn}</SubmitBtn>
     </form>
   )
 }
@@ -388,7 +508,9 @@ export default function AuthModal({ open, initialTab = 'login', onClose, onSucce
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px 0' }}>
-          <div style={{ fontSize: '11px', letterSpacing: '0.14em', color: C.textDim }}>{t.auth.accountHeader}</div>
+          <div style={{ fontSize: '11px', letterSpacing: '0.14em', color: C.textDim }}>
+            {tab === 'set-password' ? t.auth.setNewPasswordTitle : t.auth.accountHeader}
+          </div>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', color: C.textDim, cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '2px 4px', fontFamily: 'inherit' }}
@@ -397,16 +519,20 @@ export default function AuthModal({ open, initialTab = 'login', onClose, onSucce
           </button>
         </div>
 
-        <div style={{ display: 'flex', gap: '24px', padding: '16px 24px 0', borderBottom: `1px solid ${C.border}` }}>
-          <TabBtn active={tab === 'login'}    onClick={() => setTab('login')}>{t.auth.loginTab}</TabBtn>
-          <TabBtn active={tab === 'register'} onClick={() => setTab('register')}>{t.auth.registerTab}</TabBtn>
-          <TabBtn active={tab === 'track'}    onClick={() => setTab('track')}>{t.auth.trackTab}</TabBtn>
-        </div>
+        {tab !== 'forgot' && tab !== 'set-password' && (
+          <div style={{ display: 'flex', gap: '24px', padding: '16px 24px 0', borderBottom: `1px solid ${C.border}` }}>
+            <TabBtn active={tab === 'login'}    onClick={() => setTab('login')}>{t.auth.loginTab}</TabBtn>
+            <TabBtn active={tab === 'register'} onClick={() => setTab('register')}>{t.auth.registerTab}</TabBtn>
+            <TabBtn active={tab === 'track'}    onClick={() => setTab('track')}>{t.auth.trackTab}</TabBtn>
+          </div>
+        )}
 
         <div style={{ padding: '24px' }}>
-          {tab === 'login'    && <LoginForm    t={t} onSuccess={() => { onSuccess(); onClose() }} />}
-          {tab === 'register' && <RegisterForm t={t} onSuccess={() => { onSuccess(); onClose() }} />}
-          {tab === 'track'    && <TrackForm    t={t} />}
+          {tab === 'login'        && <LoginForm          t={t} onSuccess={() => { onSuccess(); onClose() }} onForgot={() => setTab('forgot')} />}
+          {tab === 'register'     && <RegisterForm       t={t} onSuccess={() => { onSuccess(); onClose() }} />}
+          {tab === 'track'        && <TrackForm          t={t} />}
+          {tab === 'forgot'       && <ForgotPasswordForm t={t} onBack={() => setTab('login')} />}
+          {tab === 'set-password' && <SetPasswordForm    t={t} onSuccess={() => { onSuccess(); onClose() }} />}
         </div>
       </div>
     </div>

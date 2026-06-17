@@ -1,4 +1,4 @@
-import React, { useState, Component } from 'react'
+import React, { useState, useEffect, Component } from 'react'
 import { C } from '@/tokens'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { LocaleProvider } from '@/contexts/LocaleContext'
@@ -24,6 +24,7 @@ import Checkout from '@/pages/Checkout'
 import ProfilePage from '@/pages/ProfilePage'
 import Admin from '@/pages/Admin'
 import StaticPage from '@/pages/StaticPage'
+import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/hooks/useCart'
 import { useWishlist } from '@/hooks/useWishlist'
 import { useToast } from '@/hooks/useToast'
@@ -68,16 +69,21 @@ function AppInner() {
   const [nav, setNav] = useState<NavState>({ page: 'home' })
   const age    = useAgeGate()
   const cookie = useCookieConsent()
-  const [authModal, setAuthModal] = useState<{ open: boolean; tab: 'login' | 'register' | 'track' }>({
+  const [authModal, setAuthModal] = useState<{ open: boolean; tab: 'login' | 'register' | 'track' | 'set-password' }>({
     open: false,
     tab: 'login',
   })
 
+  const { isPasswordRecovery } = useAuth()
   const cart = useCart()
   const wish = useWishlist()
   const toast = useToast()
 
   usePageMeta({ page: nav.page, product: nav.product, cat: nav.cat })
+
+  useEffect(() => {
+    if (isPasswordRecovery) setAuthModal({ open: true, tab: 'set-password' })
+  }, [isPasswordRecovery])
 
   const navigate = (page: Page, cat?: string, sub?: string) => {
     setNav({ page, cat, sub })
