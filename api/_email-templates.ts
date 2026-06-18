@@ -29,7 +29,11 @@ const C = {
 // PNG, not SVG — most email clients (Gmail, Outlook, iCloud) refuse SVG for
 // security reasons. PNG works everywhere. Hosted on the production storefront
 // so we don't need attachments.
-const LOGO_URL = 'https://www.toys4joys.com/images/logo.png'
+// The ?v= query param is a cache-buster for the Gmail / Apple Mail / Outlook
+// image proxies. Each proxy keys its cache on the full URL, so bumping the
+// version forces a fresh fetch of the transparent PNG (the older one shipped
+// with a white background and got cached aggressively).
+const LOGO_URL = 'https://www.toys4joys.com/images/logo.png?v=2'
 const SUPPORT  = 'info@toys4joys.com'
 
 // ── Localised strings ───────────────────────────────────────────────────
@@ -45,6 +49,12 @@ const STRINGS = {
     welcomeBody1:   'Klicke auf den Button unten, um dein Konto zu aktivieren. Der Link ist 24 Stunden gültig.',
     welcomeCta:     'E-MAIL BESTÄTIGEN',
     welcomeBody2:   'Wenn du dich nicht bei TOYS4JOYS registriert hast, kannst du diese E-Mail einfach ignorieren.',
+    // reset
+    resetSubject:  'Passwort zurücksetzen – TOYS4JOYS',
+    resetHeading:  'Passwort zurücksetzen',
+    resetBody1:    'Klicke auf den Button unten, um ein neues Passwort zu wählen. Der Link ist 1 Stunde gültig.',
+    resetCta:      'NEUES PASSWORT WÄHLEN',
+    resetBody2:    'Wenn du kein neues Passwort angefordert hast, kannst du diese E-Mail einfach ignorieren.',
     // order
     orderSubject:   (sid: string) => `Bestellung bestätigt · #${sid}`,
     orderHeading:   'Vielen Dank für deine Bestellung.',
@@ -74,6 +84,11 @@ const STRINGS = {
     welcomeBody1:   'Click the button below to activate your account. The link is valid for 24 hours.',
     welcomeCta:     'CONFIRM EMAIL',
     welcomeBody2:   'If you didn\'t sign up to TOYS4JOYS, you can safely ignore this email.',
+    resetSubject:  'Reset your password – TOYS4JOYS',
+    resetHeading:  'Reset your password',
+    resetBody1:    'Click the button below to choose a new password. The link is valid for 1 hour.',
+    resetCta:      'CHOOSE NEW PASSWORD',
+    resetBody2:    'If you didn\'t request a password reset, you can safely ignore this email.',
     orderSubject:   (sid: string) => `Order confirmed · #${sid}`,
     orderHeading:   'Thanks for your order.',
     orderIntro:     'We\'ve received your payment and passed the order to our warehouse. You\'ll get a separate email with the tracking number when it ships.',
@@ -101,6 +116,11 @@ const STRINGS = {
     welcomeBody1:   'Haz clic en el botón a continuación para activar tu cuenta. El enlace es válido durante 24 horas.',
     welcomeCta:     'CONFIRMAR EMAIL',
     welcomeBody2:   'Si no te registraste en TOYS4JOYS, puedes ignorar este correo.',
+    resetSubject:  'Restablecer contraseña – TOYS4JOYS',
+    resetHeading:  'Restablecer contraseña',
+    resetBody1:    'Haz clic en el botón a continuación para elegir una nueva contraseña. El enlace es válido durante 1 hora.',
+    resetCta:      'ELEGIR NUEVA CONTRASEÑA',
+    resetBody2:    'Si no solicitaste un restablecimiento de contraseña, puedes ignorar este correo.',
     orderSubject:   (sid: string) => `Pedido confirmado · #${sid}`,
     orderHeading:   'Gracias por tu pedido.',
     orderIntro:     'Hemos recibido tu pago y pasado el pedido a nuestro almacén. Recibirás un email separado con el número de seguimiento cuando se envíe.',
@@ -216,6 +236,25 @@ ${button(s.welcomeCta, confirmUrl)}
   ${s.welcomeBody2}
 </p>`
   return { subject: s.welcomeSubject, html: wrap(body, L) }
+}
+
+// ── PUBLIC: Password reset ─────────────────────────────────────────────
+export function resetPasswordEmail({
+  resetUrl, locale,
+}: { resetUrl: string; locale?: string }): { subject: string; html: string } {
+  const L = pickLocale(locale)
+  const s = STRINGS[L]
+  const body = `
+${h1(s.resetHeading)}
+${p(s.resetBody1)}
+${button(s.resetCta, resetUrl)}
+<p style="font-size:11px;color:${C.textDim};word-break:break-all;line-height:1.6;margin:18px 0 0">
+  ${resetUrl}
+</p>
+<p style="font-size:12px;color:${C.textDim};line-height:1.7;margin:28px 0 0;border-top:1px solid ${C.border};padding-top:20px">
+  ${s.resetBody2}
+</p>`
+  return { subject: s.resetSubject, html: wrap(body, L) }
 }
 
 // ── PUBLIC: Order confirmation ─────────────────────────────────────────
