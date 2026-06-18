@@ -212,17 +212,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ── Password reset ─────────────────────────────────────────────────────────
 
   const sendPasswordReset = async (email: string): Promise<string | null> => {
-    const siteUrl = (import.meta.env.VITE_SITE_URL as string | undefined) ?? window.location.origin
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: siteUrl,
-    })
-    if (error) return deError(error.message)
-    return null
+    try {
+      const res = await fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, locale: 'de' }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        return (json as { error?: string }).error ?? 'E-Mail konnte nicht gesendet werden. Bitte versuche es erneut.'
+      }
+      return null
+    } catch {
+      return 'Verbindungsfehler. Bitte versuche es erneut.'
+    }
   }
 
   const setNewPassword = async (password: string): Promise<string | null> => {
     const { error } = await supabase.auth.updateUser({ password })
-    if (error) return deError(error.message)
+    if (error) return deError(error)
     setIsPasswordRecovery(false)
     window.history.replaceState(null, '', window.location.pathname + window.location.search)
     return null
