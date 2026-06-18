@@ -59,7 +59,9 @@ interface AuthContextType {
 const EMPTY_ADDRESS: UserAddress = { street: '', zip: '', city: '', country: 'Deutschland' }
 
 /** Map English Supabase error messages → German */
-function deError(msg: string): string {
+function deError(raw: unknown): string {
+  const msg = typeof raw === 'string' ? raw : (raw as { message?: string })?.message ?? ''
+  if (!msg || msg === '{}' || msg === 'undefined') return 'Etwas ist schiefgelaufen. Bitte versuche es erneut.'
   if (msg.includes('Invalid login credentials'))    return 'Ungültige E-Mail-Adresse oder Passwort.'
   if (msg.includes('already registered') || msg.includes('already been registered'))
                                                      return 'Diese E-Mail-Adresse ist bereits registriert.'
@@ -67,6 +69,7 @@ function deError(msg: string): string {
   if (msg.includes('Password should be at least'))   return 'Das Passwort muss mindestens 6 Zeichen lang sein.'
   if (msg.includes('rate limit') || msg.includes('too many')) return 'Zu viele Versuche. Bitte warte kurz.'
   if (msg.includes('network') || msg.includes('fetch')) return 'Verbindungsfehler. Bitte versuche es erneut.'
+  if (msg.includes('smtp') || msg.includes('SMTP') || msg.includes('mail')) return 'E-Mail konnte nicht gesendet werden. Bitte versuche es erneut.'
   return msg
 }
 
