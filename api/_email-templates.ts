@@ -351,3 +351,74 @@ ${p(s.shippedIntro)}
 ${trackingBlock}`
   return { subject: s.shippedSubject(sid), html: wrap(body, L) }
 }
+
+// ── PUBLIC: Internal order notification (to info@toys4joys.com) ────────
+export function internalOrderEmail({ order }: { order: OrderInfo }): { subject: string; html: string } {
+  const sid  = shortId(order.id)
+  const addr = order.shipping_address
+  const name = addr ? [addr.firstName, addr.lastName].filter(Boolean).map(escape).join(' ') : '—'
+  const vat  = (order.total * 19 / 119).toFixed(2)
+
+  const itemsHtml = order.order_items.map(i => `
+<tr>
+  <td style="padding:10px 0;font-size:13px;color:${C.text};border-bottom:1px solid ${C.border}">
+    ${i.qty > 1 ? `<span style="color:${C.textDim};margin-right:6px">×${i.qty}</span>` : ''}${escape(i.name)}
+  </td>
+  <td align="right" style="padding:10px 0;font-size:13px;color:${C.text};border-bottom:1px solid ${C.border};white-space:nowrap">${eur(i.price * i.qty)}</td>
+</tr>`).join('')
+
+  const addrHtml = addr ? `
+<div style="margin-top:6px;font-size:13px;color:${C.textMid};line-height:1.8">
+  ${escape(addr.street ?? '')}, ${escape(addr.zip ?? '')} ${escape(addr.city ?? '')}, ${escape(addr.country ?? '')}
+</div>` : ''
+
+  const body = `
+${h1('Neue Bestellung')}
+
+<div style="margin:20px 0;padding:16px 20px;background:${C.bgCard};border:1px solid ${C.border};border-left:3px solid ${C.accent}">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td style="font-size:10px;letter-spacing:0.12em;color:${C.textDim};padding-bottom:4px">BESTELLNUMMER</td>
+      <td align="right" style="font-size:10px;letter-spacing:0.12em;color:${C.textDim};padding-bottom:4px">BETRAG</td>
+    </tr>
+    <tr>
+      <td style="font-size:22px;font-weight:700;color:${C.text};letter-spacing:0.06em">#${sid}</td>
+      <td align="right" style="font-size:22px;font-weight:700;color:${C.accent}">${eur(order.total)}</td>
+    </tr>
+  </table>
+</div>
+
+<div style="margin:20px 0;padding:14px 20px;background:${C.bgCard};border:1px solid ${C.border}">
+  <div style="font-size:10px;letter-spacing:0.12em;color:${C.textDim};margin-bottom:8px">KUNDE</div>
+  <div style="font-size:14px;font-weight:600;color:${C.text}">${name}</div>
+  <a href="mailto:${escape(order.email)}" style="font-size:13px;color:${C.accent};text-decoration:none">${escape(order.email)}</a>
+  ${addrHtml}
+</div>
+
+<div style="font-size:10px;letter-spacing:0.14em;color:${C.textDim};margin-bottom:14px">BESTELLÜBERSICHT</div>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+  ${itemsHtml}
+  <tr>
+    <td style="padding:12px 0 4px;font-size:12px;color:${C.textMid}">Zwischensumme</td>
+    <td align="right" style="padding:12px 0 4px;font-size:12px;color:${C.textMid}">${eur(order.subtotal)}</td>
+  </tr>
+  <tr>
+    <td style="padding:4px 0;font-size:12px;color:${C.textMid}">Versand</td>
+    <td align="right" style="padding:4px 0;font-size:12px;color:${order.shipping_cost === 0 ? C.accent : C.textMid}">
+      ${order.shipping_cost === 0 ? 'Kostenlos' : eur(order.shipping_cost)}
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:12px 0 0;font-size:15px;color:${C.text};font-weight:600;border-top:1px solid ${C.border}">Gesamt</td>
+    <td align="right" style="padding:12px 0 0;font-size:15px;color:${C.text};font-weight:600;border-top:1px solid ${C.border}">${eur(order.total)}</td>
+  </tr>
+  <tr><td colspan="2" style="padding:4px 0 0;font-size:10px;color:${C.textDim}">inkl. 19% MwSt. (€${vat})</td></tr>
+</table>
+
+<p style="font-size:11px;color:${C.textDim};margin:24px 0 0;font-family:monospace">ID: ${order.id}</p>`
+
+  return {
+    subject: `🛒 Neue Bestellung #${sid} — ${eur(order.total)}`,
+    html:    wrap(body, 'de'),
+  }
+}
