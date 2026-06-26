@@ -2,7 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from './_brevo.js'
-import { orderEmail, type OrderInfo } from './_email-templates.js'
+import { orderEmail, internalOrderEmail, type OrderInfo } from './_email-templates.js'
+
+const INTERNAL_EMAIL = 'info@toys4joys.com'
 
 const stripe   = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const supabase = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -25,13 +27,20 @@ async function sendOrderConfirmation(orderId: string, locale?: string) {
     .from('orders').select('*, order_items(*)').eq('id', orderId).single()
   if (error || !order) { console.error('[email] fetch failed:', error?.message); return }
 
+  // 1. Customer confirmation
   const toEmail = order.email && order.email !== 'guest' ? order.email : null
-  if (!toEmail) return
+  if (toEmail) {
+    const { subject, html } = orderEmail({ order: order as OrderInfo, locale })
+    const { ok, error: mailErr } = await sendEmail({ to: toEmail, subject, html })
+    if (!ok) console.error('[email] order confirmation failed:', mailErr)
+    else     console.log(`[email] order confirmation → ${toEmail}`)
+  }
 
-  const { subject, html } = orderEmail({ order: order as OrderInfo, locale })
-  const { ok, error: mailErr } = await sendEmail({ to: toEmail, subject, html })
-  if (!ok) console.error('[email] order confirmation failed:', mailErr)
-  else     console.log(`[email] order confirmation → ${toEmail}`)
+  // 2. Internal notification
+  const { subject: iSubject, html: iHtml } = internalOrderEmail({ order: order as OrderInfo })
+  const { ok: iOk, error: iErr } = await sendEmail({ to: INTERNAL_EMAIL, subject: iSubject, html: iHtml })
+  if (!iOk) console.error('[email] internal notification failed:', iErr)
+  else      console.log(`[email] internal notification → ${INTERNAL_EMAIL}`)
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
