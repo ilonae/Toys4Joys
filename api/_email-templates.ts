@@ -289,7 +289,7 @@ export function orderEmail({ order, locale }: { order: OrderInfo; locale?: strin
 <div style="margin-top:28px;padding-top:20px;border-top:1px solid ${C.border}">
   <div style="font-size:10px;letter-spacing:0.14em;color:${C.textDim};margin-bottom:10px">${s.shipToLbl}</div>
   <div style="font-size:13px;color:${C.textMid};line-height:1.8">
-    ${[addr.firstName, addr.lastName].filter(Boolean).map(escape).join(' ')}<br>
+    ${[addr.firstName, addr.lastName].filter((s): s is string => !!s).map(escape).join(' ')}<br>
     ${escape(addr.street ?? '')}<br>
     ${escape(addr.zip ?? '')} ${escape(addr.city ?? '')}<br>
     ${escape(addr.country ?? '')}
@@ -356,7 +356,7 @@ ${trackingBlock}`
 export function internalOrderEmail({ order }: { order: OrderInfo }): { subject: string; html: string } {
   const sid  = shortId(order.id)
   const addr = order.shipping_address
-  const name = addr ? [addr.firstName, addr.lastName].filter(Boolean).map(escape).join(' ') : '—'
+  const name = addr ? [addr.firstName, addr.lastName].filter((s): s is string => !!s).map(escape).join(' ') : '—'
   const vat  = (order.total * 19 / 119).toFixed(2)
 
   const itemsHtml = order.order_items.map(i => `
