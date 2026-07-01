@@ -49,12 +49,13 @@ async function sendOrderConfirmation(orderId: string, locale?: string) {
   const customer = addr
     ? [addr.firstName, addr.lastName].filter((s): s is string => !!s).join(' ')
     : (order.email ?? '—')
-  const itemCount = (order.order_items as { qty: number }[]).reduce((n, i) => n + i.qty, 0)
+  const items     = order.order_items as { name: string; qty: number; price: number }[]
+  const itemLines = items.map(i => `  ${i.qty > 1 ? `×${i.qty} ` : ''}${i.name} — €${(i.price * i.qty).toFixed(2)}`).join('\n')
   await sendTelegram(
     `🛒 <b>Neue Bestellung</b> #${sid}\n` +
-    `💶 €${(order.total as number).toFixed(2)}\n` +
-    `👤 ${customer}\n` +
-    `📦 ${itemCount} Artikel\n` +
+    `👤 ${customer}\n\n` +
+    `<b>Artikel:</b>\n${itemLines}\n\n` +
+    `💶 <b>Gesamt: €${(order.total as number).toFixed(2)}</b>\n` +
     `✅ Bezahlt`
   )
 }
