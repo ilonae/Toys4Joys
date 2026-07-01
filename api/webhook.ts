@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { sendEmail } from './_brevo.js'
+import { sendTelegram } from './_telegram.js'
 import { orderEmail, internalOrderEmail, type OrderInfo } from './_email-templates.js'
 
 const INTERNAL_EMAIL = 'info@toys4joys.com'
@@ -41,6 +42,21 @@ async function sendOrderConfirmation(orderId: string, locale?: string) {
   const { ok: iOk, error: iErr } = await sendEmail({ to: INTERNAL_EMAIL, subject: iSubject, html: iHtml })
   if (!iOk) console.error('[email] internal notification failed:', iErr)
   else      console.log(`[email] internal notification → ${INTERNAL_EMAIL}`)
+
+  // 3. Telegram push to owner
+  const sid      = order.id.slice(-8).toUpperCase()
+  const addr     = order.shipping_address as { firstName?: string; lastName?: string } | null
+  const customer = addr
+    ? [addr.firstName, addr.lastName].filter((s): s is string => !!s).join(' ')
+    : (order.email ?? '—')
+  const itemCount = (order.order_items as { qty: number }[]).reduce((n, i) => n + i.qty, 0)
+  await sendTelegram(
+    `🛒 <b>Neue Bestellung</b> #${sid}\n` +
+    `💶 €${(order.total as number).toFixed(2)}\n` +
+    `👤 ${customer}\n` +
+    `📦 ${itemCount} Artikel\n` +
+    `✅ Bezahlt`
+  )
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
